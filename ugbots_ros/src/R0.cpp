@@ -5,6 +5,7 @@
 #include <sensor_msgs/LaserScan.h>
 
 #include <sstream>
+#include <stdlib.h>
 #include "math.h"
 
 //velocity of the robot
@@ -43,8 +44,8 @@ int main(int argc, char **argv)
 	py = 20;
 	
 	//Initial velocity
-	linear_x = 0.2;
-	angular_z = 0.2;
+	linear_x = 100.0;
+	angular_z = 20.0;
 	
 //You must call ros::init() first of all. ros::init() function needs to see argc and argv. The third argument is the name of the node
 ros::init(argc, argv, "RobotNode0");
@@ -75,6 +76,9 @@ while (ros::ok())
 	RobotNode_cmdvel.linear.x = linear_x;
 	RobotNode_cmdvel.angular.z = angular_z;
         
+	if (count % 2 == 0) {
+		angular_z = -50 + (rand() % 100);
+	}
 	//publish the message
 	RobotNode_stage_pub.publish(RobotNode_cmdvel);
 	
