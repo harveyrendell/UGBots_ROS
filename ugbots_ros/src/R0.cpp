@@ -20,9 +20,23 @@ public:
 
 	}
 
-	int stop(int t)
+	void stop(int t)
 	{
-		return 0;
+		double temp_x = linear_x;
+		double temp_z = angular_z;
+
+		linear_x = 0.0;
+		angular_z = 0.0;
+		
+		int i = 0;
+		for (i; i <= t; i++)
+		{
+			sleep(1);
+			ROS_INFO("Waiting for %i seconds", i+1);
+		}
+
+		linear_x = temp_x;
+		angular_z = temp_z;
 	}
 
 	void StageOdom_callback(nav_msgs::Odometry msg)
@@ -41,12 +55,6 @@ public:
 		//you can access the range data from msg.ranges[i]. i = sample number
 		
 	}
-
-	void setSubs(ros::NodeHandle& n)
-	{
-		ros::Subscriber StageOdo_sub = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &R0::StageOdom_callback, this);
-		ros::Subscriber StageLaser_sub = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&R0::StageLaser_callback, this);
-	}
 };
 
 R0::R0(void)
@@ -54,8 +62,6 @@ R0::R0(void)
 	theta = M_PI/2.0;
 	px = 10;
 	py = 20;
-	
-	//Initial velocity
 	linear_x = 100.0;
 	angular_z = 20.0;
 }
@@ -63,8 +69,8 @@ R0::R0(void)
 int main(int argc, char **argv)
 {
 
- //initialize robot parameters
-	R0 robo;
+//initialize robot parameters
+R0 robo;
 	
 //You must call ros::init() first of all. ros::init() function needs to see argc and argv. The third argument is the name of the node
 ros::init(argc, argv, "RobotNode0");
@@ -77,7 +83,10 @@ ros::NodeHandle n;
 ros::Publisher RobotNode_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000); 
 
 //subscribe to listen to messages coming from stage
-robo.setSubs(n);
+//robo.setSubs(n);
+ros::Subscriber StageOdo_sub = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &R0::StageOdom_callback, &robo);
+ros::Subscriber StageLaser_sub = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&R0::StageLaser_callback, &robo);
+
 
 ros::Rate loop_rate(10);
 
@@ -90,7 +99,10 @@ geometry_msgs::Twist RobotNode_cmdvel;
 
 while (ros::ok())
 {
-	robo.moveTo(1,1);
+	if (count == 0)
+	{
+		robo.stop(10);		
+	}
 
 	//messages to stage
 	RobotNode_cmdvel.linear.x = robo.linear_x;

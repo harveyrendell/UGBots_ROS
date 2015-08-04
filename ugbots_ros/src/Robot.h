@@ -3,7 +3,7 @@ class Robot
 {
 public:
 	virtual void moveTo(int x, int y) {}
-	virtual int stop(int time) {}
+	virtual void stop(int time) {}
 
 	//velocity of the robot
 	double linear_x;
