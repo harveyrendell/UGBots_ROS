@@ -31,3 +31,4 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 rosbuild_add_executable(R0 src/R0.cpp)
 rosbuild_add_executable(R1 src/R1.cpp)
+rosbuild_add_executable(Template src/template.cpp)
