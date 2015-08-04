@@ -2,9 +2,9 @@ class Robot
 
 {
 public:
-	virtual int moveTo(int x, int y);
-	virtual int stop(int time);
-private:
+	virtual void moveTo(int x, int y) {}
+	virtual int stop(int time) {}
+
 	//velocity of the robot
 	double linear_x;
 	double angular_z;
@@ -13,4 +13,4 @@ private:
 	double px;
 	double py;
 	double theta;	
-}
+};
