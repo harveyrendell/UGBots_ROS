@@ -20,6 +20,9 @@ public:
 	double linear_x;
 	double angular_z;
 
+	//max velocity of the unit	
+	double max_linear_x;
+
 	//NodeHandle for the node
 	ros::NodeHandle n;
 

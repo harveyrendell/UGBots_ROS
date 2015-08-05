@@ -9,10 +9,10 @@
 #include "Robot.h"
 #include "Unit.h"
 
-class CarrierBot : public Robot
+class PickerBot : public Robot
 {
 public:
-	CarrierBot(ros::NodeHandle &n)
+	PickerBot(ros::NodeHandle &n)
 	{
 		this->n = n;
 
@@ -21,7 +21,7 @@ public:
 		px = 10;
 		py = 20;
 		linear_x = 0.0;
-		max_linear_x = 3.0;
+		max_linear_x = 0.01;
 		angular_z = 20.0;
 
 		node_stage_pubb = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
@@ -57,14 +57,14 @@ int main(int argc, char **argv)
 ros::init(argc, argv, "node_name");
 ros::NodeHandle n;
 
-CarrierBot carrierBot(n);
+PickerBot pickerBot(n);
 
 ros::Rate loop_rate(10);
 int count = 0;
 
 while (ros::ok())
 {
-	carrierBot.publish();
+	pickerBot.publish();
 
 	loop_rate.sleep();
 	++count;
