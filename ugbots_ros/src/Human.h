@@ -1,4 +1,4 @@
-class Robot
+class Human
 
 {
 public:
@@ -13,4 +13,4 @@ public:
 
 		ros::spinOnce();
 	}
-}
+};
