@@ -67,20 +67,21 @@ R0::R0(void)
 }
 
 int main(int argc, char **argv)
-{
+{	
+//You must call ros::init() first of all. ros::init() function needs to see argc and argv. The third argument is the name of the node
+ros::init(argc, argv, "R0");
 
 //initialize robot parameters
 R0 robo;
-	
-//You must call ros::init() first of all. ros::init() function needs to see argc and argv. The third argument is the name of the node
-ros::init(argc, argv, "RobotNode0");
 
 //NodeHandle is the main access point to communicate with ros.
 ros::NodeHandle n;
 
 //advertise() function will tell ROS that you want to publish on a given topic_
 //to stage
-ros::Publisher RobotNode_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000); 
+//ros::Publisher RobotNode_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000); 
+//use the one below when using launch, use the one above when testing individual robot
+ros::Publisher RobotNode_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000); 
 
 //subscribe to listen to messages coming from stage
 //robo.setSubs(n);
