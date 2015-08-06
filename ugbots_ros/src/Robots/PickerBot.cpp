@@ -9,24 +9,24 @@
 #include "Robot.h"
 #include "Unit.h"
 
-class Animal : public Unit
+class PickerBot : public Robot
 {
 public:
-	Animal(ros::NodeHandle &n)
+	PickerBot(ros::NodeHandle &n)
 	{
 		this->n = n;
 
 		//setting base attribute defaults
-		pose.theta = M_PI/2.0;
-		pose.px = 10;
-		pose.py = 20;
-		speed.linear_x = 0.0;
-		speed.max_linear_x = 3.0;
-		speed.angular_z = 20.0;
+		theta = M_PI/2.0;
+		px = 10;
+		py = 20;
+		linear_x = 0.0;
+		max_linear_x = 0.01;
+		angular_z = 20.0;
 
-		sub_list.node_stage_pubb = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
-		sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Template::odom_callback, this);
-		sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Template::laser_callback, this);
+		node_stage_pubb = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
+		sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Template::odom_callback, this);
+		sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Template::laser_callback, this);
 	}
 
 	virtual void moveTo(int x, int y){
@@ -50,26 +50,3 @@ public:
 		
 	}
 };
-
-int main(int argc, char **argv)
-{
-
-ros::init(argc, argv, "node_name");
-ros::NodeHandle n;
-
-Animal animal(n);
-
-ros::Rate loop_rate(10);
-int count = 0;
-
-while (ros::ok())
-{
-	animal.publish();
-
-	loop_rate.sleep();
-	++count;
-}
-
-return 0;
-
-}

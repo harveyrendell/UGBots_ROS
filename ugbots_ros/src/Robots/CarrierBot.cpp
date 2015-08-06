@@ -9,10 +9,10 @@
 #include "Robot.h"
 #include "Unit.h"
 
-class Animal : public Unit
+class CarrierBot : public Unit
 {
 public:
-	Animal(ros::NodeHandle &n)
+	CarrierBot(ros::NodeHandle &n)
 	{
 		this->n = n;
 
@@ -50,26 +50,3 @@ public:
 		
 	}
 };
-
-int main(int argc, char **argv)
-{
-
-ros::init(argc, argv, "node_name");
-ros::NodeHandle n;
-
-Animal animal(n);
-
-ros::Rate loop_rate(10);
-int count = 0;
-
-while (ros::ok())
-{
-	animal.publish();
-
-	loop_rate.sleep();
-	++count;
-}
-
-return 0;
-
-}

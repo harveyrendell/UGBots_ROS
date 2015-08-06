@@ -9,10 +9,10 @@
 #include "Robot.h"
 #include "Unit.h"
 
-class Animal : public Unit
+class Person : public Unit
 {
 public:
-	Animal(ros::NodeHandle &n)
+	Person(ros::NodeHandle &n)
 	{
 		this->n = n;
 
@@ -57,14 +57,14 @@ int main(int argc, char **argv)
 ros::init(argc, argv, "node_name");
 ros::NodeHandle n;
 
-Animal animal(n);
+Person person(n);
 
 ros::Rate loop_rate(10);
 int count = 0;
 
 while (ros::ok())
 {
-	animal.publish();
+	person.publish();
 
 	loop_rate.sleep();
 	++count;
