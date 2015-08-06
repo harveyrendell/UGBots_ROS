@@ -9,7 +9,7 @@
 #include "Robot.h"
 #include "Unit.h"
 
-class CarrierBot : public Robot
+class CarrierBot : public Unit
 {
 public:
 	CarrierBot(ros::NodeHandle &n)
@@ -17,16 +17,16 @@ public:
 		this->n = n;
 
 		//setting base attribute defaults
-		theta = M_PI/2.0;
-		px = 10;
-		py = 20;
-		linear_x = 0.0;
-		max_linear_x = 3.0;
-		angular_z = 20.0;
+		pose.theta = M_PI/2.0;
+		pose.px = 10;
+		pose.py = 20;
+		speed.linear_x = 0.0;
+		speed.max_linear_x = 3.0;
+		speed.angular_z = 20.0;
 
-		node_stage_pubb = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
-		sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Template::odom_callback, this);
-		sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Template::laser_callback, this);
+		sub_list.node_stage_pubb = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
+		sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Template::odom_callback, this);
+		sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Template::laser_callback, this);
 	}
 
 	virtual void moveTo(int x, int y){

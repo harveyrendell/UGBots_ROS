@@ -9,7 +9,7 @@
 #include "Robot.h"
 #include "Unit.h"
 
-class CarrierBot : public Unit
+class Animal : public Unit
 {
 public:
 	CarrierBot(ros::NodeHandle &n)

@@ -1,0 +1,8 @@
+Class Pose
+{
+private:
+	double px;
+	double py;
+	double theta;	
+}
+
