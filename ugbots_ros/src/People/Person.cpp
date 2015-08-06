@@ -50,26 +50,3 @@ public:
 		
 	}
 };
-
-int main(int argc, char **argv)
-{
-
-ros::init(argc, argv, "node_name");
-ros::NodeHandle n;
-
-Person person(n);
-
-ros::Rate loop_rate(10);
-int count = 0;
-
-while (ros::ok())
-{
-	person.publish();
-
-	loop_rate.sleep();
-	++count;
-}
-
-return 0;
-
-}

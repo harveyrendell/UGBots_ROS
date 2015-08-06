@@ -50,26 +50,3 @@ public:
 		
 	}
 };
-
-int main(int argc, char **argv)
-{
-
-ros::init(argc, argv, "node_name");
-ros::NodeHandle n;
-
-PickerBot pickerBot(n);
-
-ros::Rate loop_rate(10);
-int count = 0;
-
-while (ros::ok())
-{
-	pickerBot.publish();
-
-	loop_rate.sleep();
-	++count;
-}
-
-return 0;
-
-}

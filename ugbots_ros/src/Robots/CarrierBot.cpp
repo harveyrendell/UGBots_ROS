@@ -50,26 +50,3 @@ public:
 		
 	}
 };
-
-int main(int argc, char **argv)
-{
-
-ros::init(argc, argv, "node_name");
-ros::NodeHandle n;
-
-CarrierBot carrierBot(n);
-
-ros::Rate loop_rate(10);
-int count = 0;
-
-while (ros::ok())
-{
-	carrierBot.publish();
-
-	loop_rate.sleep();
-	++count;
-}
-
-return 0;
-
-}
