@@ -1,7 +1,0 @@
-class Robot
-
-{
-public:
-	double max_linear_x;
-	double max_angular_z;
-}

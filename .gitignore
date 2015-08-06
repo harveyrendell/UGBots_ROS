@@ -1,8 +1,5 @@
 setup.*
 .rosinstall
-ugbots_ros/build/
-ugbots_ros/bin/
-ugbots_ros/src/Animals/*~
-ugbots_ros/src/Headers/*~
-ugbots_ros/src/People/*~
-ugbots_ros/src/Robots/*~
+ugbots_ros/build
+ugbots_ros/bin
+
