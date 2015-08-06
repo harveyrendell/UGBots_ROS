@@ -12,7 +12,7 @@
 class Person : public Unit
 {
 public:
-	CarrierBot(ros::NodeHandle &n)
+	Person(ros::NodeHandle &n)
 	{
 		this->n = n;
 
@@ -57,14 +57,14 @@ int main(int argc, char **argv)
 ros::init(argc, argv, "node_name");
 ros::NodeHandle n;
 
-CarrierBot carrierBot(n);
+Person person(n);
 
 ros::Rate loop_rate(10);
 int count = 0;
 
 while (ros::ok())
 {
-	carrierBot.publish();
+	person.publish();
 
 	loop_rate.sleep();
 	++count;

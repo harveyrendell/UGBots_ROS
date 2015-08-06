@@ -12,7 +12,7 @@
 class Animal : public Unit
 {
 public:
-	CarrierBot(ros::NodeHandle &n)
+	Animal(ros::NodeHandle &n)
 	{
 		this->n = n;
 
@@ -57,14 +57,14 @@ int main(int argc, char **argv)
 ros::init(argc, argv, "node_name");
 ros::NodeHandle n;
 
-CarrierBot carrierBot(n);
+Animal animal(n);
 
 ros::Rate loop_rate(10);
 int count = 0;
 
 while (ros::ok())
 {
-	carrierBot.publish();
+	animal.publish();
 
 	loop_rate.sleep();
 	++count;
