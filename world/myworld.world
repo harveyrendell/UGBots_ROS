@@ -25,13 +25,18 @@ define floorplan model
 
   # most maps will need a bounding box
   boundary 1
-  
+  laser_return 1
   ranger_return 1
+)
+
+define rows model
+(
+  color "black"
 )
 
 define my_block model
 (
-  size [0.5 0.5 0.5]
+  size [0.5 0.5 .5]
   gui_nose 0
 )
 
@@ -58,10 +63,15 @@ floorplan
   pose [ -29.350 27.000 0 90.000 ]
 )
 
+rows
+(
+  size [2.0 2.0 10.0]
+  pose [5 20 0 0]
+)
+
 # throw in a robot
 myRobot( pose [ 5 10 0 0 ] name "r0" color "blue")
 myRobot( pose [ 15 20 0 0 ] name "r1" color "green")
 myRobot( pose [ 10 30 0 0 ] name "r2" color "black")
 myRobot( pose [ 25 16 0 0 ] name "r3" color "yellow")
 myRobot( pose [ 5 28 0 0 ] name "r4" color "brown")
-myRobot( pose [ 5 30 0 0 ] name "r4" color "brown")
