@@ -11,7 +11,7 @@ public:
 	}
 
 	virtual void moveTo(int x, int y){}
-	virtual void stop (){}
+	virtual void stop(){}
 	virtual void collisionDetected(){}
 
 	//pose of the unit
@@ -27,4 +27,4 @@ public:
 	geometry_msgs::Twist node_cmdvel;
 
 	SubscriberList sub_list;
-}
+};
