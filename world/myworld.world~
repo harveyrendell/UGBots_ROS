@@ -1,4 +1,4 @@
-#include "worldinstances.inc"
+include "worldinstances.inc"
 
 define mylaser ranger
 (
@@ -68,3 +68,7 @@ myRobot( pose [ 15 20 0 0 ] name "r1" color "green")
 myRobot( pose [ 10 30 0 0 ] name "r2" color "black")
 myRobot( pose [ 25 16 0 0 ] name "r3" color "yellow")
 myRobot( pose [ 5 28 0 0 ] name "r4" color "brown")s
+
+
+generate a world file with cpp file?
+take in arguments from bash script and then put into cpp, then generate a world file accordingly?
