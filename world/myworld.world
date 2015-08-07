@@ -11,9 +11,34 @@ define mylaser ranger
   
 )
 
+define myShape model
+(
+  block (
+    points 3
+    point[0] [0 1]
+    point[1] [1 1]
+    point[2] [1 0]
+    z [0 4]
+  )
+  color "random"
+)
+
+define wall model
+(
+  size [ 10 1 5 ]
+  color "black"
+)
+
 define myRobot position
 (
   size [0.35 0.35 0.25]
+  drive "diff"
+  #mylaser(pose [ 0.050 0.000 0 0.000 ])
+)
+
+define laserRobot position
+(
+  size [0.5 0.5 0.2]
   drive "diff"
   mylaser(pose [ 0.050 0.000 0 0.000 ])
 )
@@ -57,8 +82,19 @@ floorplan
   size [54.0 58.7 0.5]
   pose [ -29.350 27.000 0 90.000 ]
 )
+
+wall( pose [ 20 20 0 0 ])
+wall( pose [ 20 10 0 0] )
+wall( pose [ 14.5 15 0 90] )
+wall( pose [ 25.5 15 0 90] )
+
+myShape( pose [ -4 4 0 0 ] ) 
+myShape( pose [ 4 4 0 0 ] ) 
+myShape( pose [ -4 10 0 0 ] ) 
+myShape( pose [ 4 10 0 0 ] ) 
+
 # throw in a robot
-myRobot( pose [ 5 10 0 0 ] name "r0" color "blue")
+laserRobot( pose [ 5 10 0 0 ] name "r0" color "blue")
 myRobot( pose [ 15 20 0 0 ] name "r1" color "green")
 myRobot( pose [ 10 30 0 0 ] name "r2" color "black")
 myRobot( pose [ 25 16 0 0 ] name "r3" color "yellow")
