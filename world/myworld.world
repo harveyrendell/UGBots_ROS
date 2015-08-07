@@ -15,7 +15,7 @@ define mylaser ranger
 
 define myRobot position
 (
-  size [0.35 0.35 0.25]
+  size [1.5 2.5 1.0]
   drive "diff"
   mylaser(pose [ 0.050 0.000 0 0.000 ])
 )
