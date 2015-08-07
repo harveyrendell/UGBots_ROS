@@ -95,7 +95,7 @@ while (ros::ok())
 
 	loop_rate.sleep();
 	++count;
-
+}
 return 0;
 
 }
