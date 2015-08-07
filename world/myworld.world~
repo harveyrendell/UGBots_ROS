@@ -1,4 +1,4 @@
-include "worldinstances.inc"
+#include "worldinstances.inc"
 
 define mylaser ranger
 (
