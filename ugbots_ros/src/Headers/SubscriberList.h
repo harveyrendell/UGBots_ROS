@@ -1,4 +1,4 @@
-Class SubscriberList
+class SubscriberList
 {
 public:
 	//Odometry subscriber
@@ -7,4 +7,4 @@ public:
 	ros::Subscriber sub_laser;
 	//Publisher for publishing to stage
 	ros::Publisher node_stage_pub;
-}
+};
