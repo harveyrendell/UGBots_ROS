@@ -1,20 +1,5 @@
 include "kiwirow.inc"
 
-
-rows
-(
-  size [1.0 1.0 10.0]
-  pose [x 20 0 0]
-)
-rows
-(
-  size [1.0 1.0 10.0]
-  pose [15 20 0 0]
-)
-rows
-(
-  size [1.0 1.0 10.0]
-  pose [10 20 0 0]
-)
-
-
+rows(pose [ -12.9 20 0 0 ])
+rows(pose [ 4.3 20 0 0 ])
+rows(pose [ -4.3 20 0 0 ])

@@ -1,6 +1,5 @@
 include "kiwirow.inc"
 
-int xpos = 5;
 
 rows
 (
@@ -17,3 +16,5 @@ rows
   size [1.0 1.0 10.0]
   pose [10 20 0 0]
 )
+
+
