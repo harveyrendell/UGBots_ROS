@@ -1,4 +1,4 @@
 define rows model
 (
-  color "black"
+  color "green"
 )
