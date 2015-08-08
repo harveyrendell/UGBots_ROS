@@ -55,7 +55,7 @@ public:
 	{
 		//This is the callback function to process laser scan messages
 		//you can access the range data from msg.ranges[i]. i = sample number
-		
+		ROS_INFO("Distance is: %f");
 	}
 };
 
