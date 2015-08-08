@@ -4,7 +4,7 @@
 gnome-terminal -x bash -c 'roscore'
 
 #wait 3 seconds for roscore to initialise
-sleep 3
+sleep 5
 
 #Open terminal to run stageros for world
 gnome-terminal -x bash -c 'rosrun stage_ros stageros world/myworld.world'
