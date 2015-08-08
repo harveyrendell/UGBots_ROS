@@ -17,6 +17,8 @@ double px;
 double py;
 double theta;
 
+int ct;
+
 std::vector<float> laserRanges;
 
 void StageOdom_callback(nav_msgs::Odometry msg)
@@ -35,12 +37,16 @@ void StageLaser_callback(sensor_msgs::LaserScan msg)
 	//you can access the range data from msg.ranges[i]. i = sample number
 	laserRanges = msg.ranges;
 	ROS_INFO("Current distance from front obstacle %f", laserRanges[90]);
-	if (laserRanges[90] < 1) {
+	/*if (laserRanges[90] < 1) {
 		angular_z = -0.8;
 		if (laserRanges[179] > laserRanges[180]) {
 			angular_z = 0.0;
 		}
+	}*/
+	if (ct > 9) {
+		angular_z = 0.0;
 	}
+	ct++;
 }
 
 int main(int argc, char **argv)
@@ -53,8 +59,8 @@ int main(int argc, char **argv)
 	py = 10;
 	
 	//Initial velocity
-	linear_x = 0.5;
-	angular_z = 0.0;
+	linear_x = 0.0;
+	angular_z = 1;
 	
 //You must call ros::init() first of all. ros::init() function needs to see argc and argv. The third argument is the name of the node
 ros::init(argc, argv, "PB");
