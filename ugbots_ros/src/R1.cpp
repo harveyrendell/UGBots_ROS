@@ -54,13 +54,13 @@ ros::NodeHandle n;
 
 //advertise() function will tell ROS that you want to publish on a given topic_
 //to stage
-ros::Publisher RobotNode_stage_pub = n.advertise<geometry_msgs::Twist>("robot_1/cmd_vel",1000); 
+ros::Publisher RobotNode_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000); 
 //use the one below when using launch, use the one above when testing individual robot
 //ros::Publisher RobotNode_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000); 
 
 //subscribe to listen to messages coming from stage
-ros::Subscriber StageOdo_sub = n.subscribe<nav_msgs::Odometry>("robot_1/odom",1000, StageOdom_callback);
-ros::Subscriber StageLaser_sub = n.subscribe<sensor_msgs::LaserScan>("robot_1/base_scan",1000,StageLaser_callback);
+ros::Subscriber StageOdo_sub = n.subscribe<nav_msgs::Odometry>("odom",1000, StageOdom_callback);
+ros::Subscriber StageLaser_sub = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,StageLaser_callback);
 
 ros::Rate loop_rate(10);
 

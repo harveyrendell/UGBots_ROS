@@ -12,6 +12,7 @@
 class CarrierBot : public Unit
 {
 public:
+	int counter = 0;
 	CarrierBot(ros::NodeHandle &n)
 	{
 		this->n = n;
@@ -20,24 +21,31 @@ public:
 		this->pose.theta = M_PI/2.0;
 		this->pose.px = 10;
 		this->pose.py = 20;
-		this->speed.linear_x = 30.0;
+		this->speed.linear_x = -30.0;
 		this->speed.max_linear_x = 3.0;
-		this->speed.angular_z = 20.0;
+		this->speed.angular_z = 0.0;
 
-		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
-		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &CarrierBot::odom_callback, this);
-		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&CarrierBot::laser_callback, this);
+		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &CarrierBot::odom_callback, this);
+		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&CarrierBot::laser_callback, this);
 	}
 
-	virtual void moveTo(int x, int y){
-		
+	virtual void moveTo(){
+		if(this->pose.px < 10)
+		{
+			this->speed.linear_x = 30.0;
+		}
+		if(this->pose.px > 30)
+		{
+			this->speed.linear_x = -30.0;
+		}
 	}
 
 	void odom_callback(nav_msgs::Odometry msg)
 	{
 		//This is the call back function to process odometry messages coming from Stage. 	
-		this->pose.px = 5 + msg.pose.pose.position.x;
-		this->pose.py = 10 + msg.pose.pose.position.y;
+		this->pose.px = 25 + msg.pose.pose.position.x;
+		this->pose.py = 25 + msg.pose.pose.position.y;
 		ROS_INFO("Current x position is: %f", this->pose.px);
 		ROS_INFO("Current y position is: %f", this->pose.py);
 	}
@@ -84,12 +92,19 @@ geometry_msgs::Twist RobotNode_cmdvel;
 
 while (ros::ok())
 {
+	count++
+	if(count == 10)
+	{
+		count = 0;
+		cb.speed.linear_x = -1.0 * cb.speed.linear_x;
+	}
 	//messages to stage
 	RobotNode_cmdvel.linear.x = cb.speed.linear_x;
 	RobotNode_cmdvel.angular.z = cb.speed.angular_z;
         
 	//publish the message
 	cb.sub_list.node_stage_pub.publish(RobotNode_cmdvel);
+
 	
 	ros::spinOnce();
 
