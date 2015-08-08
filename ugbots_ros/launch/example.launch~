@@ -1,6 +1,0 @@
-
-<launch>
-	<group ns="robot_0">
-		<node pkg="ugbots_ros" name="robotnode" type="R1"/>
-	</group>
-</launch>

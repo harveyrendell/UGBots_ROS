@@ -6,8 +6,7 @@
 
 #include <sstream>
 #include <stdlib.h>
-#include "Robot.h"
-#include "Unit.h"
+#include "../Headers/Unit.h"
 
 class PickerBot : public Robot
 {
@@ -24,9 +23,9 @@ public:
 		max_linear_x = 0.01;
 		angular_z = 20.0;
 
-		node_stage_pubb = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
-		sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Template::odom_callback, this);
-		sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Template::laser_callback, this);
+		node_stage_pubb = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+		sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Template::odom_callback, this);
+		sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Template::laser_callback, this);
 	}
 
 	virtual void moveTo(int x, int y){
