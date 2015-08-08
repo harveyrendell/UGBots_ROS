@@ -21,7 +21,7 @@ do
 k=$((-20+$j))
 echo rows\(\pose [ $k 20 0 0 ]\)\ >> worldinstances.inc
 i=$(($i+1))
-j=$((5+$j))
+j=$((8+$j))
 
 done
 
