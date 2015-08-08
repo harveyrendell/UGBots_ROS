@@ -28,9 +28,9 @@ void turnRight() {
 bool hasObstacleBoolean() {
 	if (laserRanges[90] < 1) {
 		return true;
-	} else if (laserRanges[114] < 1.0625) {
+	} else if (laserRanges[114] < 1.063) {
 		return true;
-	} else if (laserRanges[76] < 1.0625) {
+	} else if (laserRanges[76] < 1.063) {
 		return true;
 	}
 	return false;
