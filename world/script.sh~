@@ -25,5 +25,4 @@ j=$((8+$j))
 
 done
 
-SOURCE=$(readlink -f myworld.world)
-rosrun stage_ros stageros .$SOURCE
+rosrun stage_ros stageros ./world/myworld.world

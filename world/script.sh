@@ -11,7 +11,7 @@ read carrier
 
 rm worldinstances.inc
 
-echo include \"\kiwirow.inc\"\ > worldinstances.inc
+echo include \"kiwirow.inc\" > worldinstances.inc
 
 i=0
 j=0
@@ -25,4 +25,4 @@ j=$((8+$j))
 
 done
 
-rosrun stage_ros stageros ./myworld.world
+rosrun stage_ros stageros ./world/myworld.world
