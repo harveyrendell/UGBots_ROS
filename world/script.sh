@@ -1,12 +1,12 @@
 #!/bin/bash
  
-echo "Number of kiwifruit rows to be generated: \c "
+echo -e "Number of kiwifruit rows to be generated: \c "
 read  rows
 
-echo "Number of picker robots to be generated: \c "
+echo -e "Number of picker robots to be generated: \c "
 read picker
 
-echo "Number of carrier robots to be generated: \c "
+echo -e "Number of carrier robots to be generated: \c "
 read carrier
 
 rm worldinstances.inc
