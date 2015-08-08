@@ -1,0 +1,36 @@
+define rows model
+(
+  color "green"
+  size [3.5 70.0 1.8]
+)
+
+define fence model
+(
+  color "black"
+  size [50 0.5 2]
+)
+
+define floorplan model
+(
+  size [ 50 50 0.5 ]
+  # sombre, sensible, artistic
+  boundary 1
+  color "gray30"
+)
+
+floorplan
+( 
+  name "swarm"
+  bitmap "swarm_world.pgm"
+  pose [ 0 0 0 0 ]
+)
+
+fence (pose [ -50 0 0 90 ])
+fence (pose [ 50 0 0 90 ])
+fence (pose [ -50 -50 0 90 ])
+fence (pose [ 50 -50 0 90 ])
+
+fence (pose [ -50 50 0 0 ])
+fence (pose [ 0 50 0 0 ])
+fence (pose [ -50 -50 0 0 ])
+fence (pose [ 0 -50 0 0 ])
