@@ -1,15 +1,4 @@
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-#include <geometry_msgs/Twist.h>
-#include <nav_msgs/Odometry.h>
-#include <sensor_msgs/LaserScan.h>
-
-#include <sstream>
-#include <stdlib.h>
-#include "Robot.h"
-#include "Unit.h"
-
-class Animal : public Unit
+class Animal
 {
 public:
 	Animal(ros::NodeHandle &n)
@@ -20,8 +9,8 @@ public:
 		this->pose.theta = M_PI/2.0;
 		this->pose.px = 10;
 		this->pose.py = 20;
-		this->speed.linear_x = 0.0;
-		this->speed.max_linear_x = 3.0;
+		this->speed.linear_x = 400.0;
+		this->speed.max_linear_x = 400.0;
 		this->speed.angular_z = 20.0;
 
 		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
