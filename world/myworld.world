@@ -40,7 +40,7 @@ define laserRobot position
 (
   size [0.5 0.5 0.2]
   drive "diff"
-  mylaser(pose [ 0.050 0.000 0 0.000 ])
+  mylaser(pose [ 0.375 0.000 0 0.000 ])
 )
 
 define floorplan model

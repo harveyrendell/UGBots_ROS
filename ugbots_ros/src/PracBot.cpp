@@ -21,6 +21,21 @@ int ct;
 
 std::vector<float> laserRanges;
 
+void turnRight() {
+	angular_z = -0.8;
+}
+
+bool hasObstacleBoolean() {
+	if (laserRanges[90] < 1) {
+		return true;
+	} else if (laserRanges[114] < 1.0625) {
+		return true;
+	} else if (laserRanges[76] < 1.0625) {
+		return true;
+	}
+	return false;
+}
+
 void StageOdom_callback(nav_msgs::Odometry msg)
 {
 	//This is the call back function to process odometry messages coming from Stage. 	
@@ -43,10 +58,11 @@ void StageLaser_callback(sensor_msgs::LaserScan msg)
 			angular_z = 0.0;
 		}
 	}*/
-	if (ct > 9) {
-		angular_z = 0.0;
+	if (hasObstacleBoolean()) {
+		turnRight();
+	} else {
+		angular_z = 0;
 	}
-	ct++;
 }
 
 int main(int argc, char **argv)
@@ -59,8 +75,8 @@ int main(int argc, char **argv)
 	py = 10;
 	
 	//Initial velocity
-	linear_x = 0.0;
-	angular_z = 1;
+	linear_x = 0.5;
+	angular_z = 0.0;
 	
 //You must call ros::init() first of all. ros::init() function needs to see argc and argv. The third argument is the name of the node
 ros::init(argc, argv, "PB");
