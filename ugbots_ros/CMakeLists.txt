@@ -34,6 +34,7 @@ find_package(rostest REQUIRED)
 #Executable nodes
 rosbuild_add_executable(R1 src/R1.cpp)
 rosbuild_add_executable(CB src/Robots/CarrierBot.cpp)
+rosbuild_add_rostest(test/test.launch)
 
 #Test suites
 add_rostest_gtest(example_test test/test.launch test/unit_tests.cpp)

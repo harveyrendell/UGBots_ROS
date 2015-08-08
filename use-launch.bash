@@ -3,8 +3,8 @@
 #move into project directory
 cd ugbots_ros
 
-#build before running any robots
-rosmake
+#build before running any robots also run tests
+rosmake --pre-clean -t
 
 #launch the example launch file
 #change launch file name to launch file you want to use
