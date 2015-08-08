@@ -20,8 +20,8 @@ public:
 		this->pose.theta = M_PI/2.0;
 		this->pose.px = 5;
 		this->pose.py = 10;
-		this->speed.linear_x = 2.0;
-		this->speed.max_linear_x = 3.0;
+		this->speed.linear_x = 20.0;
+		this->speed.max_linear_x = 30.0;
 		this->speed.angular_z = 0.0;
 
 		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_1/cmd_vel",1000);
@@ -47,15 +47,15 @@ public:
 		//This is the callback function to process laser scan messages
 		//you can access the range data from msg.ranges[i]. i = sample number
 
-		if(msg.ranges[90] < 3.0)
+		if(msg.ranges[90] < 3.0 || msg.ranges[60] < 3.0 ||  msg.ranges[120] < 3.0 )
 		{
 			this->speed.linear_x = 0.0;
-			this->speed.angular_z = 40.0;
+			this->speed.angular_z = 150.0;
 			ROS_INFO("Test laser: %f", msg.ranges[90]);	
 		}
 		else
 		{
-			this->speed.linear_x = 2.0;
+			this->speed.linear_x = 20.0;
 			this->speed.angular_z = 0.0;
 		}				
 	}
