@@ -49,8 +49,17 @@ public:
 
 		if(msg.ranges[90] < 3.0 || msg.ranges[60] < 3.0 ||  msg.ranges[120] < 3.0 )
 		{
+			if(msg.ranges[60] >= msg.ranges [90])
+			{
+				this->speed.angular_z = 150;
+			}
+			else
+			{
+				this->speed.angular_z = -150;
+			}
+
 			this->speed.linear_x = 0.0;
-			this->speed.angular_z = 150.0;
+
 			ROS_INFO("Test laser: %f", msg.ranges[90]);	
 		}
 		else
