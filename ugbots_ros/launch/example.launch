@@ -4,7 +4,7 @@
 	</group>
 	
 	<group ns="robot_1">
-		<node pkg="ugbots_ros" name="robotnode" type="R0"/>
+		<node pkg="ugbots_ros" name="robotnode" type="f1"/>
 	</group>
 
 	<group ns="robot_2">

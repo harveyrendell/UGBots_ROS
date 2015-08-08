@@ -30,6 +30,6 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #target_link_libraries(example ${PROJECT_NAME})
 
 #rosbuild_add_executable(R0 src/R0.cpp)
-rosbuild_add_executable(R1 src/R1.cpp)
+rosbuild_add_executable(f1 src/People/Farmer.cpp)
 rosbuild_add_executable(CB src/Robots/CarrierBot.cpp)
 #rosbuild_add_executable(Template src/template.cpp)
