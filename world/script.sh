@@ -1,17 +1,17 @@
 #!/bin/bash
  
-echo "Number of kiwifruit rows to be generated: \c "
+echo -e "Number of kiwifruit rows to be generated: \c "
 read  rows
 
-echo "Number of picker robots to be generated: \c "
+echo -e "Number of picker robots to be generated: \c "
 read picker
 
-echo "Number of carrier robots to be generated: \c "
+echo -e "Number of carrier robots to be generated: \c "
 read carrier
 
 rm worldinstances.inc
 
-echo include \"\kiwirow.inc\"\ > worldinstances.inc
+echo include \"kiwirow.inc\" > worldinstances.inc
 
 i=0
 j=0
@@ -25,4 +25,4 @@ j=$((8+$j))
 
 done
 
-rosrun stage_ros stageros ./myworld.world
+rosrun stage_ros stageros ./world/myworld.world
