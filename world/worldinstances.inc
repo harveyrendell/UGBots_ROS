@@ -1,4 +1,17 @@
 include "kiwirow.inc" 
-rows(pose [ -20 20 0 0 ]) 
-rows(pose [ -12 20 0 0 ]) 
-rows(pose [ -4 20 0 0 ]) 
+include "boundary.inc"
+
+rows (pose [ -2.25 0 0 0 ])
+rows (pose [ 2.25 0 0 0 ])
+
+boundary (pose [ -50 25 0 90 ])
+boundary (pose [ 50 25 0 90 ])
+boundary (pose [ -50 -25 0 90 ])
+boundary (pose [ 50 -25 0 90 ])
+
+boundary (pose [ -25 50 0 0 ])
+boundary (pose [ 25 50 0 0 ])
+boundary (pose [ -25 -50 0 0 ])
+boundary (pose [ 25 -50 0 0 ])
+
+
