@@ -18,6 +18,8 @@ public:
 
 	virtual void move() = 0;
 	virtual void stop() = 0;
+	virtual void turnLeft() = 0;
+	virtual void turnRight() = 0;
 	virtual void collisionDetected(){}
 
 	//pose of the unit

@@ -7,12 +7,12 @@ public:
 		angular_z = z;
 	}
 
-	double getLinearVel()
+	double getLinearX()
 	{
 		return this->linear_x;
 	}
 
-	double getAngularVel()
+	double getAngularZ()
 	{
 		return this->angular_z;
 	}
