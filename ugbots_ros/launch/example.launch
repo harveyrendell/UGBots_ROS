@@ -3,7 +3,7 @@
 		<node pkg="ugbots_ros" name="robotnode" type="R1"/>
 	</group>
 	
-	<group ns="robot_5">
+	<group ns="robot_1">
 		<node pkg="ugbots_ros" name="robotnode" type="CB"/>
 	</group>
 
