@@ -20,13 +20,13 @@ public:
 		this->pose.theta = M_PI/2.0;
 		this->pose.px = 10;
 		this->pose.py = 20;
-		this->speed.linear_x = 30.0;
-		this->speed.max_linear_x = 3.0;
+		this->speed.linear_x = -30.0;
+		//this->speed.max_linear_x = 3.0;
 		this->speed.angular_z = 20.0;
 
 		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Dog::odom_callback, this);
-		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Dog::laser_callback, this);
+		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Dog::odom_callback, this);
+		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000, &Dog::laser_callback, this);
 	}
 
 	virtual void moveTo(int x, int y){
@@ -86,7 +86,7 @@ while (ros::ok())
 {
 	//messages to stage
 	RobotNode_cmdvel.linear.x = dg.speed.linear_x;
-	RobotNode_cmdvel.angular.z = dg.speed.angular_z;
+	//RobotNode_cmdvel.angular.z = dg.speed.angular_z;
         
 	//publish the message
 	dg.sub_list.node_stage_pub.publish(RobotNode_cmdvel);
