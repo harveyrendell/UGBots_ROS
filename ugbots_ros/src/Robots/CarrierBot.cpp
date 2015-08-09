@@ -24,9 +24,9 @@ public:
 		this->speed.max_linear_x = 3.0;
 		this->speed.angular_z = 20.0;
 
-		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
-		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &CarrierBot::odom_callback, this);
-		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&CarrierBot::laser_callback, this);
+		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &CarrierBot::odom_callback, this);
+		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&CarrierBot::laser_callback, this);
 	}
 
 	virtual void moveTo(int x, int y){
@@ -53,43 +53,30 @@ public:
 
 int main(int argc, char **argv)
 {	
+	
 //You must call ros::init() first of all. ros::init() function needs to see argc and argv. The third argument is the name of the node
 ros::init(argc, argv, "CB");
 
 //NodeHandle is the main access point to communicate with ros.
 ros::NodeHandle n;
 
+//Creating the CarrierBot instance
 CarrierBot cb(n);
 
-/*//advertise() function will tell ROS that you want to publish on a given topic_
-//to stage
-//ros::Publisher RobotNode_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000); 
-//use the one below when using launch, use the one above when testing individual robot
-ros::Publisher RobotNode_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000); 
-
-//subscribe to listen to messages coming from stage
-//robo.setSubs(n);
-ros::Subscriber StageOdo_sub = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &R0::StageOdom_callback, &robo);
-ros::Subscriber StageLaser_sub = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&R0::StageLaser_callback, &robo);*/
-
-
+//Setting the loop rate
 ros::Rate loop_rate(10);
 
-//a count of howmany messages we have sent
+//a count of how many messages we have sent
 int count = 0;
-
-////messages
-//velocity of this RobotNode
-geometry_msgs::Twist RobotNode_cmdvel;
 
 while (ros::ok())
 {
 	//messages to stage
-	RobotNode_cmdvel.linear.x = cb.speed.linear_x;
-	RobotNode_cmdvel.angular.z = cb.speed.angular_z;
+	cb.node_cmdvel.linear.x = cb.speed.linear_x;
+	cb.node_cmdvel.angular.z = cb.speed.angular_z;
         
 	//publish the message
-	cb.sub_list.node_stage_pub.publish(RobotNode_cmdvel);
+	cb.sub_list.node_stage_pub.publish(cb.node_cmdvel);
 	
 	ros::spinOnce();
 
