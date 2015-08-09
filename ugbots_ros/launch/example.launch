@@ -1,10 +1,10 @@
 <launch>
 	<group ns="robot_0">
-		<node pkg="ugbots_ros" name="robotnode" type="CB"/>
+		<node pkg="ugbots_ros" name="robotnode" type="TEST"/>
 	</group>
 	
 	<group ns="robot_1">
-		<node pkg="ugbots_ros" name="robotnode" type="CB"/>
+		<node pkg="ugbots_ros" name="robotnode" type="TEST"/>
 	</group>
 
 	<group ns="robot_2">
