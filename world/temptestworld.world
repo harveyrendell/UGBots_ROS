@@ -1,3 +1,23 @@
+define mylaser ranger
+(
+  sensor(
+  range [ 0.0 30.0 ] # range
+  fov 180       # field of vision
+  samples 180   # samples 
+  )
+  # generic model properties
+  color "black"
+  size [ 0.05 0.05 0.1 ]
+  
+)
+
+define myRobot position
+(
+  size [0.35 0.35 0.25]
+  drive "diff"
+  mylaser(pose [ 0.050 0.000 0 0.000 ])
+)
+
 define rows model
 (
   color "green"
@@ -38,3 +58,10 @@ fence (pose [ 25 -50 0 0 ])
 rows (pose [ -2.25 0 0 0 ])
 rows (pose [ 2.25 0 0 0 ])
 
+# throw in a robot
+myRobot( pose [ 5 10 0 0 ] name "r0" color "blue")
+#myRobot( pose [ 15 20 0 0 ] name "r1" color "green")
+#myRobot( pose [ 10 30 0 0 ] name "r2" color "black")
+#myRobot( pose [ 25 16 0 0 ] name "r3" color "yellow")
+#myRobot( pose [ 5 28 0 0 ] name "r4" color "brown")
+#myRobot( pose [ 25 25 0 0 ] name "mycarrier" color "brown")
