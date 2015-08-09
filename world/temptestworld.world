@@ -1,7 +1,7 @@
 define rows model
 (
   color "green"
-  size [3.5 70.0 1.8]
+  size [1.0 70.0 1.8]
 )
 
 define fence model
@@ -34,3 +34,5 @@ fence (pose [ -25 50 0 0 ])
 fence (pose [ 25 50 0 0 ])
 fence (pose [ -25 -50 0 0 ])
 fence (pose [ 25 -50 0 0 ])
+
+
