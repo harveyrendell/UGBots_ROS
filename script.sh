@@ -34,7 +34,7 @@ echo \<group ns=\"robot_$i\"\> >> ugbots_ros/launch/example2.launch
 echo \<node pkg=\"ugbots_ros\" name=\"robotnode\" type=\"PB\"\/\> >> ugbots_ros/launch/example2.launch 
 echo \<\/group\> >> ugbots_ros\/launch\/example2.launch
 
-echo pickerRobot\(pose [ 0 $((33-$(($i * 5)))) 0 0 ]\ name \"R$i\" color \"red\"\) >> world/robotinstances.inc
+echo pickerRobot\(pose [ 0 $((33-$(($i * 5)))) 0 0 ]\ name \"R$i\" color \"red\"\) >> world/config/robotinstances.inc
 
 i=$(($i+1))
 
@@ -47,7 +47,7 @@ echo \<group ns=\"robot_$i\"\> >> ugbots_ros\/launch\/example2.launch
 echo \<node pkg=\"ugbots_ros\" name=\"robotnode\" type=\"CB\"\/\> >> ugbots_ros\/launch\/example2.launch
 echo \<\/group\> >> ugbots_ros\/launch\/example2.launch
 
-echo carrierRobot\(pose [ 0 $((-33+$(($j*5)))) 0 0 ] name \"R$i\" color \"blue\"\) >> world/robotinstances.inc
+echo carrierRobot\(pose [ 0 $((-33+$(($j*5)))) 0 0 ] name \"R$i\" color \"blue\"\) >> world/config/robotinstances.inc
 
 j=$(($j+1))
 i=$(($i+1))
@@ -61,7 +61,7 @@ echo \<group ns=\"robot_$i\"\> >> ugbots_ros/launch/example2.launch
 echo \<node pkg=\"ugbots_ros\" name=\"workernode\" type=\"Person\"\/\> >> ugbots_ros/launch/example2.launch 
 echo \<\/group\> >> ugbots_ros/launch/example2.launch
 
-echo worker\(pose [ 0 $((1+$(($w * 2)))) 0 0 ] name \"W$w\" color \"black\" \) >> world/workerinstances.inc
+echo worker\(pose [ 0 $((1+$(($w * 2)))) 0 0 ] name \"W$w\" color \"black\" \) >> world/config/workerinstances.inc
 w=$(($w+1))
 i=$(($i+1))
 
@@ -74,7 +74,7 @@ echo \<group ns=\"robot_$i\"\> >> ugbots_ros/launch/example2.launch
 echo \<node pkg=\"ugbots_ros\" name=\"workernode\" type=\"Animal\"\/\> >> ugbots_ros/launch/example2.launch 
 echo \<\/group\> >> ugbots_ros/launch/example2.launch
 
-echo animal\( pose [ 0 $((-1-$(($a * 2)))) 0 0 ] name \"A$a\" color \"brown\" \) >> world/animalinstances.inc
+echo animal\( pose [ 0 $((-1-$(($a * 2)))) 0 0 ] name \"A$a\" color \"brown\" \) >> world/config/animalinstances.inc
 a=$(($a+1))
 i=$(($i+1))
 
