@@ -6,26 +6,26 @@
 
 #include <sstream>
 #include <stdlib.h>
-#include "../Headers/Unit.h"
+#include <node.h>
 
-class PickerBot : public Robot
+class Picker : public Node
 {
 public:
-	PickerBot(ros::NodeHandle &n)
+	Picker(ros::NodeHandle &n)
 	{
 		this->n = n;
 
 		//setting base attribute defaults
-		theta = M_PI/2.0;
-		px = 10;
-		py = 20;
-		linear_x = 0.0;
-		max_linear_x = 0.01;
-		angular_z = 20.0;
+		pose.theta = M_PI/2.0;
+		pose.px = 10;
+		pose.py = 20;
+		speed.linear_x = 30.0;
+		speed.max_linear_x = 3.0;
+		speed.angular_z = 20.0;
 
-		node_stage_pubb = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-		sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Template::odom_callback, this);
-		sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Template::laser_callback, this);
+		sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+		sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Picker::odom_callback, this);
+		sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
 	}
 
 	virtual void moveTo(int x, int y){
@@ -35,10 +35,10 @@ public:
 	void odom_callback(nav_msgs::Odometry msg)
 	{
 		//This is the call back function to process odometry messages coming from Stage. 	
-		px = 5 + msg.pose.pose.position.x;
-		py = 10 + msg.pose.pose.position.y;
-		ROS_INFO("Current x position is: %f", px);
-		ROS_INFO("Current y position is: %f", py);
+		pose.px = 5 + msg.pose.pose.position.x;
+		pose.py = 10 + msg.pose.pose.position.y;
+		ROS_INFO("Current x position is: %f", pose.px);
+		ROS_INFO("Current y position is: %f", pose.py);
 	}
 
 
@@ -48,4 +48,41 @@ public:
 		//you can access the range data from msg.ranges[i]. i = sample number
 		
 	}
+
+	void move(){}
+	void stop(){}
+	void turnLeft(){}
+	void turnRight(){}
+	void collisionDetected(){}
 };
+
+int main(int argc, char **argv)
+{
+
+//You must call ros::init() first of all. ros::init() function needs to see argc and argv. The third argument is the name of the node
+ros::init(argc, argv, "PICKER");
+
+//NodeHandle is the main access point to communicate with ros.
+ros::NodeHandle n;
+
+//Creating the CarrierBot instance
+Picker node(n);
+
+//Setting the loop rate
+ros::Rate loop_rate(10);
+
+//a count of how many messages we have sent
+int count = 0;
+
+while (ros::ok())
+{
+	node.publish();
+	
+	ros::spinOnce();
+
+	loop_rate.sleep();
+	++count;
+}
+return 0;
+
+}
