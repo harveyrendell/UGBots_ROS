@@ -7,4 +7,4 @@ cd ugbots_ros
 rosmake
 
 #run the node you want
-rosrun ugbots_ros f1
+rosrun ugbots_ros <node-name>
