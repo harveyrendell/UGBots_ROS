@@ -12,6 +12,8 @@
 class Dog : public Unit
 {
 public:
+	bool endOfPath = false;
+
 	Dog(ros::NodeHandle &n)
 	{
 		this->n = n;
@@ -20,7 +22,7 @@ public:
 		this->pose.theta = M_PI/2.0;
 		this->pose.px = 10;
 		this->pose.py = 20;
-		this->speed.linear_x = -30.0;
+		this->speed.linear_x = 2.0;
 		//this->speed.max_linear_x = 3.0;
 		this->speed.angular_z = 20.0;
 
@@ -36,10 +38,16 @@ public:
 	void odom_callback(nav_msgs::Odometry msg)
 	{
 		//This is the call back function to process odometry messages coming from Stage. 	
-		this->pose.px = 5 + msg.pose.pose.position.x;
-		this->pose.py = 10 + msg.pose.pose.position.y;
+		this->pose.px = -16 + msg.pose.pose.position.x;
+		this->pose.py = 42.5 + msg.pose.pose.position.y;
 		ROS_INFO("Current x position is: %f", this->pose.px);
 		ROS_INFO("Current y position is: %f", this->pose.py);
+
+		if (msg.pose.pose.position.x >= 32) {
+			ROS_INFO("GONE PAST 16m");
+			this->speed.linear_x = 0.0;
+			endOfPath = true;
+		}
 	}
 
 
@@ -47,6 +55,23 @@ public:
 	{
 		//This is the callback function to process laser scan messages
 		//you can access the range data from msg.ranges[i]. i = sample number
+		bool detection = false;
+		for(int a = 0 ; a < 180; a++){
+			if (msg.ranges[a] < 7) {
+				detection = true;
+				continue;
+			} 
+		}
+
+		if (detection == true){
+			this->speed.linear_x = 0.0;
+			ROS_INFO("BARK BARK BARK BARK!");
+		} else {
+			if (endOfPath == false){
+				this->speed.linear_x = 2.0;
+			}
+		}
+
 		
 	}
 };

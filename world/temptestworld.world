@@ -1,7 +1,7 @@
 define mylaser ranger
 (
   sensor(
-  range [ 0.0 30.0 ] # range
+  range [ 0.0 7.0 ] # range
   fov 180       # field of vision
   samples 180   # samples 
   )
@@ -34,7 +34,6 @@ define floorplan model
 (
   size [ 50 50 0.5 ]
   # sombre, sensible, artistic
-  boundary 1
   color "gray30"
 )
 
@@ -59,7 +58,7 @@ rows (pose [ -2.25 0 0 0 ])
 rows (pose [ 2.25 0 0 0 ])
 
 # throw in a robot
-myRobot( pose [ 5 10 0 0 ] name "r0" color "blue")
+myRobot( pose [ -16 42.5 0 0 ] name "r0" color "blue")
 #myRobot( pose [ 15 20 0 0 ] name "r1" color "green")
 #myRobot( pose [ 10 30 0 0 ] name "r2" color "black")
 #myRobot( pose [ 25 16 0 0 ] name "r3" color "yellow")
