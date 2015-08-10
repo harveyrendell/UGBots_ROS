@@ -29,11 +29,27 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
+<<<<<<< HEAD
 find_package(rostest REQUIRED)
 
 #Executable nodes
 rosbuild_add_executable(R1 src/R1.cpp)
 rosbuild_add_executable(CB src/Robots/CarrierBot.cpp)
+rosbuild_add_rostest(test/test.launch)
+
+#Test suites
+add_rostest_gtest(example_test test/test.launch test/unit_tests.cpp)
+=======
+#Executable nodes
+rosbuild_add_executable(CARRIER src/robot/carrier.cpp)
+rosbuild_add_executable(PICKER src/robot/picker.cpp)
+rosbuild_add_executable(DOG src/animal/dog.cpp)
+rosbuild_add_executable(CAT src/animal/cat.cpp)
+rosbuild_add_executable(POSSUM src/animal/possum.cpp)
+rosbuild_add_executable(WORKER src/person/worker.cpp)
+rosbuild_add_executable(VISITOR src/person/visitor.cpp)
+
+#Rostest class
 rosbuild_add_rostest(test/test.launch)
 
 #Test suites

@@ -3,3 +3,4 @@ setup.*
 ugbots_ros/build
 ugbots_ros/bin
 ugbots_ros/lib
+*.*~
