@@ -2,4 +2,4 @@ setup.*
 .rosinstall
 ugbots_ros/build
 ugbots_ros/bin
-
+*.*~
