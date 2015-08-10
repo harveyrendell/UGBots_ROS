@@ -7,7 +7,7 @@ gnome-terminal -x bash -c 'roscore'
 sleep 3
 
 #Open terminal to run stageros for world
-gnome-terminal -x bash -c 'rosrun stage_ros stageros world/myworld.world'
+gnome-terminal -x bash -c 'sh ./script.sh'
 
 #FOR LAUNCH FILE
 #Open terminal to run script that runs the example launch file
