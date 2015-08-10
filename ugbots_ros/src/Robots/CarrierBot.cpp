@@ -7,12 +7,18 @@
 #include <sstream>
 #include <iostream>
 #include <stdlib.h>
+#include <vector>
 #include "../Headers/Unit.h"
 
 class CarrierBot : public Unit
 {
 public:
 	int counter = 0;
+	double rotx;
+	double roty;
+	double rotz;
+	double rotw;
+	std::vector<float> laserRanges;
 	CarrierBot(ros::NodeHandle &n)
 	{
 		this->n = n;
@@ -21,13 +27,17 @@ public:
 		this->pose.theta = M_PI/2.0;
 		this->pose.px = 10;
 		this->pose.py = 20;
-		this->speed.linear_x = -30.0;
+		this->speed.linear_x = 30.0;
 		this->speed.max_linear_x = 3.0;
-		this->speed.angular_z = 0.0;
+		this->speed.angular_z = 20.0;
 
 		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_1/cmd_vel",1000);
 		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_1/odom",1000, &CarrierBot::odom_callback, this);
 		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_1/base_scan",1000,&CarrierBot::laser_callback, this);
+	}
+
+	virtual void logic(){
+		
 	}
 
 	virtual void moveTo(){
@@ -38,15 +48,38 @@ public:
 		//This is the call back function to process odometry messages coming from Stage. 	
 		this->pose.px = 25 + msg.pose.pose.position.x;
 		this->pose.py = 25 + msg.pose.pose.position.y;
-		ROS_INFO("Current x position is: %f", msg.pose.pose.position.x);
-		ROS_INFO("Current y position is: %f", msg.pose.pose.position.y);
+		//this->pose.theta = msg.pose.pose.theta;
+
+
+
+		rotx = msg.pose.pose.orientation.x;
+		roty = msg.pose.pose.orientation.y;
+		rotz = msg.pose.pose.orientation.z;
+		rotw = msg.pose.pose.orientation.w;
+
+
+		this->pose.theta = atan2(2*(roty*rotx+rotw*rotz),rotw*rotw+rotx*rotx-roty*roty-rotz*rotz);
+
+
+		ROS_INFO("Current x position is: %f", this->pose.theta);
+		//ROS_INFO("Current y position is: %f", msg.pose.pose.position.y);
+
+		
+
+		//ROS_INFO("Current x position is: %f", msg.pose.pose.orientation.x);
+		//ROS_INFO("Current y position is: %f", msg.pose.pose.orientation.y);
+		//ROS_INFO("Current z position is: %f", msg.pose.pose.orientation.z);
+		//ROS_INFO("Current w position is: %f", msg.pose.pose.orientation.w);
 	}
 
 	void laser_callback(sensor_msgs::LaserScan msg)
 	{
+
 		//This is the callback function to process laser scan messages
 		//you can access the range data from msg.ranges[i]. i = sample number
-		//ROS_INFO("Distance is: %f", msg.ranges[i]);
+		laserRanges = msg.ranges;
+		logic();
+		ROS_INFO("Distance is: %f", msg.ranges[40]);
 	}
 };
 
@@ -75,7 +108,7 @@ ros::Subscriber StageLaser_sub = n.subscribe<sensor_msgs::LaserScan>("robot_0/ba
 ros::Rate loop_rate(10);
 
 //a count of howmany messages we have sent
-int count = 0;
+//int count = 0;
 
 ////messages
 //velocity of this RobotNode
