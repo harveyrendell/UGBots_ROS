@@ -23,10 +23,10 @@ public:
 	}
 
 
-	//pose of the unit
+	//Pose of the unit
 	Pose pose;
 
-	//velocity of the unit
+	//Velocity of the unit
 	Speed speed;
 
 	//NodeHandle for the node
@@ -35,7 +35,11 @@ public:
 	//Velocity of the robot
 	geometry_msgs::Twist node_cmdvel;
 
+	//Publishers and Subscribers for node
 	SubscriberList sub_list;
+
+	//Orientation of the unit
+	Orientation orientation;
 };
 
 
