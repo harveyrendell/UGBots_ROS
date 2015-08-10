@@ -1,6 +1,7 @@
 #include <speed.h>
 #include <pose.h>
 #include <subscriber_list.h>
+#include <orientation.h>
 
 class Node
 {
