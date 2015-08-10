@@ -19,7 +19,7 @@ while [ $i -lt $picker ];
 do
 
 echo \<group ns=\"robot_$i\"\> >> ugbots_ros\/launch\/example2.launch
-echo \<node pkg=\"ugbots_ros\" name=\"robotnode\" type=\"PB\"\/\> >> ugbots_ros\/launch\/example2.launch 
+echo \<node pkg=\"ugbots_ros\" name=\"robotnode\" type=\"PICKER\"\/\> >> ugbots_ros\/launch\/example2.launch 
 echo \<\/group\> >> ugbots_ros\/launch\/example2.launch
 
 echo pickerRobot\(pose [ 0 $((33-$(($i * 5)))) 0 0 ]\ name \"R$i\" color \"red\"\) >> world\/robotinstances.inc
@@ -32,7 +32,7 @@ while [ $j -lt $carrier ];
 do
 
 echo \<group ns=\"robot_$i\"\> >> ugbots_ros\/launch\/example2.launch
-echo \<node pkg=\"ugbots_ros\" name=\"robotnode\" type=\"CB\"\/\> >> ugbots_ros\/launch\/example2.launch
+echo \<node pkg=\"ugbots_ros\" name=\"robotnode\" type=\"CARRIER\"\/\> >> ugbots_ros\/launch\/example2.launch
 echo \<\/group\> >> ugbots_ros\/launch\/example2.launch
 
 echo carrierRobot\(pose [ 0 $((-33+$(($j*5)))) 0 0 ]\ name \"R$i\" color \"blue\"\) >> world\/robotinstances.inc
@@ -42,6 +42,6 @@ i=$(($i+1))
 
 done
 
-echo  \<launch\> >> ugbots_ros/launch/example2.launch
+echo  \<\/launch\> >> ugbots_ros/launch/example2.launch
 
 rosrun stage_ros stageros ./world/myworld.world
