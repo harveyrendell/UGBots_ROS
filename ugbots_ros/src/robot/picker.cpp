@@ -10,6 +10,8 @@
 
 class Picker : public Node
 {
+private:
+	Orientation orientation;
 public:
 	Picker(ros::NodeHandle &n)
 	{
@@ -28,6 +30,10 @@ public:
 		sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
 	}
 
+	void turn(bool clockwise, double desired_angle) {
+
+	}
+
 	virtual void moveTo(int x, int y){
 		
 	}
@@ -39,6 +45,13 @@ public:
 		pose.py = 10 + msg.pose.pose.position.y;
 		ROS_INFO("Current x position is: %f", pose.px);
 		ROS_INFO("Current y position is: %f", pose.py);
+		orientation.rotx = msg.pose.pose.orientation.x;
+		orientation.roty = msg.pose.pose.orientation.y;
+		orientation.rotz = msg.pose.pose.orientation.z;
+		orientation.rotw = msg.pose.pose.orientation.w;
+		orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
+			orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*
+			orientation.rotz);
 	}
 
 
