@@ -1,6 +1,5 @@
 include "worldinstances.inc"
-#include "robotinstances.inc"
-include "robots.inc"
+include "robotinstances.inc"
 
 define floorplan model
 (

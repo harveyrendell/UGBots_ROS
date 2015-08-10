@@ -14,7 +14,6 @@ define floorplan model
 (
   size [ 50 50 0.5 ]
   # sombre, sensible, artistic
-  boundary 1
   color "gray30"
 )
 
@@ -35,4 +34,6 @@ fence (pose [ 25 50 0 0 ])
 fence (pose [ -25 -50 0 0 ])
 fence (pose [ 25 -50 0 0 ])
 
+rows (pose [ -2.25 0 0 0 ])
+rows (pose [ 2.25 0 0 0 ])
 

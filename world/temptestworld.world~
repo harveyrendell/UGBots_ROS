@@ -4,12 +4,6 @@ define rows model
   size [1.0 70.0 1.8]
 )
 
-define pickerRobot position
-(
-  size [1.5 2.5 1.0]
-  drive "diff"
-)
-
 define fence model
 (
   color "black"
@@ -41,5 +35,6 @@ fence (pose [ 25 50 0 0 ])
 fence (pose [ -25 -50 0 0 ])
 fence (pose [ 25 -50 0 0 ])
 
-pickerRobot(pose[ 30 10 0 0 ] name "r0" color "red")
+rows (pose [ -2.25 0 0 0 ])
+rows (pose [ 2.25 0 0 0 ])
 
