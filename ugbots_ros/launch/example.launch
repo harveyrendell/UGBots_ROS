@@ -1,3 +1,4 @@
+
 <launch>
 	<group ns="robot_0">
 		<node pkg="ugbots_ros" name="robotnode" type="CARRIER"/>
@@ -18,4 +19,3 @@
 		<node pkg="ugbots_ros" name="robotnode" type="WORKER"/>
 	</group>
 </launch>
-
