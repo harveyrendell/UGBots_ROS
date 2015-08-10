@@ -7,6 +7,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include <node.h>
+#include <node_defs/picker.h>
 
 class Picker : public Node
 {

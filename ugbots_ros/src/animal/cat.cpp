@@ -6,8 +6,8 @@
 
 #include <sstream>
 #include <stdlib.h>
-//#include <unit.h>
 #include <node.h>
+#include <node_defs/cat.h>
 
 class Cat : public Node
 {

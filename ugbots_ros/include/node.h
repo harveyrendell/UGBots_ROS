@@ -1,6 +1,6 @@
-#include <speed.h>
-#include <pose.h>
-#include <subscriber_list.h>
+#include <node_structs/speed.h>
+#include <node_structs/pose.h>
+#include <node_structs/subscriber_list.h>
 
 class Node
 {
