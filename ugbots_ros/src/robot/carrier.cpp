@@ -14,6 +14,8 @@ public:
 	bool moving = false;
 	double tempx;
 	double tempy;
+	bool swag = false;
+
 
 	Carrier(ros::NodeHandle &n)
 	{
@@ -37,8 +39,8 @@ public:
 		//This is the call back function to process odometry messages coming from Stage. 	
 		this->pose.px = msg.pose.pose.position.x;
 		this->pose.py = -33 + msg.pose.pose.position.y;
-		ROS_INFO("Current x position is: %f", this->pose.px);
-		ROS_INFO("Current y position is: %f", this->pose.py);
+		//ROS_INFO("Current x position is: %f", this->pose.px);
+		//ROS_INFO("Current y position is: %f", this->pose.py);
 		orientation.rotx = msg.pose.pose.orientation.x;
 		orientation.roty = msg.pose.pose.orientation.y;
 		orientation.rotz = msg.pose.pose.orientation.z;
@@ -48,14 +50,14 @@ public:
 		this->pose.theta = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
 			orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
 			orientation.roty-orientation.rotz*orientation.rotz);
-		ROS_INFO("Current y position is: %f", this->pose.theta);
+		//ROS_INFO("Current y position is: %f", this->pose.theta);
 		if(!moving)
 		{
 			tempx = pose.px;
 			tempy = pose.py;
 			moving = true;
 		}
-		move(3.3, tempx, tempy);
+		move(5.7, tempx, tempy);
 	}
 
 
@@ -81,21 +83,15 @@ public:
 
 		double distance_x = x - pose.px;
 		double distance_y = y - pose.py;
-		double distance_z = sqrt(pow(distance_x,2) + pow(distance_y,2)) + 1;
+		double distance_z = sqrt(pow(distance_x,2) + pow(distance_y,2));
 
-		//ROS_INFO("px:%f", x);
-		//ROS_INFO("py:%f", y);
-		//ROS_INFO("x:%f", distance_x);
-		//ROS_INFO("y:%f", distance_y);
-		ROS_INFO("z:%f", distance_z);
-		const double epsilon = 0.01;
-
-		if(abs(distance_z) == 1)
+		if(distance_z < 0.20001)
 		{
 			speed.linear_x = 0.0;
+			ROS_INFO("z:%f", distance_z);
 			ROS_INFO("SWAG");
+			swag = true;
 		}
-
 
 	}
 
