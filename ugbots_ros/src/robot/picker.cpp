@@ -6,9 +6,9 @@
 
 #include <sstream>
 #include <stdlib.h>
-#include <node.h>
+#include <node_defs/picker.h>
 
-class Picker : public Node
+Picker::Picker(ros::NodeHandle &n)
 {
 private:
 	Orientation orientation;
@@ -121,11 +121,11 @@ public:
 		logic();
 	}
 
-	void move(){}
-	void stop(){}
-	void turnLeft(){}
-	void turnRight(){}
-	void collisionDetected(){}
+	void Picker::move(){}
+	void Picker::stop(){}
+	void Picker::turnLeft(){}
+	void Picker::turnRight(){}
+	void Picker::collisionDetected(){}
 };
 
 int main(int argc, char **argv)

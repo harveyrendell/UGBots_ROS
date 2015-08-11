@@ -7,49 +7,120 @@
 #include <sstream>
 #include <stdlib.h>
 #include <node.h>
+#include <node_defs/worker.h>
 
-class Worker : public Node
+Worker::Worker(ros::NodeHandle &n)
 {
-public:
-	Worker(ros::NodeHandle &n)
+	this->n = n;
+
+	//setting base attribute defaults
+	this->pose.theta = M_PI/2.0;
+	this->pose.px = 5;
+	this->pose.py = 10;
+	this->speed.linear_x = 1.0;
+	this->speed.max_linear_x = 30.0;
+	this->speed.angular_z = 0.0;
+
+	this->orientation.previous_right_distance = 0;
+	this->orientation.previous_left_distance = 0;
+	this->orientation.previous_front_distance = 0;
+	this->orientation.angle = 0;
+	this->orientation.desired_angle = M_PI / 2;
+	this->orientation.currently_turning = false;
+
+	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
+	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Worker::odom_callback, this);
+	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Worker::laser_callback, this);
+}
+
+void Worker::odom_callback(nav_msgs::Odometry msg)
+{
+	//This is the call back function to process odometry messages coming from Stage. 	
+	this->pose.px = 5 + msg.pose.pose.position.x;
+	this->pose.py = 10 + msg.pose.pose.position.y;
+	this->orientation.rotx = msg.pose.pose.orientation.x;
+		this->orientation.roty = msg.pose.pose.orientation.y;
+		this->orientation.rotz = msg.pose.pose.orientation.z;
+		this->orientation.rotw = msg.pose.pose.orientation.w;
+	this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
+
+	doAngleCheck();
+}
+
+
+void Worker::laser_callback(sensor_msgs::LaserScan msg)
+{
+	if(this->orientation.currently_turning)
 	{
-		this->n = n;
+		//2 clocks
+		if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) >= this->orientation.desired_angle)
+		{
+			stopTurn();
+		}
+		return;
+	}
+	
+	
+	if(msg.ranges[90] < 5.0)
+	{				
+		this->orientation.previous_right_distance = msg.ranges[0];
+		this->orientation.previous_left_distance = msg.ranges[180];
+		this->orientation.previous_front_distance = msg.ranges[90];
+		turnLeft();	
+	}	
+}
 
-		//setting base attribute defaults
-		pose.theta = M_PI/2.0;
-		pose.px = 10;
-		pose.py = 20;
-		speed.linear_x = 30.0;
-		speed.max_linear_x = 3.0;
-		speed.angular_z = 20.0;
+void Worker::move(){}
 
-		sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-		sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Worker::odom_callback, this);
-		sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Worker::laser_callback, this);
+void Worker::stop()
+{
+	this->speed.linear_x = 0.0;
+	this->speed.angular_z = 0.0;
+}
+
+void Worker::stopTurn()
+{
+	this->orientation.currently_turning = false;
+	this->speed.linear_x = 1.0;
+	this->speed.angular_z = 0.0;
+	this->orientation.desired_angle = this->orientation.desired_angle + M_PI / 2.000000;
+}
+
+void Worker::turnLeft()
+{
+	this->orientation.currently_turning = true;
+		
+	this->speed.linear_x = 0.5;
+	this->speed.angular_z = 5.0;
+}
+
+void Worker::turnRight()
+{
+	this->orientation.currently_turning = true;
+		
+	this->speed.linear_x = 0.5;
+	this->speed.angular_z = -5.0;
+}
+
+void Worker::doAngleCheck()
+{		
+	if(this->orientation.angle < 0)
+	{
+		this->orientation.angle = this->orientation.angle + 2.000000 * M_PI;
 	}
 
-	void odom_callback(nav_msgs::Odometry msg)
+	if(this->orientation.desired_angle > (2.000000 * M_PI))
 	{
-		//This is the call back function to process odometry messages coming from Stage. 	
-		this->pose.px = 5 + msg.pose.pose.position.x;
-		this->pose.py = 10 + msg.pose.pose.position.y;
-		ROS_INFO("Current x position is: %f", this->pose.px);
-		ROS_INFO("Current y position is: %f", this->pose.py);
+		this->orientation.desired_angle = M_PI / 2.000000;
 	}
-
-
-	void laser_callback(sensor_msgs::LaserScan msg)
+	
+	if(this->orientation.angle > 2.000000 * M_PI)
 	{
-		//This is the callback function to process laser scan messages
-		//you can access the range data from msg.ranges[i]. i = sample number	
+		this->orientation.angle = this->orientation.angle - 2.000000 * M_PI;	
 	}
+}
 
-	void move(){}
-	void stop(){}
-	void turnLeft(){}
-	void turnRight(){}
-	void collisionDetected(){}
-};
+void Worker::collisionDetected(){}
 
 int main(int argc, char **argv)
 {	
