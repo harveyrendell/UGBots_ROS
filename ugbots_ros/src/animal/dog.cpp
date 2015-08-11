@@ -53,14 +53,16 @@ public:
 		this->orientation.rotw = msg.pose.pose.orientation.w;
 		this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
 
+		ROS_INFO("X POS: %f", msg.pose.pose.position.x);		
+
 		calculateOrientation();
 
 		doAngleCheck();
 
-		ROS_INFO("Lets check the angle : %f", this->orientation.angle);
+		//ROS_INFO("Lets check the angle : %f", this->orientation.angle);
 
 		if ((msg.pose.pose.position.x + 0.3 >= 32) && (facingRight == true)){
-			ROS_INFO("HHHHEEELLLOOO");
+			
 			endOfPath = true;
 
 			this->speed.linear_x = 0.0;
@@ -74,14 +76,16 @@ public:
 			}
 		}
 
-		if ((msg.pose.pose.position.x + 0.3 <= 0) && (facingLeft == true)) {
+		if ((msg.pose.pose.position.x - 0.2 <= 0) && (facingLeft == true)) {
+
+			ROS_INFO("HHHHEEELLLOOO");
 
 			endOfPath = true;
 
 			this->speed.linear_x = 0.0;
 			this->speed.angular_z = 3.0;
 
-			if((this->orientation.angle + (M_PI / (this->speed.angular_z * 3))) >= this->orientation.desired_angle){
+			if((this->orientation.angle + (M_PI / (this->speed.angular_z * 3))) >= (M_PI * 2)){
 				this->speed.angular_z = 0.0;// stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
 				facingLeft = false;
 				facingRight = true;
