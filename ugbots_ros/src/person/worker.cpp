@@ -6,7 +6,6 @@
 
 #include <sstream>
 #include <stdlib.h>
-#include <node.h>
 #include <node_defs/worker.h>
 
 Worker::Worker(ros::NodeHandle &n)
