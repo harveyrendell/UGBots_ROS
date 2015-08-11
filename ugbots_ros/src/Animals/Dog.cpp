@@ -24,7 +24,7 @@ public:
 		this->pose.py = 20;
 		this->speed.linear_x = 2.0;
 		//this->speed.max_linear_x = 3.0;
-		this->speed.angular_z = 20.0;
+		this->speed.angular_z = 0.0;
 
 		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Dog::odom_callback, this);
@@ -40,13 +40,27 @@ public:
 		//This is the call back function to process odometry messages coming from Stage. 	
 		this->pose.px = -16 + msg.pose.pose.position.x;
 		this->pose.py = 42.5 + msg.pose.pose.position.y;
-		ROS_INFO("Current x position is: %f", this->pose.px);
-		ROS_INFO("Current y position is: %f", this->pose.py);
+
+
+		//ROS_INFO("Current x position is: %f", this->pose.px);
+		//ROS_INFO("Current y position is: %f", this->pose.py);
 
 		if (msg.pose.pose.position.x >= 32) {
-			ROS_INFO("GONE PAST 16m");
 			this->speed.linear_x = 0.0;
+			this->speed.angular_z = 0.0;
 			endOfPath = true;
+			//ROS_INFO("Lets check the angle x: %f", msg.pose.pose.orientation.x);
+			//ROS_INFO("Lets check the angle y: %f", msg.pose.pose.orientation.y);
+			ROS_INFO("Lets check the angle z: %f", msg.pose.pose.orientation.z);
+			ROS_INFO("Lets check the angle w: %f", msg.pose.pose.orientation.w);
+			if (msg.pose.pose.orientation.z =! 1){
+				this->speed.angular_z = 3.0;
+			}
+
+			if((this->orientation.angle + (M_PI / (speed.angular_z * 2))) >= this->orientation.desired_angle)
+				{
+				stopTurn(); // stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
+				}
 		}
 	}
 
@@ -73,6 +87,11 @@ public:
 		}
 
 		
+	}
+
+	void calculateOrientation()
+	{	
+		this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
 	}
 };
 
@@ -111,7 +130,7 @@ while (ros::ok())
 {
 	//messages to stage
 	RobotNode_cmdvel.linear.x = dg.speed.linear_x;
-	//RobotNode_cmdvel.angular.z = dg.speed.angular_z;
+	RobotNode_cmdvel.angular.z = dg.speed.angular_z;
         
 	//publish the message
 	dg.sub_list.node_stage_pub.publish(RobotNode_cmdvel);
