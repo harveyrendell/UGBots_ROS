@@ -37,14 +37,15 @@ public:
 
 	void odom_callback(nav_msgs::Odometry msg)
 	{
-		//This is the call back function to process odometry messages coming from Stage. 	
+		//gets the current position and angle and sets it to the object's fields 	
 		this->pose.px = 5 + msg.pose.pose.position.x;
 		this->pose.py = 10 + msg.pose.pose.position.y;
 		this->orientation.rotx = msg.pose.pose.orientation.x;
     		this->orientation.roty = msg.pose.pose.orientation.y;
     		this->orientation.rotz = msg.pose.pose.orientation.z;
     		this->orientation.rotw = msg.pose.pose.orientation.w;
-		this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
+		
+		calculateOrientation();
 
 		doAngleCheck();
 	}
@@ -54,31 +55,33 @@ public:
 	{
 		if(this->orientation.currently_turning)
 		{
-			//2 clocks
 			if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) >= this->orientation.desired_angle)
 			{
-				stopTurn();
+				stopTurn(); // stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
 			}
 			return;
 		}
 		
 		
-		if(msg.ranges[90] < 5.0)
+		if(msg.ranges[90] < 5.0) // stop when 5 meteres from the wall is reached directly to the front
 		{				
 			this->orientation.previous_right_distance = msg.ranges[0];
 			this->orientation.previous_left_distance = msg.ranges[180];
 			this->orientation.previous_front_distance = msg.ranges[90];
-			turnLeft();	
+			turnLeft();	//turn left
 		}	
 	}
 
 	void move(){}
 
+	//Stops the node
 	void stop(){
 		this->speed.linear_x = 0.0;
 		this->speed.angular_z = 0.0;
 	}
-
+	
+	//Stops the node turning. Linear velocity will be set to default (1.0)
+	//Update the next desired angle
 	void stopTurn(){
 		this->orientation.currently_turning = false;
 		this->speed.linear_x = 1.0;
@@ -86,6 +89,7 @@ public:
 		this->orientation.desired_angle = this->orientation.desired_angle + M_PI / 2.000000;
 	}
 
+	//Turn left
 	void turnLeft(){
 		this->orientation.currently_turning = true;
 			
@@ -93,6 +97,7 @@ public:
 		this->speed.angular_z = 5.0;
 	}
 
+	//Turn right
 	void turnRight(){
 		this->orientation.currently_turning = true;
 			
@@ -100,23 +105,31 @@ public:
 		this->speed.angular_z = -5.0;
 	}
 
+	//Angle translation for easier interpretation
 	void doAngleCheck(){		
+		//if -ve rads, change to +ve rads
 		if(this->orientation.angle < 0)
 		{
 			this->orientation.angle = this->orientation.angle + 2.000000 * M_PI;
 		}
-
+		//if the desired angle is > 2pi, changed the desired angle to pi/2 
 		if(this->orientation.desired_angle > (2.000000 * M_PI))
 		{
 			this->orientation.desired_angle = M_PI / 2.000000;
 		}
-		
+		//if the current angle is 2pi or more, translate the angle to 0< x <2pi 
 		if(this->orientation.angle > 2.000000 * M_PI)
 		{
 			this->orientation.angle = this->orientation.angle - 2.000000 * M_PI;	
 		}
 	}
-
+	
+	//calculates current orientation using atan2
+	void calculateOrientation()
+	{	
+		this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
+	}
+		
 	void collisionDetected(){}
 };
 
