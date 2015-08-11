@@ -11,13 +11,12 @@ public:
 	virtual void turnLeft() = 0;
 	virtual void turnRight() = 0;
 	virtual void collisionDetected() = 0;
-
+	
 	void publish()
 	{
 		//messages to stage
 		node_cmdvel.linear.x = speed.linear_x;
 		node_cmdvel.angular.z = speed.angular_z;
-	        
 		//publish the message
 		sub_list.node_stage_pub.publish(node_cmdvel);
 	}
@@ -41,5 +40,3 @@ public:
 	//Orientation of the unit
 	Orientation orientation;
 };
-
-

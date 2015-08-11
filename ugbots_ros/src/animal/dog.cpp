@@ -67,7 +67,7 @@ int count = 0;
 
 while (ros::ok())
 {
-node.publish();
+	node.publish();
 	
 	ros::spinOnce();
 
