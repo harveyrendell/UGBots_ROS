@@ -13,6 +13,8 @@ class Dog : public Node
 {
 public:
 	bool endOfPath = false;
+	bool facingRight = true;
+	bool facingLeft = false;
 
 	Dog(ros::NodeHandle &n)
 	{
@@ -57,7 +59,22 @@ public:
 
 		ROS_INFO("Lets check the angle : %f", this->orientation.angle);
 
-		if (msg.pose.pose.position.x + 0.3 >= 32) {
+		if ((msg.pose.pose.position.x + 0.3 >= 32) && (facingRight == true)){
+			ROS_INFO("HHHHEEELLLOOO");
+			endOfPath = true;
+
+			this->speed.linear_x = 0.0;
+			this->speed.angular_z = 3.0;
+
+			if((this->orientation.angle + (M_PI / (this->speed.angular_z * 3))) >= this->orientation.desired_angle){
+				this->speed.angular_z = 0.0;// stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
+				facingRight = false;
+				facingLeft = true;
+				endOfPath = false;
+			}
+		}
+
+		if ((msg.pose.pose.position.x + 0.3 <= 0) && (facingLeft == true)) {
 
 			endOfPath = true;
 
@@ -66,8 +83,12 @@ public:
 
 			if((this->orientation.angle + (M_PI / (this->speed.angular_z * 3))) >= this->orientation.desired_angle){
 				this->speed.angular_z = 0.0;// stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
+				facingLeft = false;
+				facingRight = true;
+				endOfPath = false;
 			}
 		}
+
 
 	}
 
