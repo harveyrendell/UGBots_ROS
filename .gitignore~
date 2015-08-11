@@ -2,5 +2,4 @@ setup.*
 .rosinstall
 ugbots_ros/build
 ugbots_ros/bin
-world/config
-ugbots_ros/launch/example2.launch
+
