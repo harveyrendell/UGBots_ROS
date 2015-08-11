@@ -19,7 +19,7 @@ public:
 		this->pose.theta = M_PI/2.0;
 		this->pose.px = 5;
 		this->pose.py = 10;
-		this->speed.linear_x = 20.0;
+		this->speed.linear_x = 1.0;
 		this->speed.max_linear_x = 30.0;
 		this->speed.angular_z = 0.0;
 
@@ -63,8 +63,11 @@ public:
 		}
 		
 		
-		if(msg.ranges[90] < 3.0)
-		{	
+		if(msg.ranges[90] < 5.0)
+		{				
+			this->orientation.previous_right_distance = msg.ranges[0];
+			this->orientation.previous_left_distance = msg.ranges[180];
+			this->orientation.previous_front_distance = msg.ranges[90];
 			turnLeft();	
 		}	
 	}
@@ -78,30 +81,22 @@ public:
 
 	void stopTurn(){
 		this->orientation.currently_turning = false;
-		this->speed.linear_x = 20.0;
+		this->speed.linear_x = 1.0;
 		this->speed.angular_z = 0.0;
 		this->orientation.desired_angle = this->orientation.desired_angle + M_PI / 2.000000;
 	}
 
 	void turnLeft(){
 		this->orientation.currently_turning = true;
-
-		this->orientation.previous_right_distance = msg.ranges[0];
-		this->orientation.previous_left_distance = msg.ranges[180];
-		this->orientation.previous_front_distance = msg.ranges[90];
 			
-		this->speed.linear_x = 0.0;
+		this->speed.linear_x = 0.5;
 		this->speed.angular_z = 5.0;
 	}
 
 	void turnRight(){
 		this->orientation.currently_turning = true;
-
-		this->orientation.previous_right_distance = msg.ranges[0];
-		this->orientation.previous_left_distance = msg.ranges[180];
-		this->orientation.previous_front_distance = msg.ranges[90];
 			
-		this->speed.linear_x = 0.0;
+		this->speed.linear_x = 0.5;
 		this->speed.angular_z = -5.0;
 	}
 
