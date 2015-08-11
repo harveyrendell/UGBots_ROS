@@ -51,13 +51,7 @@ public:
 			orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
 			orientation.roty-orientation.rotz*orientation.rotz);
 		//ROS_INFO("Current y position is: %f", this->pose.theta);
-		if(!moving)
-		{
-			tempx = pose.px;
-			tempy = pose.py;
-			moving = true;
-		}
-		move(5.7, tempx, tempy);
+		move(20);
 	}
 
 
@@ -76,10 +70,18 @@ public:
 
 	}
 
-	void move(double distance, double px, double py)
+	void move(double distance)
 	{
-		double x = distance * cos(pose.theta) + px;
-		double y = distance * sin(pose.theta) + py;
+
+		if(!moving)
+		{
+			tempx = pose.px;
+			tempy = pose.py;
+			moving = true;
+		}
+
+		double x = distance * cos(pose.theta) + tempx;
+		double y = distance * sin(pose.theta) + tempy;
 
 		double distance_x = x - pose.px;
 		double distance_y = y - pose.py;
@@ -88,11 +90,8 @@ public:
 		if(distance_z < 0.20001)
 		{
 			speed.linear_x = 0.0;
-			ROS_INFO("z:%f", distance_z);
-			ROS_INFO("SWAG");
-			swag = true;
+			moving = false;
 		}
-
 	}
 
 	void move(){}
