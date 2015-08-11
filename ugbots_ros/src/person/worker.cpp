@@ -52,31 +52,10 @@ public:
 
 		doAngleCheck();		
 
-		ROS_INFO("Angle: %f", this->orientation.angle);	
+		checkTurningStatus();
 
-		if(this->orientation.currently_turning == true)
-		{
-			ROS_INFO("LEVEL 1", "");
-			if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) >= this->orientation.desired_angle)
-			{
-				ROS_INFO("LEVEL 2", "");
-				stopTurn(); // stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
-			}
-			return;
-		}
-
-		if(this->orientation.currently_turning_static == true)
-		{		
-			if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) >= this->orientation.desired_angle)
-			{
-				if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) <= this->orientation.desired_angle + 0.05)
-				{	
-					stopTurnStatic();	
-				}
-			}
-			return;
-		}
-
+		checkStaticTurningStatus();
+		//ROS_INFO("Angle: %f", this->orientation.angle);	
 	}
 
 
@@ -118,7 +97,7 @@ public:
 		this->speed.linear_x = 1.0;
 		this->speed.angular_z = 0.0;
 		
-		ROS_INFO("Stop Turn", "");	
+		//ROS_INFO("Stop Turn", "");	
 	}
 
 	void stopTurnStatic()
@@ -128,7 +107,7 @@ public:
 		this->speed.angular_z = 0.0;	
 
 		
-		ROS_INFO("Stop Turn Static", "");	
+		//ROS_INFO("Stop Turn Static", "");	
 	}
 
 	//Turn left
@@ -138,7 +117,7 @@ public:
 		this->speed.linear_x = 0.5;
 		this->speed.angular_z = 5.0;
 
-		ROS_INFO("Turn Left Desired Angle: %f", this->orientation.desired_angle);	
+		//ROS_INFO("Turn Left Desired Angle: %f", this->orientation.desired_angle);	
 	}
 
 	//Static turn left
@@ -149,7 +128,7 @@ public:
 		this->speed.angular_z = 5.0;
 
 		
-		ROS_INFO("Spin on the spot", "");	
+		//ROS_INFO("Spin on the spot", "");	
 	}
 
 	//Turn right
@@ -160,7 +139,7 @@ public:
 		this->speed.angular_z = -5.0;
 
 		
-		ROS_INFO("Turn Right", "");	
+		//ROS_INFO("Turn Right", "");	
 	}
 
 	//Angle translation for easier interpretation
@@ -182,6 +161,37 @@ public:
 		}
 	}
 	
+	//
+	void checkTurningStatus()
+	{
+		if(this->orientation.currently_turning == true)
+		{
+			//ROS_INFO("LEVEL 1", "");
+			if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) >= this->orientation.desired_angle)
+			{
+				//ROS_INFO("LEVEL 2", "");
+				stopTurn(); // stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
+			}
+			return;
+		}
+	}
+	
+	//
+	void checkStaticTurningStatus()
+	{
+		if(this->orientation.currently_turning_static == true)
+		{		
+			if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) >= this->orientation.desired_angle)
+			{
+				if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) <= this->orientation.desired_angle + 0.05)
+				{	
+					stopTurnStatic();	
+				}
+			}
+			return;
+		}
+	}
+
 	//calculates current orientation using atan2
 	void calculateOrientation()
 	{	
