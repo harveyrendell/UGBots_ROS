@@ -3,6 +3,7 @@
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/LaserScan.h>
+#include <ugbots_ros/bin_status.h>
 
 #include <sstream>
 #include <stdlib.h>
@@ -12,6 +13,7 @@ class Picker : public Node
 {
 public:
 	ros::Publisher carrier_alert;
+	ugbots_ros::bin_status binStatus;
 
 	Picker(ros::NodeHandle &n);
 	void odom_callback(nav_msgs::Odometry msg);
@@ -22,6 +24,6 @@ public:
 	void turnRight();
 	void collisionDetected();
 
-	enum State { IDLE, TRAVELLING, PICKING, AVOIDING, STOPPED };
+	enum State { IDLE, TRAVELLING, PICKING, WAITING, AVOIDING, STOPPED };
 	State state;
 };
