@@ -46,6 +46,62 @@ public:
     		this->orientation.rotw = msg.pose.pose.orientation.w;
 		this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
 
+		doAngleCheck();
+	}
+
+
+	void laser_callback(sensor_msgs::LaserScan msg)
+	{
+		if(this->orientation.currently_turning)
+		{
+			//2 clocks
+			if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) >= this->orientation.desired_angle)
+			{
+				stopTurn();
+			}
+			return;
+		}
+		
+		
+		if(msg.ranges[90] < 3.0)
+		{	
+			turnLeft();	
+		}	
+	}
+
+	void move(){}
+	void stop(){}
+
+	void stopTurn(){
+		this->orientation.currently_turning = false;
+		this->speed.linear_x = 20.0;
+		this->speed.angular_z = 0.0;
+		this->orientation.desired_angle = this->orientation.desired_angle + M_PI / 2.000000;
+	}
+
+	void turnLeft(){
+		this->orientation.currently_turning = true;
+
+		this->orientation.previous_right_distance = msg.ranges[0];
+		this->orientation.previous_left_distance = msg.ranges[180];
+		this->orientation.previous_front_distance = msg.ranges[90];
+			
+		this->speed.linear_x = 0.0;
+		this->speed.angular_z = 5.0;
+	}
+
+	void turnRight(){
+		this->orientation.currently_turning = true;
+
+		this->orientation.previous_right_distance = msg.ranges[0];
+		this->orientation.previous_left_distance = msg.ranges[180];
+		this->orientation.previous_front_distance = msg.ranges[90];
+			
+		this->speed.linear_x = 0.0;
+		this->speed.angular_z = -5.0;
+	}
+
+	void doAngleCheck(){		
 		if(this->orientation.angle < 0)
 		{
 			this->orientation.angle = this->orientation.angle + 2.000000 * M_PI;
@@ -60,57 +116,8 @@ public:
 		{
 			this->orientation.angle = this->orientation.angle - 2.000000 * M_PI;	
 		}
-
-		
-		ROS_INFO("Current angle is: %f", this->orientation.angle);				
-		ROS_INFO("Current angle limit is: %f",  2.000000 * M_PI);
-		ROS_INFO("Desired angle is: %f",  this->orientation.desired_angle );
 	}
 
-
-	void laser_callback(sensor_msgs::LaserScan msg)
-	{
-		//This is the callback function to process laser scan messages
-		//you can access the range data from msg.ranges[i]. i = sample number
-
-		if(this->orientation.currently_turning)
-		{
-			//ROS_INFO("Current angle is: %f", this->orientation.angle);		
-			//ROS_INFO("Current next desired angle is: %f", this->orientation.desired_angle);
-			//ROS_INFO("Test laser: TURNING RIGHT %f", msg.ranges[0]);
-
-			//2 clocks
-			if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) )
- >= this->orientation.desired_angle)
-			{
-				this->orientation.currently_turning = false;
-				this->speed.linear_x = 20.0;
-				this->speed.angular_z = 0.0;
-				this->orientation.desired_angle = this->orientation.desired_angle + M_PI / 2.000000;
-			}
-			return;
-		}
-		
-		
-		if(msg.ranges[90] < 3.0)
-		{	
-			this->orientation.currently_turning = true;
-
-			this->orientation.previous_right_distance = msg.ranges[0];
-			this->orientation.previous_left_distance = msg.ranges[180];
-			this->orientation.previous_front_distance = msg.ranges[90];
-			
-			this->speed.linear_x = 0.0;
-			this->speed.angular_z = 5.0;
-
-			//ROS_INFO("Test laser: FRONT %f", msg.ranges[90]);	
-		}	
-	}
-
-	void move(){}
-	void stop(){}
-	void turnLeft(){}
-	void turnRight(){}
 	void collisionDetected(){}
 };
 
