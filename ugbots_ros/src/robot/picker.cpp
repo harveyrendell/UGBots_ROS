@@ -12,6 +12,10 @@ class Picker : public Node
 {
 private:
 	Orientation orientation;
+	bool turningLeft = false;
+	bool turningRight = false;
+	bool stopped = false;
+	double zero_angle = 0.0;
 public:
 	Picker(ros::NodeHandle &n)
 	{
@@ -21,17 +25,55 @@ public:
 		pose.theta = M_PI/2.0;
 		pose.px = 10;
 		pose.py = 20;
-		speed.linear_x = 30.0;
+		speed.linear_x = 1.0;
 		speed.max_linear_x = 3.0;
-		speed.angular_z = 20.0;
+		speed.angular_z = 0.0;
 
-		sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-		sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Picker::odom_callback, this);
-		sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
+		sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
+		sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Picker::odom_callback, this);
+		sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Picker::laser_callback, this);
+	}
+
+	void logic() {
+		if (turningLeft) {
+			turn(false, M_PI/2);
+		} else if (turningRight) {
+			turn(true, M_PI/2);
+		}
+
+		if (stopped) {
+			speed.linear_x = 0.0;
+		} else {
+			speed.linear_x = 1.0;
+		}
 	}
 
 	void turn(bool clockwise, double desired_angle) {
+		orientation.desired_angle = desired_angle + zero_angle;
 
+		/*double current_angle = orientation.angle;
+
+		if (current_angle < 0) {
+			current_angle = -current_angle;
+		}*/
+
+		if (clockwise) {
+			speed.angular_z = -M_PI/2;
+		} else {
+			if (orientation.angle < 0) {
+				orientation.angle = M_PI + (M_PI - orientation.angle);
+			}
+			speed.angular_z = M_PI/2;
+		}
+
+		if (orientation.desired_angle-(M_PI/10) > orientation.angle) {
+		} else {
+			turningLeft = false;
+			turningRight = false;
+			stopped = false;
+			speed.angular_z = 0.0;
+			zero_angle = desired_angle;
+		}
 	}
 
 	virtual void moveTo(int x, int y){
@@ -52,6 +94,7 @@ public:
 		orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
 			orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*
 			orientation.rotz);
+		ROS_INFO("Current angle is: %f", orientation.angle);
 	}
 
 
@@ -59,7 +102,13 @@ public:
 	{
 		//This is the callback function to process laser scan messages
 		//you can access the range data from msg.ranges[i]. i = sample number
-		
+		if (msg.ranges[90] < 3) {
+			turningLeft = true;
+			stopped = true;
+		}
+
+		logic();
+		ROS_INFO("Editted angle is: %f", orientation.angle);
 	}
 
 	void move(){}
