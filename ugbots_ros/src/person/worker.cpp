@@ -70,7 +70,11 @@ public:
 	}
 
 	void move(){}
-	void stop(){}
+
+	void stop(){
+		this->speed.linear_x = 0.0;
+		this->speed.angular_z = 0.0;
+	}
 
 	void stopTurn(){
 		this->orientation.currently_turning = false;
