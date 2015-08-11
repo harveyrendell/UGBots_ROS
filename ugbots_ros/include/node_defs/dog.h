@@ -19,4 +19,7 @@ public:
 	void turnLeft();
 	void turnRight();
 	void collisionDetected();
+
+	enum State { IDLE, ROAMING, AGGRESSIVE, FLEEING };
+	State state;
 };
