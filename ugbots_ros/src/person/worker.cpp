@@ -28,7 +28,10 @@ public:
 		this->orientation.previous_front_distance = 0;
 		this->orientation.angle = 0;
 		this->orientation.desired_angle = 0;
+
 		this->orientation.currently_turning = false;
+
+		this->orientation.currently_turning_static = false;
 
 		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
 		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Worker::odom_callback, this);
@@ -49,9 +52,6 @@ public:
 
 		doAngleCheck();
 
-		
-		ROS_INFO("Angle: %f", this->orientation.angle);
-		ROS_INFO("Next Angle: %f", this->orientation.desired_angle);
 	}
 
 
@@ -59,6 +59,10 @@ public:
 	{
 		if(this->orientation.currently_turning)
 		{
+			
+			ROS_INFO("Current Angle: %f", this->orientation.angle + (M_PI / (speed.angular_z * 2) ));	
+			ROS_INFO("Desired Angle: %f", this->orientation.desired_angle);	
+
 			if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) >= this->orientation.desired_angle)
 			{
 				stopTurn(); // stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
@@ -66,8 +70,19 @@ public:
 			return;
 		}
 		
+		if(this->orientation.currently_turning_static == true)
+		{		
+			if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) >= this->orientation.desired_angle)
+			{
+				if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) <= this->orientation.desired_angle + 0.05)
+				{	
+					stopTurnStatic();	
+				}
+			}
+			return;
+		}
 		
-		if(msg.ranges[90] < 5.0) // stop when 5 meteres from the wall is reached directly to the front
+		if(msg.ranges[90] < 18.0) // stop when 5 meteres from the wall is reached directly to the front
 		{				
 			this->orientation.previous_right_distance = msg.ranges[0];
 			this->orientation.previous_left_distance = msg.ranges[180];
@@ -75,6 +90,17 @@ public:
 			//turnRight();	//turn left
 			turnLeft();
 		}	
+
+		if(this->orientation.currently_turning == false && this->orientation.currently_turning_static == false)
+		{
+			for(int i=100; i<130; i++)
+			{
+				if(msg.ranges[i] < 10)
+				{
+					spinOnTheSpot();
+				}
+			}
+		}
 	}
 
 	void move(){}
@@ -93,11 +119,26 @@ public:
 		this->speed.angular_z = 0.0;
 	}
 
+	void stopTurnStatic()
+	{
+		this->orientation.currently_turning_static = false;
+		this->speed.linear_x = 1.0;
+		this->speed.angular_z = 0.0;	
+	}
+
 	//Turn left
 	void turnLeft(){
 		this->orientation.currently_turning = true;
 		this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2.000000);
 		this->speed.linear_x = 0.5;
+		this->speed.angular_z = 5.0;
+	}
+
+	//Static turn left
+	void spinOnTheSpot(){
+		this->orientation.currently_turning_static = true;
+		this->orientation.desired_angle = (M_PI);
+		this->speed.linear_x = 0.0;
 		this->speed.angular_z = 5.0;
 	}
 
