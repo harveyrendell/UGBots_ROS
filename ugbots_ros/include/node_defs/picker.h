@@ -3,6 +3,7 @@
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/LaserScan.h>
+#include <ugbots_ros/bin_status.h>
 
 #include <sstream>
 #include <stdlib.h>
@@ -18,6 +19,9 @@ public:
 	double station_y = -33;
 	double zero_angle;
 
+	ros::Publisher carrier_alert;
+	ugbots_ros::bin_status binStatus;
+
 	Picker(ros::NodeHandle &n);
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
@@ -30,9 +34,9 @@ public:
 	void turnLeft();
 	void turnRight();
 	void collisionDetected();
-
+	
 	void goToWork();
 
-	enum State { IDLE, TRAVELLING, PICKING, AVOIDING, STOPPED };
+	enum State { IDLE, TRAVELLING, PICKING, WAITING, AVOIDING, STOPPED };
 	State state;
 };

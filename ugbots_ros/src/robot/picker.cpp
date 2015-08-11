@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <node_defs/picker.h>
 
+
 Picker::Picker(ros::NodeHandle &n)
 {
 	this->n = n;
@@ -24,6 +25,7 @@ Picker::Picker(ros::NodeHandle &n)
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Picker::odom_callback, this);
 	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Picker::laser_callback, this);
+	carrier_alert = n.advertise<ugbots_ros::bin_status>("alert",1000);
 }
 
 /*void Picker::logic() {
@@ -235,10 +237,22 @@ int count = 0;
 while (ros::ok())
 {
 	node.publish();
-	
+	if (count < 100) {
+		node.binStatus.bin_x = 0.0;
+		node.binStatus.bin_y = 0.0;
+		node.binStatus.bin_stat = "NOTHING";
+	} else {
+		node.binStatus.bin_x = 10.0;
+		node.binStatus.bin_y = 10.0;
+		node.binStatus.bin_stat = "FULL";
+	}
+
+	node.carrier_alert.publish(node.binStatus);
+
 	ros::spinOnce();
 
 	loop_rate.sleep();
+
 	++count;
 }
 return 0;
