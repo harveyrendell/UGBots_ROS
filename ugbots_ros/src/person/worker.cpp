@@ -27,7 +27,7 @@ public:
 		this->orientation.previous_left_distance = 0;
 		this->orientation.previous_front_distance = 0;
 		this->orientation.angle = 0;
-		this->orientation.desired_angle = M_PI / 2;
+		this->orientation.desired_angle = 0;
 		this->orientation.currently_turning = false;
 
 		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
@@ -68,7 +68,7 @@ public:
 			this->orientation.previous_right_distance = msg.ranges[0];
 			this->orientation.previous_left_distance = msg.ranges[180];
 			this->orientation.previous_front_distance = msg.ranges[90];
-			turnLeft();	//turn left
+			turnRight();	//turn left
 		}	
 	}
 
@@ -86,13 +86,13 @@ public:
 		this->orientation.currently_turning = false;
 		this->speed.linear_x = 1.0;
 		this->speed.angular_z = 0.0;
-		this->orientation.desired_angle = this->orientation.desired_angle + M_PI / 2.000000;
+		this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2.000000);
 	}
 
 	//Turn left
 	void turnLeft(){
 		this->orientation.currently_turning = true;
-			
+		this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2);
 		this->speed.linear_x = 0.5;
 		this->speed.angular_z = 5.0;
 	}
@@ -100,7 +100,7 @@ public:
 	//Turn right
 	void turnRight(){
 		this->orientation.currently_turning = true;
-			
+		this->orientation.desired_angle = this->orientation.desired_angle - (M_PI / 2);
 		this->speed.linear_x = 0.5;
 		this->speed.angular_z = -5.0;
 	}
