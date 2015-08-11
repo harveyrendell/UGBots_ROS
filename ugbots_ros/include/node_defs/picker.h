@@ -36,6 +36,7 @@ public:
 	void collisionDetected();
 	
 	void goToWork();
+	void pickKiwi();
 
 	enum State { IDLE, TRAVELLING, PICKING, WAITING, AVOIDING, STOPPED };
 	State state;

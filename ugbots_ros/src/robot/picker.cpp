@@ -161,9 +161,15 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	orientation.rotz = msg.pose.pose.orientation.z;
 	orientation.rotw = msg.pose.pose.orientation.w;
 	orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
-		orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*
-		orientation.rotz);
+		orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
+		orientation.roty-orientation.rotz*orientation.rotz);
 	ROS_INFO("Current angle is: %f", orientation.angle);
+
+	//bin location, currently attached to the centre of robot
+	binStatus.bin_x = pose.px;
+	binStatus.bin_y = pose.py;
+
+	//relative actions for different states
 	if (state == IDLE) {
 		state = TRAVELLING;
 		tempx = pose.px;
@@ -174,10 +180,15 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	} else if (state == TRAVELLING) {
 		goToWork();
 	} else if (state == PICKING) {
-		speed.linear_x = 0.01;
+		pickKiwi();
+	} else if (state == WAITING) {
+		binStatus.bin_x = 0.0;
+		binStatus.bin_y = binStatus.bin_y-1.5;
+		binStatus.bin_stat = "FULL";
 	}
-	//move(10.0,tempx,tempy);
-	
+
+	//publish topic about current bin status
+	carrier_alert.publish(binStatus);
 }
 
 
@@ -188,6 +199,7 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 	
 }
 
+//hard coded function for robot to get to work station
 void Picker::goToWork() {
 	moveX(abs(station_x-tempx),tempx);
 	if (speed.linear_x == 0.0) {
@@ -205,9 +217,14 @@ void Picker::goToWork() {
 	}
 }
 
+//function putting robot into picking mode
 void Picker::pickKiwi() {
-	speed.linear_x = 0.01;
-	
+	speed.linear_x = 0.5;
+	binStatus.bin_stat = "FILLING";
+	moveY(70.0,tempy);
+	if (speed.linear_x == 0.0) {
+		state = WAITING;
+	}
 }
 
 void Picker::move(){}
@@ -228,6 +245,8 @@ ros::NodeHandle n;
 //Creating the CarrierBot instance
 Picker node(n);
 
+node.binStatus.bin_stat = "EMPTY";
+
 //Setting the loop rate
 ros::Rate loop_rate(10);
 
@@ -237,15 +256,6 @@ int count = 0;
 while (ros::ok())
 {
 	node.publish();
-	if (count < 100) {
-		node.binStatus.bin_x = 0.0;
-		node.binStatus.bin_y = 0.0;
-		node.binStatus.bin_stat = "NOTHING";
-	} else {
-		node.binStatus.bin_x = 10.0;
-		node.binStatus.bin_y = 10.0;
-		node.binStatus.bin_stat = "FULL";
-	}
 
 	node.carrier_alert.publish(node.binStatus);
 
