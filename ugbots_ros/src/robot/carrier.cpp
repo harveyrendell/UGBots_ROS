@@ -12,9 +12,13 @@ class Carrier : public Node
 {
 public:
 	bool moving = false;
+	bool undergoing_task = false;
 	double tempx;
 	double tempy;
 	bool swag = false;
+
+
+
 
 
 	Carrier(ros::NodeHandle &n)
@@ -32,7 +36,9 @@ public:
 		sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_3/cmd_vel",1000);
 		sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_3/odom",1000, &Carrier::odom_callback, this);
 		sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_3/base_scan",1000,&Carrier::laser_callback, this);
+		//sub_list.sub_comm = n.subscribe<idk>("robot3/what_ever",1000,&Carrier::comm_callback, this);
 	}
+
 
 	void odom_callback(nav_msgs::Odometry msg)
 	{
@@ -51,7 +57,7 @@ public:
 			orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
 			orientation.roty-orientation.rotz*orientation.rotz);
 		//ROS_INFO("Current y position is: %f", this->pose.theta);
-		move(20);
+		test();
 	}
 
 
@@ -62,42 +68,77 @@ public:
 		//you can access the range data from msg.ranges[i]. i = sample number	
 	}
 
+	void comm_callback(){
+
+		//if(msg.status == "ready")
+		//{
+
+
+		//}
+
+
+	}
+
+	void test(){
+		move_forward(10);
+		move_forward(30);
+
+	}
+
+    return false;
+
+	bool at_point(double x, double y){
+		if()
+
+	}
 	void turn(double desiredAngle)
 	{
 		speed.angular_z = 3.0;
-		
 		speed.angular_z = 0.0;
 
 	}
 
-	void move(double distance)
+	void move(double x, double y)
 	{
 
-		if(!moving)
-		{
-			tempx = pose.px;
-			tempy = pose.py;
-			moving = true;
-		}
 
-		double x = distance * cos(pose.theta) + tempx;
-		double y = distance * sin(pose.theta) + tempy;
+	}
 
-		double distance_x = x - pose.px;
-		double distance_y = y - pose.py;
-		double distance_z = sqrt(pow(distance_x,2) + pow(distance_y,2));
+	void move_forward(double distance)
+	{
 
-		if(distance_z < 0.20001)
-		{
-			speed.linear_x = 0.0;
-			moving = false;
+
+		if(!undergoing_task){
+			undergoing_task = true;
+			speed.linear_x = 2.0;
+			if(!moving)
+			{
+				tempx = pose.px;
+				tempy = pose.py;
+				moving = true;
+			}
+
+			double x = distance * cos(pose.theta) + tempx;
+			double y = distance * sin(pose.theta) + tempy;
+
+			double distance_x = x - pose.px;
+			double distance_y = y - pose.py;
+			double distance_z = sqrt(pow(distance_x,2) + pow(distance_y,2));
 		}
 	}
 
-	void move(){}
-	void stop(){}
-	void turnLeft(){}
-	void turnRight(){}
+	void move(){
+		speed.linear_x = 2.0;
+	}
+	void stop(){
+		speed.linear_x = 0.0;
+	}
+	void turnLeft(){
+		speed.angular.z = 1;
+	}
+	void turnRight(){
+		speed.angular.z = -1;
+	}
 	void collisionDetected(){}
 };
 

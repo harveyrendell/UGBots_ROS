@@ -11,4 +11,6 @@ public:
 	ros::Publisher node_debug_pub;
 	//Subscriber for debug node
 	ros::Subscriber sub_debug;
+	//Subscriber for communication between carrier/picker
+	ros::Subscriber sub_comm;
 };
