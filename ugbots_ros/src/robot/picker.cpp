@@ -61,7 +61,7 @@ public:
 			speed.angular_z = -M_PI/2;
 		} else {
 			if (orientation.angle < 0) {
-				orientation.angle = M_PI + (M_PI - orientation.angle);
+				orientation.angle = M_PI + (M_PI + orientation.angle);
 			}
 			speed.angular_z = M_PI/2;
 		}
@@ -72,7 +72,8 @@ public:
 			turningRight = false;
 			stopped = false;
 			speed.angular_z = 0.0;
-			zero_angle = desired_angle;
+			zero_angle = orientation.desired_angle;
+			ROS_INFO("Zero angle is: %f", zero_angle);
 		}
 	}
 
