@@ -48,6 +48,10 @@ public:
 		calculateOrientation();
 
 		doAngleCheck();
+
+		
+		ROS_INFO("Angle: %f", this->orientation.angle);
+		ROS_INFO("Next Angle: %f", this->orientation.desired_angle);
 	}
 
 
@@ -68,7 +72,8 @@ public:
 			this->orientation.previous_right_distance = msg.ranges[0];
 			this->orientation.previous_left_distance = msg.ranges[180];
 			this->orientation.previous_front_distance = msg.ranges[90];
-			turnRight();	//turn left
+			//turnRight();	//turn left
+			turnLeft();
 		}	
 	}
 
@@ -86,13 +91,12 @@ public:
 		this->orientation.currently_turning = false;
 		this->speed.linear_x = 1.0;
 		this->speed.angular_z = 0.0;
-		this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2.000000);
 	}
 
 	//Turn left
 	void turnLeft(){
 		this->orientation.currently_turning = true;
-		this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2);
+		this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2.000000);
 		this->speed.linear_x = 0.5;
 		this->speed.angular_z = 5.0;
 	}
@@ -100,7 +104,7 @@ public:
 	//Turn right
 	void turnRight(){
 		this->orientation.currently_turning = true;
-		this->orientation.desired_angle = this->orientation.desired_angle - (M_PI / 2);
+		this->orientation.desired_angle = this->orientation.desired_angle - (M_PI / 2.000000);
 		this->speed.linear_x = 0.5;
 		this->speed.angular_z = -5.0;
 	}
