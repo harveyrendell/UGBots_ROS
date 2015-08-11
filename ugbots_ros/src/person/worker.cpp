@@ -50,19 +50,21 @@ public:
 		{
 			this->orientation.angle = this->orientation.angle + 2.000000 * M_PI;
 		}
-		ROS_INFO("Current angle is: %f", this->orientation.angle);				
-		ROS_INFO("Current angle limit is: %f",  2.000000 * M_PI);
-		ROS_INFO("Desired angle is: %f",  this->orientation.desired_angle );
 
+		if(this->orientation.desired_angle > (2.000000 * M_PI))
+		{
+			this->orientation.desired_angle = M_PI / 2.000000;
+		}
+		
 		if(this->orientation.angle > 2.000000 * M_PI)
 		{
 			this->orientation.angle = this->orientation.angle - 2.000000 * M_PI;	
 		}
 
-		if(this->orientation.desired_angle > (2.000000 * M_PI)
-		{
-			this->orientation.desired_angle = M_PI / 2.000000;
-		}
+		
+		ROS_INFO("Current angle is: %f", this->orientation.angle);				
+		ROS_INFO("Current angle limit is: %f",  2.000000 * M_PI);
+		ROS_INFO("Desired angle is: %f",  this->orientation.desired_angle );
 	}
 
 
