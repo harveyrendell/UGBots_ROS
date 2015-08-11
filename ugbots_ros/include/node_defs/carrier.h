@@ -11,7 +11,9 @@
 class Carrier : public Node
 {
 public:
+	Carrier();
 	Carrier(ros::NodeHandle &n);
+	virtual ~Carrier() {}
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
 	void move();
@@ -22,4 +24,7 @@ public:
 
 	enum State { IDLE, TRAVELLING, CARRYING, AVOIDING, STOPPED };
 	State state;
+
+private:
+	void init();
 };

@@ -31,6 +31,15 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 find_package(rostest REQUIRED)
 
+rosbuild_add_library(CarrierLib src/robot/carrier.cpp)
+rosbuild_add_library(PickerLib src/robot/picker.cpp)
+rosbuild_add_library(DogLib src/animal/dog.cpp)
+rosbuild_add_library(CatLib src/animal/cat.cpp)
+rosbuild_add_library(PossumLib src/animal/possum.cpp)
+rosbuild_add_library(WorkerLib src/person/worker.cpp)
+rosbuild_add_library(VisitorLib src/person/visitor.cpp)
+
+
 #Executable nodes
 rosbuild_add_executable(CARRIER src/robot/carrier.cpp)
 rosbuild_add_executable(PICKER src/robot/picker.cpp)
@@ -41,6 +50,7 @@ rosbuild_add_executable(WORKER src/person/worker.cpp)
 rosbuild_add_executable(VISITOR src/person/visitor.cpp)
 
 #Testing
-rosbuild_add_executable(unit_tests EXCLUDE_FROM_ALL test/unit_tests.cpp)
-rosbuild_add_gtest(unit_tests test/unit_tests.cpp)
-rosbuild_add_rostest(test/mynode.test)
+#rosbuild_add_executable(UnitTests EXCLUDE_FROM_ALL test/unit_tests.cpp)
+rosbuild_add_gtest(UnitTests test/unit_tests.cpp)
+#rosbuild_add_rostest(test/mynode.test)
+target_link_libraries(UnitTests CarrierLib)

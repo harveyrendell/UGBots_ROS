@@ -10,8 +10,6 @@
 
 Cat::Cat(ros::NodeHandle &n)
 {
-	this->n = n;
-
 	//setting base attribute defaults
 	pose.theta = M_PI/2.0;
 	pose.px = 10;

@@ -6,13 +6,10 @@
 
 #include <sstream>
 #include <stdlib.h>
-#include <node.h>
 #include <node_defs/worker.h>
 
 Worker::Worker(ros::NodeHandle &n)
 {
-	this->n = n;
-
 	//setting base attribute defaults
 	this->pose.theta = M_PI/2.0;
 	this->pose.px = 5;
