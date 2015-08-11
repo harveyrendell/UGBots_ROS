@@ -10,123 +10,209 @@
 
 Picker::Picker(ros::NodeHandle &n)
 {
-private:
-	Orientation orientation;
-	bool turningLeft = false;
-	bool turningRight = false;
-	bool stopped = false;
-	double zero_angle = 0.0;
-public:
-	Picker(ros::NodeHandle &n)
-	{
-		this->n = n;
+	this->n = n;
 
-		//setting base attribute defaults
-		pose.theta = M_PI/2.0;
-		pose.px = 10;
-		pose.py = 20;
+	//setting base attribute defaults
+	pose.theta = M_PI/2.0;
+	pose.px = 10;
+	pose.py = 20;
+	speed.linear_x = 1.0;
+	speed.max_linear_x = 3.0;
+	speed.angular_z = 0.0;
+	state = IDLE;
+
+	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
+	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Picker::odom_callback, this);
+	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Picker::laser_callback, this);
+}
+
+/*void Picker::logic() {
+	if (turningLeft) {
+		turn(false, M_PI/2);
+	} else if (turningRight) {
+		turn(true, M_PI/2);
+	}
+
+	if (stopped) {
+		speed.linear_x = 0.0;
+	} else {
 		speed.linear_x = 1.0;
-		speed.max_linear_x = 3.0;
+	}
+}*/
+
+/*void Picker::turn(bool clockwise, double desired_angle) {
+	double current_angular_z;
+
+	//desired angle of turn added to robots current angle facing
+	orientation.desired_angle = desired_angle + zero_angle;
+
+	//deduct one rotation if desired angle exceed full rotation
+	if (orientation.desired_angle > 2*M_PI) {
+		orientation.desired_angle = orientation.desired_angle - 2*M_PI;
+	}
+
+	//for when turn is set to be clockwise
+	if (clockwise) {
+		if (orientation.angle > 0) {
+			orientation.angle = -2*M_PI + orientation.angle;
+		}
+		speed.angular_z = -M_PI/2;
+		current_angular_z = -speed.angular_z;
+		orientation.angle = -orientation.angle;
+	} else {
+		if (orientation.angle < 0) {
+			orientation.angle = 2*M_PI + orientation.angle;
+		}
+		speed.angular_z = M_PI/2;
+		current_angular_z = speed.angular_z;
+	}
+
+	//turn until desired angle is reached, taking into account of the 2 clock time ahead
+	if (orientation.desired_angle-2*(current_angular_z/10) >= orientation.angle) {
+	//if desired angle is reached, robot stops turning and moves again 
+	} else {
+		orientation.currently_turning = false;
+		//stopped = false;
 		speed.angular_z = 0.0;
+		zero_angle = orientation.desired_angle;
+	}
+}*/
+void Picker::turn(bool clockwise, double desired_angle, double temprad) {
+	double current_angular_z;
 
-		sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
-		sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Picker::odom_callback, this);
-		sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Picker::laser_callback, this);
+	//desired angle of turn added to robots current angle facing
+	orientation.desired_angle = desired_angle + temprad;
+
+	//deduct one rotation if desired angle exceed full rotation
+	if (orientation.desired_angle > 2*M_PI) {
+		orientation.desired_angle = orientation.desired_angle - 2*M_PI;
 	}
 
-	void logic() {
-		if (turningLeft) {
-			turn(false, M_PI/2);
-		} else if (turningRight) {
-			turn(true, M_PI/2);
+	//for when turn is set to be clockwise
+	if (clockwise) {
+		if (orientation.angle > 0) {
+			orientation.angle = -2*M_PI + orientation.angle;
 		}
+		speed.angular_z = -M_PI/2;
+		current_angular_z = -speed.angular_z;
+		orientation.angle = -orientation.angle;
+	} else {
+		if (orientation.angle < 0) {
+			orientation.angle = 2*M_PI + orientation.angle;
+		}
+		speed.angular_z = M_PI/2;
+		current_angular_z = speed.angular_z;
+	}
 
-		if (stopped) {
-			speed.linear_x = 0.0;
-		} else {
+	//turn until desired angle is reached, taking into account of the 2 clock time ahead
+	if (orientation.desired_angle-3*(current_angular_z/10) >= orientation.angle) {
+		orientation.currently_turning = true;
+	//if desired angle is reached, robot stops turning and moves again 
+	} else {
+		orientation.currently_turning = false;
+		//stopped = false;
+		speed.angular_z = 0.0;
+		zero_angle = orientation.desired_angle;
+	}
+}
+
+void Picker::moveX(double distance, double px) {
+	double x = distance + px;
+	double distance_x = x - pose.px;
+	if (distance_x < 0.20001) {
+		speed.linear_x = 0.0;
+	}
+}
+
+void Picker::moveY(double distance, double py) {
+	double y = distance + py;
+	double distance_y = y - pose.py;
+	if (distance_y < 0.20001) {
+		speed.linear_x = 0.0;
+	}
+}
+
+void Picker::move(double distance, double px, double py)
+{
+	double x = distance * sin(pose.theta) + px;
+	double y = distance * cos(pose.theta) + py;
+
+	double distance_x = x - pose.px;
+	double distance_y = y - pose.py;
+	double distance_z = sqrt(pow(distance_x,2) + pow(distance_y,2));
+
+	if(distance_z < 0.20001)
+	{
+		speed.linear_x = 0.0;
+	}
+}
+
+void Picker::odom_callback(nav_msgs::Odometry msg)
+{
+	//This is the call back function to process odometry messages coming from Stage. 	
+	pose.px = -10 + msg.pose.pose.position.x;
+	pose.py = -40 + msg.pose.pose.position.y;
+	ROS_INFO("Current x position is: %f", pose.px);
+	ROS_INFO("Current y position is: %f", pose.py);
+	orientation.rotx = msg.pose.pose.orientation.x;
+	orientation.roty = msg.pose.pose.orientation.y;
+	orientation.rotz = msg.pose.pose.orientation.z;
+	orientation.rotw = msg.pose.pose.orientation.w;
+	orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
+		orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*
+		orientation.rotz);
+	ROS_INFO("Current angle is: %f", orientation.angle);
+	if (state == IDLE) {
+		state = TRAVELLING;
+		tempx = pose.px;
+		tempy = pose.py;
+		temprad = orientation.angle;
+		goToWork();
+		state = TRAVELLING;
+	} else if (state == TRAVELLING) {
+		goToWork();
+	} else if (state == PICKING) {
+		speed.linear_x = 0.01;
+	}
+	//move(10.0,tempx,tempy);
+	
+}
+
+
+void Picker::laser_callback(sensor_msgs::LaserScan msg)
+{
+	//This is the callback function to process laser scan messages
+	//you can access the range data from msg.ranges[i]. i = sample number
+	
+}
+
+void Picker::goToWork() {
+	moveX(abs(station_x-tempx),tempx);
+	if (speed.linear_x == 0.0) {
+		turn(false, M_PI/2, temprad);
+		if (speed.angular_z == 0.0){
 			speed.linear_x = 1.0;
-		}
-	}
-
-	void turn(bool clockwise, double desired_angle) {
-		double current_angular_z;
-
-		//desired angle of turn added to robots current angle facing
-		orientation.desired_angle = desired_angle + zero_angle;
-
-		//deduct one rotation if desired angle exceed full rotation
-		if (orientation.desired_angle > 2*M_PI) {
-			orientation.desired_angle = orientation.desired_angle - 2*M_PI;
-		}
-
-		//for when turn is set to be clockwise
-		if (clockwise) {
-			if (orientation.angle > 0) {
-				orientation.angle = -2*M_PI + orientation.angle;
+			moveY(abs(station_y-tempy),tempy);
+			if (pose.py > -35.0){
+				state = PICKING;
+				tempx = pose.px;
+				tempy = pose.py;
+				temprad = orientation.angle;
 			}
-			speed.angular_z = -M_PI/2;
-			current_angular_z = -speed.angular_z;
-			orientation.angle = -orientation.angle;
-		} else {
-			if (orientation.angle < 0) {
-				orientation.angle = 2*M_PI + orientation.angle;
-			}
-			speed.angular_z = M_PI/2;
-			current_angular_z = speed.angular_z;
-		}
-
-		//turn until desired angle is reached, taking into account of the 2 clock time ahead
-		if (orientation.desired_angle-2*(current_angular_z/10) >= orientation.angle) {
-		//if desired angle is reached, robot stops turning and moves again 
-		} else {
-			turningLeft = false;
-			turningRight = false;
-			stopped = false;
-			speed.angular_z = 0.0;
-			zero_angle = orientation.desired_angle;
 		}
 	}
+}
 
-	virtual void moveTo(int x, int y){
-		
-	}
+void Picker::pickKiwi() {
+	speed.linear_x = 0.01;
+	
+}
 
-	void odom_callback(nav_msgs::Odometry msg)
-	{
-		//This is the call back function to process odometry messages coming from Stage. 	
-		pose.px = 5 + msg.pose.pose.position.x;
-		pose.py = 10 + msg.pose.pose.position.y;
-		ROS_INFO("Current x position is: %f", pose.px);
-		ROS_INFO("Current y position is: %f", pose.py);
-		orientation.rotx = msg.pose.pose.orientation.x;
-		orientation.roty = msg.pose.pose.orientation.y;
-		orientation.rotz = msg.pose.pose.orientation.z;
-		orientation.rotw = msg.pose.pose.orientation.w;
-		orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
-			orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*
-			orientation.rotz);
-		ROS_INFO("Current angle is: %f", orientation.angle);
-	}
-
-
-	void laser_callback(sensor_msgs::LaserScan msg)
-	{
-		//This is the callback function to process laser scan messages
-		//you can access the range data from msg.ranges[i]. i = sample number
-		if (msg.ranges[90] < 3) {
-			turningRight = true;
-			stopped = true;
-		}
-
-		logic();
-	}
-
-	void Picker::move(){}
-	void Picker::stop(){}
-	void Picker::turnLeft(){}
-	void Picker::turnRight(){}
-	void Picker::collisionDetected(){}
-};
+void Picker::move(){}
+void Picker::stop(){}
+void Picker::turnLeft(){}
+void Picker::turnRight(){}
+void Picker::collisionDetected(){}
 
 int main(int argc, char **argv)
 {
