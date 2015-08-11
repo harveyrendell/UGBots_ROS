@@ -1,3 +1,0 @@
-<launch>
-  <test test-name="example" pkg="ugbots_ros" type="example_test" />
-</launch>

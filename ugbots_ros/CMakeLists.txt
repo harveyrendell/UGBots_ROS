@@ -40,8 +40,7 @@ rosbuild_add_executable(POSSUM src/animal/possum.cpp)
 rosbuild_add_executable(WORKER src/person/worker.cpp)
 rosbuild_add_executable(VISITOR src/person/visitor.cpp)
 
-#Rostest class
-rosbuild_add_rostest(test/test.launch)
-
-#Test suites
-add_rostest_gtest(example_test test/test.launch test/unit_tests.cpp)
+#Testing
+rosbuild_add_executable(unit_tests EXCLUDE_FROM_ALL test/unit_tests.cpp)
+rosbuild_add_gtest(unit_tests test/unit_tests.cpp)
+rosbuild_add_rostest(test/mynode.test)
