@@ -50,26 +50,21 @@ public:
 		
 		calculateOrientation();
 
-		doAngleCheck();
+		doAngleCheck();		
 
-	}
+		ROS_INFO("Angle: %f", this->orientation.angle);	
 
-
-	void laser_callback(sensor_msgs::LaserScan msg)
-	{
-		if(this->orientation.currently_turning)
+		if(this->orientation.currently_turning == true)
 		{
-			
-			ROS_INFO("Current Angle: %f", this->orientation.angle + (M_PI / (speed.angular_z * 2) ));	
-			ROS_INFO("Desired Angle: %f", this->orientation.desired_angle);	
-
+			ROS_INFO("LEVEL 1", "");
 			if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) >= this->orientation.desired_angle)
 			{
+				ROS_INFO("LEVEL 2", "");
 				stopTurn(); // stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
 			}
 			return;
 		}
-		
+
 		if(this->orientation.currently_turning_static == true)
 		{		
 			if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) >= this->orientation.desired_angle)
@@ -81,8 +76,13 @@ public:
 			}
 			return;
 		}
-		
-		if(msg.ranges[90] < 18.0) // stop when 5 meteres from the wall is reached directly to the front
+
+	}
+
+
+	void laser_callback(sensor_msgs::LaserScan msg)
+	{		
+		if(msg.ranges[90] < 18.0 && this->orientation.currently_turning == false && this->orientation.currently_turning_static == false) // stop when 5 meteres from the wall is reached directly to the front
 		{				
 			this->orientation.previous_right_distance = msg.ranges[0];
 			this->orientation.previous_left_distance = msg.ranges[180];
@@ -117,6 +117,8 @@ public:
 		this->orientation.currently_turning = false;
 		this->speed.linear_x = 1.0;
 		this->speed.angular_z = 0.0;
+		
+		ROS_INFO("Stop Turn", "");	
 	}
 
 	void stopTurnStatic()
@@ -124,6 +126,9 @@ public:
 		this->orientation.currently_turning_static = false;
 		this->speed.linear_x = 1.0;
 		this->speed.angular_z = 0.0;	
+
+		
+		ROS_INFO("Stop Turn Static", "");	
 	}
 
 	//Turn left
@@ -132,6 +137,8 @@ public:
 		this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2.000000);
 		this->speed.linear_x = 0.5;
 		this->speed.angular_z = 5.0;
+
+		ROS_INFO("Turn Left Desired Angle: %f", this->orientation.desired_angle);	
 	}
 
 	//Static turn left
@@ -140,6 +147,9 @@ public:
 		this->orientation.desired_angle = (M_PI);
 		this->speed.linear_x = 0.0;
 		this->speed.angular_z = 5.0;
+
+		
+		ROS_INFO("Spin on the spot", "");	
 	}
 
 	//Turn right
@@ -148,6 +158,9 @@ public:
 		this->orientation.desired_angle = this->orientation.desired_angle - (M_PI / 2.000000);
 		this->speed.linear_x = 0.5;
 		this->speed.angular_z = -5.0;
+
+		
+		ROS_INFO("Turn Right", "");	
 	}
 
 	//Angle translation for easier interpretation
