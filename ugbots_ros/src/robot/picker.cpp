@@ -49,31 +49,41 @@ public:
 	}
 
 	void turn(bool clockwise, double desired_angle) {
+		double current_angular_z;
+
+		//desired angle of turn added to robots current angle facing
 		orientation.desired_angle = desired_angle + zero_angle;
 
-		/*double current_angle = orientation.angle;
-
-		if (current_angle < 0) {
-			current_angle = -current_angle;
-		}*/
-
-		if (clockwise) {
-			speed.angular_z = -M_PI/2;
-		} else {
-			if (orientation.angle < 0) {
-				orientation.angle = M_PI + (M_PI + orientation.angle);
-			}
-			speed.angular_z = M_PI/2;
+		//deduct one rotation if desired angle exceed full rotation
+		if (orientation.desired_angle > 2*M_PI) {
+			orientation.desired_angle = orientation.desired_angle - 2*M_PI;
 		}
 
-		if (orientation.desired_angle-(M_PI/10) > orientation.angle) {
+		//for when turn is set to be clockwise
+		if (clockwise) {
+			if (orientation.angle > 0) {
+				orientation.angle = -2*M_PI + orientation.angle;
+			}
+			speed.angular_z = -M_PI/2;
+			current_angular_z = -speed.angular_z;
+			orientation.angle = -orientation.angle;
+		} else {
+			if (orientation.angle < 0) {
+				orientation.angle = 2*M_PI + orientation.angle;
+			}
+			speed.angular_z = M_PI/2;
+			current_angular_z = speed.angular_z;
+		}
+
+		//turn until desired angle is reached, taking into account of the 2 clock time ahead
+		if (orientation.desired_angle-2*(current_angular_z/10) >= orientation.angle) {
+		//if desired angle is reached, robot stops turning and moves again 
 		} else {
 			turningLeft = false;
 			turningRight = false;
 			stopped = false;
 			speed.angular_z = 0.0;
 			zero_angle = orientation.desired_angle;
-			ROS_INFO("Zero angle is: %f", zero_angle);
 		}
 	}
 
@@ -104,12 +114,11 @@ public:
 		//This is the callback function to process laser scan messages
 		//you can access the range data from msg.ranges[i]. i = sample number
 		if (msg.ranges[90] < 3) {
-			turningLeft = true;
+			turningRight = true;
 			stopped = true;
 		}
 
 		logic();
-		ROS_INFO("Editted angle is: %f", orientation.angle);
 	}
 
 	void move(){}
