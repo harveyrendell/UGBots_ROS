@@ -55,7 +55,8 @@ public:
 		checkTurningStatus();
 
 		checkStaticTurningStatus();
-		//ROS_INFO("Angle: %f", this->orientation.angle);	
+		
+		ROS_INFO("Angle: %f", this->orientation.angle);	
 	}
 
 
