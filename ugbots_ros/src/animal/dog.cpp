@@ -57,19 +57,18 @@ public:
 
 		ROS_INFO("Lets check the angle : %f", this->orientation.angle);
 
-		if (msg.pose.pose.position.x >= 32) {
+		if (msg.pose.pose.position.x + 0.3 >= 32) {
 
 			endOfPath = true;
 
 			this->speed.linear_x = 0.0;
 			this->speed.angular_z = 3.0;
-			
 
-
-			if((this->orientation.angle + (M_PI / (speed.angular_z * 2))) >= this->orientation.desired_angle){
+			if((this->orientation.angle + (M_PI / (this->speed.angular_z * 3))) >= this->orientation.desired_angle){
 				this->speed.angular_z = 0.0;// stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
 			}
 		}
+
 	}
 
 
