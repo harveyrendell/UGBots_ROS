@@ -19,9 +19,9 @@ public:
 		this->pose.theta = M_PI/2.0;
 		this->pose.px = 5;
 		this->pose.py = 10;
-		this->orientation.speed.linear_x = 20.0;
-		this->orientation.speed.max_linear_x = 30.0;
-		this->orientation.speed.angular_z = 0.0;
+		this->speed.linear_x = 20.0;
+		this->speed.max_linear_x = 30.0;
+		this->speed.angular_z = 0.0;
 
 		this->orientation.previous_right_distance = 0;
 		this->orientation.previous_left_distance = 0;
@@ -30,9 +30,9 @@ public:
 		this->orientation.desired_angle = M_PI / 2;
 		this->orientation.currently_turning = false;
 
-		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Farmer::odom_callback, this);
-		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Farmer::laser_callback, this);
+		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
+		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Worker::odom_callback, this);
+		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Worker::laser_callback, this);
 	}
 
 	void odom_callback(nav_msgs::Odometry msg)
@@ -45,6 +45,24 @@ public:
     		this->orientation.rotz = msg.pose.pose.orientation.z;
     		this->orientation.rotw = msg.pose.pose.orientation.w;
 		this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
+
+		if(this->orientation.angle < 0)
+		{
+			this->orientation.angle = this->orientation.angle + 2.000000 * M_PI;
+		}
+		ROS_INFO("Current angle is: %f", this->orientation.angle);				
+		ROS_INFO("Current angle limit is: %f",  2.000000 * M_PI);
+		ROS_INFO("Desired angle is: %f",  this->orientation.desired_angle );
+
+		if(this->orientation.angle > 2.000000 * M_PI)
+		{
+			this->orientation.angle = this->orientation.angle - 2.000000 * M_PI;	
+		}
+
+		if(this->orientation.desired_angle > (2.000000 * M_PI)
+		{
+			this->orientation.desired_angle = M_PI / 2.000000;
+		}
 	}
 
 
@@ -55,12 +73,13 @@ public:
 
 		if(this->orientation.currently_turning)
 		{
-			ROS_INFO("Current angle is: %f", this->orientation.angle);		
-			ROS_INFO("Current next desired angle is: %f", this->orientation.desired_angle);
+			//ROS_INFO("Current angle is: %f", this->orientation.angle);		
+			//ROS_INFO("Current next desired angle is: %f", this->orientation.desired_angle);
 			//ROS_INFO("Test laser: TURNING RIGHT %f", msg.ranges[0]);
 
 			//2 clocks
-			if((this->orientation.angle + 0.31416) >= this->orientation.desired_angle)
+			if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) )
+ >= this->orientation.desired_angle)
 			{
 				this->orientation.currently_turning = false;
 				this->speed.linear_x = 20.0;
@@ -72,7 +91,7 @@ public:
 		
 		
 		if(msg.ranges[90] < 3.0)
-		{
+		{	
 			this->orientation.currently_turning = true;
 
 			this->orientation.previous_right_distance = msg.ranges[0];
