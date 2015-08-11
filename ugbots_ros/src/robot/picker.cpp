@@ -23,6 +23,7 @@ Picker::Picker(ros::NodeHandle &n)
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Picker::odom_callback, this);
 	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
+	carrier_alert = n.advertise<std_msgs::String>("alert",1000);
 }
 
 
@@ -69,7 +70,8 @@ int count = 0;
 while (ros::ok())
 {
 	node.publish();
-	
+	node.carrier_alert.publish("Hello");
+
 	ros::spinOnce();
 
 	loop_rate.sleep();
