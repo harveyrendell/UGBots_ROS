@@ -4,8 +4,8 @@
 cd ugbots_ros
 
 #build before running any robots also run tests
-#rosmake ugbots_ros --pre-clean -t
-rosmake
+rosmake ugbots_ros --pre-clean -t
+#rosmake
 
 #launch the example launch file
 #change launch file name to launch file you want to use

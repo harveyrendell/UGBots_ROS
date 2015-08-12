@@ -16,17 +16,12 @@ Visitor node;
 
 void odom_callback(nav_msgs::Odometry msg)
 {
-	/*//This is the call back function to process odometry messages coming from Stage. 	
-	pose.px = 5 + msg.pose.pose.position.x;
-	pose.py = 10 + msg.pose.pose.position.y;
-	ROS_INFO("Current x position is: %f", this->pose.px);
-	ROS_INFO("Current y position is: %f", this->pose.py);*/
+	//Mock callback function
 }
 
 void laser_callback(sensor_msgs::LaserScan msg)
 {
-	//This is the callback function to process laser scan messages
-	//you can access the range data from msg.ranges[i]. i = sample number	
+	//Mock callback function
 }
 
 TEST(UnitTest, testNodeInstantiation)
