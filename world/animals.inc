@@ -98,4 +98,3 @@ define animal position
 
   mylaser(pose [ 0.050 0.000 0 0.000 ])
 )
-
