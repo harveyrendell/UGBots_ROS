@@ -26,7 +26,7 @@ void laser_callback(sensor_msgs::LaserScan msg)
 
 TEST(UnitTest, testNodeInitialisedSpeed)
 {
-	EXPECT_EQ(node.speed.linear_x, 0.0);
+	EXPECT_EQ(node.speed.linear_x, 2.0);
 	EXPECT_EQ(node.speed.angular_z, 0.0);
 }
 

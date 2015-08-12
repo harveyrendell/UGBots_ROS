@@ -8,250 +8,268 @@
 #include <stdlib.h>
 #include <node_defs/worker.h>
 
-	Worker::Worker(ros::NodeHandle &n)
-	{
-		//this->n = n;
+Worker::Worker()
+{
+	//setting base attribute defaults
+	this->pose.theta = M_PI/2.0;
+	this->pose.px = -40;
+	this->pose.py = -44;
+	this->speed.linear_x = 2.0;
+	this->speed.max_linear_x = 3.0;
+	this->speed.angular_z = 0.0;
+	this->state = IDLE;
 
-		//setting base attribute defaults
-		this->pose.theta = M_PI/2.0;
-		this->pose.px = -40;
-		this->pose.py = -44;
-		this->speed.linear_x = 2.0;
-		this->speed.max_linear_x = 30.0;
-		this->speed.angular_z = 0.0;
+	this->orientation.previous_right_distance = 0;
+	this->orientation.previous_left_distance = 0;
+	this->orientation.previous_front_distance = 0;
+	this->orientation.angle = 0;
+	this->orientation.desired_angle = 0;
 
-		this->orientation.previous_right_distance = 0;
-		this->orientation.previous_left_distance = 0;
-		this->orientation.previous_front_distance = 0;
-		this->orientation.angle = 0;
-		this->orientation.desired_angle = 0;
+	this->orientation.currently_turning = false;
+	this->orientation.currently_turning_static = false;
+	this->checkedThisRot = false;
+}
 
-		this->orientation.currently_turning = false;
+Worker::Worker(ros::NodeHandle &n)
+{
+	//this->n = n;
 
-		this->orientation.currently_turning_static = false;
+	//setting base attribute defaults
+	this->pose.theta = M_PI/2.0;
+	this->pose.px = -40;
+	this->pose.py = -44;
+	this->speed.linear_x = 2.0;
+	this->speed.max_linear_x = 3.0;
+	this->speed.angular_z = 0.0;
+	this->state = IDLE;
 
-		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Worker::odom_callback, this);
-		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Worker::laser_callback, this);
-		this->state = IDLE;
-		this->checkedThisRot = false;
+	this->orientation.previous_right_distance = 0;
+	this->orientation.previous_left_distance = 0;
+	this->orientation.previous_front_distance = 0;
+	this->orientation.angle = 0;
+	this->orientation.desired_angle = 0;
+
+	this->orientation.currently_turning = false;
+	this->orientation.currently_turning_static = false;
+	this->checkedThisRot = false;
+
+	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Worker::odom_callback, this);
+	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Worker::laser_callback, this);
+}
+
+void Worker::odom_callback(nav_msgs::Odometry msg)
+{
+	//gets the current position and angle and sets it to the object's fields 	
+	this->pose.px = -40 + msg.pose.pose.position.x;
+	this->pose.py = -44 + msg.pose.pose.position.y;
+	this->orientation.rotx = msg.pose.pose.orientation.x;
+		this->orientation.roty = msg.pose.pose.orientation.y;
+		this->orientation.rotz = msg.pose.pose.orientation.z;
+		this->orientation.rotw = msg.pose.pose.orientation.w;
 	
+	calculateOrientation();
+
+	doAngleCheck();		
+
+	checkTurningStatus();
+
+	checkStaticTurningStatus();
+
+	if(state == IDLE)
+	{
+		state = PATROLLING;
 	}
-
-	void Worker::odom_callback(nav_msgs::Odometry msg)
+	else
 	{
-		//gets the current position and angle and sets it to the object's fields 	
-		this->pose.px = -40 + msg.pose.pose.position.x;
-		this->pose.py = -44 + msg.pose.pose.position.y;
-		this->orientation.rotx = msg.pose.pose.orientation.x;
-    		this->orientation.roty = msg.pose.pose.orientation.y;
-    		this->orientation.rotz = msg.pose.pose.orientation.z;
-    		this->orientation.rotw = msg.pose.pose.orientation.w;
-		
-		calculateOrientation();
-
-		doAngleCheck();		
-
-		checkTurningStatus();
-
-		checkStaticTurningStatus();
-	
-		if(state == IDLE)
+		if(orientation.currently_turning_static == true)
 		{
-			state = PATROLLING;
+			state = SAWDOG;
 		}
 		else
 		{
-			if(orientation.currently_turning_static == true)
-			{
-				state = SAWDOG;
-			}
-			else
-			{
-				state = PATROLLING;
-			}
+			state = PATROLLING;
 		}
-		
-
-		ROS_INFO("/position/x/%f",this->pose.px);
-		ROS_INFO("/position/y/%f",this->pose.py);
-		ROS_INFO("/status/%s/./",enum_to_string(this->state));		
-		
 	}
+	
+
+	ROS_INFO("/position/x/%f",this->pose.px);
+	ROS_INFO("/position/y/%f",this->pose.py);
+	ROS_INFO("/status/%s/./",enum_to_string(this->state));		
+	
+}
 
 
-	void Worker::laser_callback(sensor_msgs::LaserScan msg)
-	{		
-		if(msg.ranges[90] < 5.5 && this->orientation.currently_turning == false && this->orientation.currently_turning_static == false) // stop when 5 meteres from the wall is reached directly to the front
-		{				
-			this->orientation.previous_right_distance = msg.ranges[0];
-			this->orientation.previous_left_distance = msg.ranges[180];
-			this->orientation.previous_front_distance = msg.ranges[90];
-			//turnRight();	//turn left
-			turnLeft();
-		}	
+void Worker::laser_callback(sensor_msgs::LaserScan msg)
+{		
+	if(msg.ranges[90] < 5.5 && this->orientation.currently_turning == false && this->orientation.currently_turning_static == false) // stop when 5 meteres from the wall is reached directly to the front
+	{				
+		this->orientation.previous_right_distance = msg.ranges[0];
+		this->orientation.previous_left_distance = msg.ranges[180];
+		this->orientation.previous_front_distance = msg.ranges[90];
+		//turnRight();	//turn left
+		turnLeft();
+	}	
 
-		if(this->orientation.currently_turning == false && this->orientation.currently_turning_static == false)
+	if(this->orientation.currently_turning == false && this->orientation.currently_turning_static == false)
+	{
+		if(this->checkedThisRot == false)
 		{
-			if(this->checkedThisRot == false)
+			for(int i=100; i<130; i++)
 			{
-				for(int i=100; i<130; i++)
+				if(msg.ranges[i] < 4.5)
 				{
-					if(msg.ranges[i] < 4.5)
-					{
-						spinOnTheSpot();
-					}
+					spinOnTheSpot();
 				}
 			}
 		}
 	}
+}
 
-	void Worker::move(){}
+void Worker::move(){}
 
-	//Stops the node
-	void Worker::stop()
-	{
-		this->speed.linear_x = 0.0;
-		this->speed.angular_z = 0.0;
-	}
+//Stops the node
+void Worker::stop()
+{
+	this->speed.linear_x = 0.0;
+	this->speed.angular_z = 0.0;
+}
+
+//Stops the node turning. Linear velocity will be set to default (1.0)
+//Update the next desired angle
+void Worker::stopTurn()
+{
+	this->orientation.currently_turning = false;
+	this->speed.linear_x = 2.0;
+	this->speed.angular_z = 0.0;
 	
-	//Stops the node turning. Linear velocity will be set to default (1.0)
-	//Update the next desired angle
-	void Worker::stopTurn()
+	//ROS_INFO("Stop Turn", "");	
+}
+
+void Worker::stopTurnStatic()
+{
+	this->orientation.currently_turning_static = false;
+	this->speed.linear_x = 2.0;
+	this->speed.angular_z = 0.0;	
+
+	
+	//ROS_INFO("Stop Turn Static", "");	
+}
+
+//Turn left
+void Worker::turnLeft()
+{
+	this->orientation.currently_turning = true;
+	this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2.000000);
+	this->speed.linear_x = 0.5;
+	this->speed.angular_z = 5.0;
+
+	if(orientation.desired_angle != M_PI)
 	{
-		this->orientation.currently_turning = false;
-		this->speed.linear_x = 2.0;
-		this->speed.angular_z = 0.0;
-		
-		//ROS_INFO("Stop Turn", "");	
+		checkedThisRot = false;
 	}
 
-	void Worker::stopTurnStatic()
-	{
-		this->orientation.currently_turning_static = false;
-		this->speed.linear_x = 2.0;
-		this->speed.angular_z = 0.0;	
+	//ROS_INFO("Turn Left Desired Angle: %f", this->orientation.desired_angle);	
+}
 
-		
-		//ROS_INFO("Stop Turn Static", "");	
+//Static turn left
+void Worker::spinOnTheSpot()
+{
+	this->orientation.currently_turning_static = true;
+	this->orientation.desired_angle = (M_PI);
+	this->speed.linear_x = 0.0;
+	this->speed.angular_z = 5.0;
+	this->checkedThisRot = true;
+	
+	//ROS_INFO("Spin on the spot", "");	
+}
+
+//Turn right
+void Worker::turnRight()
+{
+	this->orientation.currently_turning = true;
+	this->orientation.desired_angle = this->orientation.desired_angle - (M_PI / 2.000000);
+	this->speed.linear_x = 0.5;
+	this->speed.angular_z = -5.0;
+
+	
+	//ROS_INFO("Turn Right", "");	
+}
+
+//Angle translation for easier interpretation
+void Worker::doAngleCheck()
+{		
+	//if -ve rads, change to +ve rads
+	if(this->orientation.angle < 0)
+	{
+		this->orientation.angle = this->orientation.angle + 2.000000 * M_PI;
 	}
-
-	//Turn left
-	void Worker::turnLeft()
+	//if the desired angle is > 2pi, changed the desired angle to pi/2 
+	if(this->orientation.desired_angle > (2.000000 * M_PI))
 	{
-		this->orientation.currently_turning = true;
-		this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2.000000);
-		this->speed.linear_x = 0.5;
-		this->speed.angular_z = 5.0;
+		this->orientation.desired_angle = M_PI / 2.000000;
+	}
+	//if the current angle is 2pi or more, translate the angle to 0< x <2pi 
+	if(this->orientation.angle > 2.000000 * M_PI)
+	{
+		this->orientation.angle = this->orientation.angle - 2.000000 * M_PI;	
+	}
+}
 
-		if(orientation.desired_angle != M_PI)
+//
+void Worker::checkTurningStatus()
+{
+	if(this->orientation.currently_turning == true)
+	{
+		//ROS_INFO("LEVEL 1", "");
+		if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) >= this->orientation.desired_angle)
 		{
-			checkedThisRot = false;
+			//ROS_INFO("LEVEL 2", "");
+			stopTurn(); // stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
 		}
-
-		//ROS_INFO("Turn Left Desired Angle: %f", this->orientation.desired_angle);	
+		return;
 	}
+}
 
-	//Static turn left
-	void Worker::spinOnTheSpot()
-	{
-		this->orientation.currently_turning_static = true;
-		this->orientation.desired_angle = (M_PI);
-		this->speed.linear_x = 0.0;
-		this->speed.angular_z = 5.0;
-		this->checkedThisRot = true;
-		
-		//ROS_INFO("Spin on the spot", "");	
-	}
-
-	//Turn right
-	void Worker::turnRight()
-	{
-		this->orientation.currently_turning = true;
-		this->orientation.desired_angle = this->orientation.desired_angle - (M_PI / 2.000000);
-		this->speed.linear_x = 0.5;
-		this->speed.angular_z = -5.0;
-
-		
-		//ROS_INFO("Turn Right", "");	
-	}
-
-	//Angle translation for easier interpretation
-	void Worker::doAngleCheck()
+//
+void Worker::checkStaticTurningStatus()
+{
+	if(this->orientation.currently_turning_static == true)
 	{		
-		//if -ve rads, change to +ve rads
-		if(this->orientation.angle < 0)
+		if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) >= this->orientation.desired_angle)
 		{
-			this->orientation.angle = this->orientation.angle + 2.000000 * M_PI;
-		}
-		//if the desired angle is > 2pi, changed the desired angle to pi/2 
-		if(this->orientation.desired_angle > (2.000000 * M_PI))
-		{
-			this->orientation.desired_angle = M_PI / 2.000000;
-		}
-		//if the current angle is 2pi or more, translate the angle to 0< x <2pi 
-		if(this->orientation.angle > 2.000000 * M_PI)
-		{
-			this->orientation.angle = this->orientation.angle - 2.000000 * M_PI;	
-		}
-	}
-	
-	//
-	void Worker::checkTurningStatus()
-	{
-		if(this->orientation.currently_turning == true)
-		{
-			//ROS_INFO("LEVEL 1", "");
-			if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) >= this->orientation.desired_angle)
-			{
-				//ROS_INFO("LEVEL 2", "");
-				stopTurn(); // stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
+			if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) <= this->orientation.desired_angle + 0.05)
+			{	
+				stopTurnStatic();	
 			}
-			return;
 		}
+		return;
 	}
+}
+
+//calculates current orientation using atan2
+void Worker::calculateOrientation()
+{	
+	this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
+}
 	
-	//
-	void Worker::checkStaticTurningStatus()
-	{
-		if(this->orientation.currently_turning_static == true)
-		{		
-			if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) >= this->orientation.desired_angle)
-			{
-				if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) <= this->orientation.desired_angle + 0.05)
-				{	
-					stopTurnStatic();	
-				}
-			}
-			return;
-		}
-	}
+void Worker::collisionDetected(){}
 
-	//calculates current orientation using atan2
-	void Worker::calculateOrientation()
-	{	
-		this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
+char* Worker::enum_to_string(State t)
+{
+	switch(t){
+		case IDLE:
+			return "IDLE";
+		case PATROLLING:
+			return "PATROLLING";
+		case RESPONDING:
+			return "RESPONDING";
+		case SAWDOG:
+			return "SAWDOG";
+		default:
+			return "";
 	}
-		
-	void Worker::collisionDetected(){}
-
-	char* Worker::enum_to_string(State t)
-	{
-		switch(t){
-			case IDLE:
-				return "IDLE";
-			case PATROLLING:
-				return "PATROLLING";
-			case RESPONDING:
-				return "RESPONDING";
-			case SAWDOG:
-				return "SAWDOG";
-			default:
-				return "";
-		}
-		
-
-	}
+}
 
 int main(int argc, char **argv)
 {	

@@ -26,18 +26,18 @@ void laser_callback(sensor_msgs::LaserScan msg)
 
 TEST(UnitTest, testNodeInitialisedSpeed)
 {
-	EXPECT_EQ(node.speed.linear_x, 0.0);
+	EXPECT_EQ(node.speed.linear_x, 4.0);
 	EXPECT_EQ(node.speed.angular_z, 0.0);
 }
 
 TEST(UnitTest, testNodeTopSpeed)
 {
-	EXPECT_EQ(node.speed.max_linear_x, 3.0);
+	EXPECT_EQ(node.speed.max_linear_x, 4.0);
 }
 
 TEST(UnitTest, testStartupState)
 {
-	EXPECT_EQ(node.state, Dog::IDLE); 
+	EXPECT_EQ(node.state, Dog::ROAMING); 
 }
 
 // Run all the tests that were declared with TEST()

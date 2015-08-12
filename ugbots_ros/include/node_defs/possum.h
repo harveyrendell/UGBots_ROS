@@ -11,6 +11,7 @@
 class Possum : public Node
 {
 public:
+	Possum();
 	Possum(ros::NodeHandle &n);
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);

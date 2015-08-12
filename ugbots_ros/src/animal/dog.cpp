@@ -8,6 +8,30 @@
 #include <stdlib.h>
 #include <node_defs/dog.h>
 
+Dog::Dog()
+{
+	//setting base attribute defaults
+	this->pose.theta = M_PI/2.0;
+	this->pose.px = 10;
+	this->pose.py = 20;
+	this->speed.linear_x = 4.0;
+	this->speed.max_linear_x = 4.0;
+	this->speed.angular_z = 0.0;
+
+	this->orientation.previous_right_distance = 0;
+	this->orientation.previous_left_distance = 0;
+	this->orientation.previous_front_distance = 0;
+	this->orientation.angle = 0;
+	this->orientation.desired_angle = M_PI;
+	this->orientation.currently_turning = false;
+
+	endOfPath = false;
+	facingRight = true;
+	facingLeft = false;
+
+	state = ROAMING;	
+}
+
 Dog::Dog(ros::NodeHandle &n)
 {
 	//this->n = n;
@@ -17,7 +41,7 @@ Dog::Dog(ros::NodeHandle &n)
 	this->pose.px = 10;
 	this->pose.py = 20;
 	this->speed.linear_x = 4.0;
-	//this->speed.max_linear_x = 3.0;
+	this->speed.max_linear_x = 4.0;
 	this->speed.angular_z = 0.0;
 
 	this->orientation.previous_right_distance = 0;
