@@ -6,12 +6,9 @@
 
 #include <sstream>
 #include <stdlib.h>
-#include <node.h>
+#include <node_defs/worker.h>
 
-class Worker : public Node
-{
-public:
-	Worker(ros::NodeHandle &n)
+	Worker::Worker(ros::NodeHandle &n)
 	{
 		this->n = n;
 
@@ -36,9 +33,10 @@ public:
 		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
 		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Worker::odom_callback, this);
 		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Worker::laser_callback, this);
+	
 	}
 
-	void odom_callback(nav_msgs::Odometry msg)
+	void Worker::odom_callback(nav_msgs::Odometry msg)
 	{
 		//gets the current position and angle and sets it to the object's fields 	
 		this->pose.px = 5 + msg.pose.pose.position.x;
@@ -60,7 +58,7 @@ public:
 	}
 
 
-	void laser_callback(sensor_msgs::LaserScan msg)
+	void Worker::laser_callback(sensor_msgs::LaserScan msg)
 	{		
 		if(msg.ranges[90] < 18.0 && this->orientation.currently_turning == false && this->orientation.currently_turning_static == false) // stop when 5 meteres from the wall is reached directly to the front
 		{				
@@ -83,17 +81,19 @@ public:
 		}
 	}
 
-	void move(){}
+	void Worker::move(){}
 
 	//Stops the node
-	void stop(){
+	void Worker::stop()
+	{
 		this->speed.linear_x = 0.0;
 		this->speed.angular_z = 0.0;
 	}
 	
 	//Stops the node turning. Linear velocity will be set to default (1.0)
 	//Update the next desired angle
-	void stopTurn(){
+	void Worker::stopTurn()
+	{
 		this->orientation.currently_turning = false;
 		this->speed.linear_x = 1.0;
 		this->speed.angular_z = 0.0;
@@ -101,7 +101,7 @@ public:
 		//ROS_INFO("Stop Turn", "");	
 	}
 
-	void stopTurnStatic()
+	void Worker::stopTurnStatic()
 	{
 		this->orientation.currently_turning_static = false;
 		this->speed.linear_x = 1.0;
@@ -112,7 +112,8 @@ public:
 	}
 
 	//Turn left
-	void turnLeft(){
+	void Worker::turnLeft()
+	{
 		this->orientation.currently_turning = true;
 		this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2.000000);
 		this->speed.linear_x = 0.5;
@@ -122,7 +123,8 @@ public:
 	}
 
 	//Static turn left
-	void spinOnTheSpot(){
+	void Worker::spinOnTheSpot()
+	{
 		this->orientation.currently_turning_static = true;
 		this->orientation.desired_angle = (M_PI);
 		this->speed.linear_x = 0.0;
@@ -133,7 +135,8 @@ public:
 	}
 
 	//Turn right
-	void turnRight(){
+	void Worker::turnRight()
+	{
 		this->orientation.currently_turning = true;
 		this->orientation.desired_angle = this->orientation.desired_angle - (M_PI / 2.000000);
 		this->speed.linear_x = 0.5;
@@ -144,7 +147,8 @@ public:
 	}
 
 	//Angle translation for easier interpretation
-	void doAngleCheck(){		
+	void Worker::doAngleCheck()
+	{		
 		//if -ve rads, change to +ve rads
 		if(this->orientation.angle < 0)
 		{
@@ -163,7 +167,7 @@ public:
 	}
 	
 	//
-	void checkTurningStatus()
+	void Worker::checkTurningStatus()
 	{
 		if(this->orientation.currently_turning == true)
 		{
@@ -178,7 +182,7 @@ public:
 	}
 	
 	//
-	void checkStaticTurningStatus()
+	void Worker::checkStaticTurningStatus()
 	{
 		if(this->orientation.currently_turning_static == true)
 		{		
@@ -194,13 +198,12 @@ public:
 	}
 
 	//calculates current orientation using atan2
-	void calculateOrientation()
+	void Worker::calculateOrientation()
 	{	
 		this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
 	}
 		
-	void collisionDetected(){}
-};
+	void Worker::collisionDetected(){}
 
 int main(int argc, char **argv)
 {	
