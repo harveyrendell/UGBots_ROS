@@ -33,6 +33,7 @@
 		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
 		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Worker::odom_callback, this);
 		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Worker::laser_callback, this);
+		this->state = IDLE;
 	
 	}
 
@@ -53,8 +54,28 @@
 		checkTurningStatus();
 
 		checkStaticTurningStatus();
+	
+		if(state == IDLE)
+		{
+			state = PATROLLING;
+		}
+		else
+		{
+			if(orientation.currently_turning_static == true)
+			{
+				state = SAWDOG;
+			}
+			else
+			{
+				state = PATROLLING;
+			}
+		}
 		
-		ROS_INFO("Angle: %f", this->orientation.angle);	
+
+		ROS_INFO("X Position: %f",this->pose.px);
+		ROS_INFO("Y Position: %f",this->pose.py);
+		ROS_INFO("Status: %s",enum_to_string(this->state));		
+		
 	}
 
 
@@ -204,6 +225,24 @@
 	}
 		
 	void Worker::collisionDetected(){}
+
+	char* Worker::enum_to_string(State t)
+	{
+		switch(t){
+			case IDLE:
+				return "IDLE";
+			case PATROLLING:
+				return "PATROLLING";
+			case RESPONDING:
+				return "RESPONDING";
+			case SAWDOG:
+				return "SAWDOG";
+			default:
+				return "";
+		}
+		
+
+	}
 
 int main(int argc, char **argv)
 {	
