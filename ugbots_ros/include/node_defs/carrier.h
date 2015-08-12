@@ -21,6 +21,10 @@ public:
 	double temprad;
 
 	ros::Subscriber carrier_alert;
+	ros::Publisher carrier_alert_pub;
+
+	ugbots_ros::bin_status binStatus;
+
 
 
 	Carrier(ros::NodeHandle &n);

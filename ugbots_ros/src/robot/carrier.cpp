@@ -33,6 +33,7 @@ Carrier::Carrier(ros::NodeHandle &n)
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_1/odom",1000, &Carrier::odom_callback, this);
 	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_1/base_scan",1000,&Carrier::laser_callback, this);
 	carrier_alert = n.subscribe<ugbots_ros::bin_status>("alert",1000,&Carrier::bin_callback,this);
+	carrier_alert_pub = n.advertise<ugbots_ros::bin_status>("alert",1000);
 }
 
 void Carrier::bin_callback(ugbots_ros::bin_status msg)
@@ -43,7 +44,10 @@ void Carrier::bin_callback(ugbots_ros::bin_status msg)
 	{
 		bin_x = msg.bin_x;
 		bin_y = msg.bin_y;
-		move_to(bin_x,bin_y);
+		if(move_to(bin_x,bin_y))
+		{
+			binStatus.bin_stat = "EMPTY";
+		}
 	}
 }
 
@@ -59,9 +63,10 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 	orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
 	orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
 	orientation.roty-orientation.rotz*orientation.rotz);
-	//ROS_INFO("Current angle is: %f", orientation.angle);
-	//ROS_INFO("Current x position is: %f", this->pose.px);
-	//ROS_INFO("Current y position is: %f", this->pose.py);
+	ROS_INFO("/position/x/%f", this->pose.px);
+	ROS_INFO("/position/y/%f", this->pose.py);
+	ROS_INFO("/orientation/angle/%f", orientation.angle*180/M_PI);
+	ROS_INFO("/status/");
 }
 
 
@@ -98,12 +103,13 @@ void Carrier::turn(bool clockwise, double desired_angle, double temprad) {
 	}
 
 	//turn until desired angle is reached, taking into account of the 2 clock time ahead
-	if (orientation.desired_angle-3*(current_angular_z/10) >= orientation.angle) {
+	if (orientation.desired_angle - 3*(speed.angular_z/10)>= orientation.angle) {
 		orientation.currently_turning = true;
 	//if desired angle is reached, robot stops turning and moves again 
 	} else {
 		orientation.currently_turning = false;
 		//stopped = false;
+		ROS_INFO("STOP!");
 		speed.angular_z = 0.0;
 		zero_angle = orientation.desired_angle;
 	}
@@ -144,10 +150,10 @@ bool Carrier::move_to(double x, double y)
 				speed.linear_x = 1.0;
 				moveY(abs(tempy-y),tempy);
 				temprad = orientation.angle;
-				ROS_INFO("%f",orientation.angle);
 			}	
 		}
 	}
+	return false;
 }
 
 
@@ -191,6 +197,8 @@ ros::NodeHandle n;
 //Creating the CarrierBot instance
 Carrier node(n);
 
+node.binStatus.bin_stat = "EMPTY";
+
 //Setting the loop rate
 ros::Rate loop_rate(10);
 
@@ -199,8 +207,10 @@ int count = 0;
 
 while (ros::ok())
 {
-	node.publish();
-	
+	node.publish();	
+
+	node.carrier_alert_pub.publish(node.binStatus);
+
 	ros::spinOnce();
 
 	loop_rate.sleep();
