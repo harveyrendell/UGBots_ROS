@@ -5,13 +5,29 @@
 #include <sensor_msgs/LaserScan.h>
 
 #include <sstream>
+#include <iostream>
 #include <stdlib.h>
+#include <string>
 #include <node_defs/dog.h>
+
+using std::string;
+
+Dog::Dog()
+{
+	init();
+}
 
 Dog::Dog(ros::NodeHandle &n)
 {
-	this->n = n;
+	init();
 
+	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Dog::odom_callback, this);
+	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Dog::laser_callback, this);
+}
+
+void Dog::init()
+{
 	//setting base attribute defaults
 	this->pose.theta = M_PI/2.0;
 	this->pose.px = 10;
@@ -36,7 +52,6 @@ Dog::Dog(ros::NodeHandle &n)
 	facingLeft = false;
 
 	state = ROAMING;
-
 }
 
 void Dog::odom_callback(nav_msgs::Odometry msg)
@@ -53,7 +68,7 @@ void Dog::odom_callback(nav_msgs::Odometry msg)
 
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
-	ROS_INFO("/status/%s", enum_to_string(state));
+	ROS_INFO("/status/%s", enum_to_string(state).c_str());
 
 
 	calculateOrientation();
@@ -188,18 +203,33 @@ void Dog::doAngleCheck(){
 
 void Dog::collisionDetected(){}
 
-char* Dog::enum_to_string(State t){
-    switch(t){
-        case AGGRESSIVE:
-            return "AGGRESSIVE";
+string Dog::enum_to_string(State t){
+	 switch(t){
+		case AGGRESSIVE:
+		{
+			string s = "AGGRESSIVE";
+			return s;
+		}
         case ROAMING:
-            return "ROAMING";
+		{
+			string s = "ROAMING";
+			return s;
+		}
         case IDLE:
-            return "IDLE";
+		{
+			string s = "IDLE";
+			return s;
+		}
         case FLEEING:
-            return "FLEEING";   
+		{
+			string s = "FLEEING";
+			return s;
+		} 
         default:
-            return "INVALID ENUM";
+		{
+			string s = "INVALID ENUM";
+			return s;
+		}
     }
  }
 

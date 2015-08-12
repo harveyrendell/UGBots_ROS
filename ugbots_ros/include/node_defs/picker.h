@@ -12,17 +12,9 @@
 class Picker : public Node
 {
 public:
-	double tempx;
-	double tempy;
-	double temprad;
-	double station_x = 0;
-	double station_y = -33;
-	double zero_angle;
-
-	ros::Publisher carrier_alert;
-	ugbots_ros::bin_status binStatus;
-
+	Picker();
 	Picker(ros::NodeHandle &n);
+	virtual ~Picker() {}
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
 	void turn(bool clockwise, double desired_angle, double temprad);
@@ -41,5 +33,18 @@ public:
 	enum State { IDLE, TRAVELLING, PICKING, WAITING, AVOIDING, STOPPED };
 	State state;
 
+	double tempx;
+	double tempy;
+	double temprad;
+	double station_x = 0;
+	double station_y = -33;
+	double zero_angle;
+
+	ros::Publisher carrier_alert;
+	ugbots_ros::bin_status binStatus;
+
 	char* enum_to_string(State t);
+
+private:
+	void init();
 };

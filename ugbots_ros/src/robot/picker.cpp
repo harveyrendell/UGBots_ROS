@@ -8,11 +8,24 @@
 #include <stdlib.h>
 #include <node_defs/picker.h>
 
+Picker::Picker()
+{
+	init();
+}
 
 Picker::Picker(ros::NodeHandle &n)
 {
-	this->n = n;
+	//setting base attribute defaults
+	init();
 
+	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Picker::odom_callback, this);
+	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
+	carrier_alert = n.advertise<ugbots_ros::bin_status>("/alert",1000);
+}
+
+void Picker::init()
+{
 	//setting base attribute defaults
 	pose.theta = M_PI/2.0;
 	pose.px = 10;
@@ -21,11 +34,6 @@ Picker::Picker(ros::NodeHandle &n)
 	speed.max_linear_x = 3.0;
 	speed.angular_z = 0.0;
 	state = IDLE;
-
-	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Picker::odom_callback, this);
-	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
-	carrier_alert = n.advertise<ugbots_ros::bin_status>("/alert",1000);
 }
 
 /*void Picker::logic() {
@@ -118,18 +126,22 @@ void Picker::turn(bool clockwise, double desired_angle, double temprad) {
 	}
 }
 
-void Picker::moveX(double distance, double px) {
+void Picker::moveX(double distance, double px)
+{
 	double x = distance + px;
 	double distance_x = x - pose.px;
-	if (distance_x < 0.20001) {
+	if (distance_x < 0.20001)
+	{
 		speed.linear_x = 0.0;
 	}
 }
 
-void Picker::moveY(double distance, double py) {
+void Picker::moveY(double distance, double py)
+{
 	double y = distance + py;
 	double distance_y = y - pose.py;
-	if (distance_y < 0.20001) {
+	if (distance_y < 0.20001)
+	{
 		speed.linear_x = 0.0;
 	}
 }

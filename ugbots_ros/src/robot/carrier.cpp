@@ -5,13 +5,30 @@
 #include <sensor_msgs/LaserScan.h>
 
 #include <sstream>
+#include <iostream>
+#include <string>
 #include <stdlib.h>
 #include <node_defs/carrier.h>
 
+using std::string;
+
+//Constructor with no nodehandler argument for testing
+Carrier::Carrier()
+{
+	this->init();
+}
+
 Carrier::Carrier(ros::NodeHandle &n)
 {
-	this->n = n;
+	this->init();
 
+	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Carrier::odom_callback, this);
+	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Carrier::laser_callback, this);
+}
+
+void Carrier::init()
+{
 	//setting base attribute defaults
 	pose.theta = M_PI/2.0;
 	pose.px = 10;
@@ -41,26 +58,42 @@ void Carrier::bin_callback(ugbots_ros::bin_status msg)
 	localBinStatus.bin_x = msg.bin_x;
 	localBinStatus.bin_y = msg.bin_y;
 	localBinStatus.bin_stat = msg.bin_stat;
-
 }
 
-char* Carrier::enum_to_string(State t){
-    switch(t){
-        case IDLE:
-            return "IDLE";
+string Carrier::enum_to_string(State t){
+	 switch(t){
+		case IDLE:
+		{
+			string s = "IDLE";
+			return s;
+		}
         case TRAVELLING:
-            return "TRAVELLING";
+		{
+			string s = "TRAVELLING";
+			return s;
+		}
         case CARRYING:
-            return "CARRYING";
+		{
+			string s = "CARRYING";
+			return s;
+		}
         case AVOIDING:
-            return "AVOIDING";
+		{
+			string s = "AVOIDING";
+			return s;
+		}
         case STOPPED:
-            return "STOPPED";     
+		{
+			string s = "STOPPPED";
+			return s;
+		} 
         default:
-            return "INVALID ENUM";
-    }
- }
-
+		{
+			string s = "INVALID ENUM";
+			return s;
+		}
+	}
+}
 
 void Carrier::odom_callback(nav_msgs::Odometry msg)
 {
@@ -76,7 +109,7 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 	orientation.roty-orientation.rotz*orientation.rotz);
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
-	ROS_INFO("/status/%s", enum_to_string(state));
+	ROS_INFO("/status/%s", enum_to_string(state).c_str());
 
 
 	if(localBinStatus.bin_stat == "FULL")
@@ -88,7 +121,6 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 		}*/
 	}
 }
-
 
 void Carrier::laser_callback(sensor_msgs::LaserScan msg)
 {
@@ -175,8 +207,8 @@ bool Carrier::move_to(double x, double y)
 				temprad = orientation.angle;
 			}	
 		}
-	/*}
-	return false;*/
+	//}
+	return true; //doesn't mean anything
 }
 
 

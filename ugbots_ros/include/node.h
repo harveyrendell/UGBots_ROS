@@ -29,7 +29,7 @@ public:
 	Speed speed;
 
 	//NodeHandle for the node
-	ros::NodeHandle n;
+	//ros::NodeHandle n;
 
 	//Velocity of the robot
 	geometry_msgs::Twist node_cmdvel;

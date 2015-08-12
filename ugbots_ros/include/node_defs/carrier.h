@@ -6,30 +6,16 @@
 #include <ugbots_ros/bin_status.h>
 
 #include <sstream>
+#include <string>
 #include <stdlib.h>
 #include <node.h>
 
 class Carrier : public Node
 {
 public:
-	bool moving = false;
-	bool undergoing_task = false;
-	double tempx;
-	double tempy;
-	bool swag = false;
-	double zero_angle;
-	double temprad;
-
-	ros::Subscriber carrier_alert;
-	ros::Publisher carrier_alert_pub;
-
-	ugbots_ros::bin_status binStatus;
-	ugbots_ros::bin_status localBinStatus;
-
-
-
+	Carrier();
 	Carrier(ros::NodeHandle &n);
-
+	virtual ~Carrier() {}
 	void bin_callback(ugbots_ros::bin_status msg);
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
@@ -47,5 +33,22 @@ public:
 	enum State {IDLE, TRAVELLING, CARRYING, AVOIDING, STOPPED};
 	State state;
 
-	char* enum_to_string(State t);
+	bool moving = false;
+	bool undergoing_task = false;
+	double tempx;
+	double tempy;
+	bool swag = false;
+	double zero_angle;
+	double temprad;
+
+	ros::Subscriber carrier_alert;
+	ros::Publisher carrier_alert_pub;
+
+	ugbots_ros::bin_status binStatus;
+	ugbots_ros::bin_status localBinStatus;
+
+	string enum_to_string(State t);
+
+private:
+	void init();
 };
