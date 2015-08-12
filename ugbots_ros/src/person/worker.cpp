@@ -33,6 +33,8 @@
 		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
 		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Worker::odom_callback, this);
 		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Worker::laser_callback, this);
+		this->state = IDLE;
+		this->checkedThisRot = false;
 	
 	}
 
@@ -53,8 +55,28 @@
 		checkTurningStatus();
 
 		checkStaticTurningStatus();
+	
+		if(state == IDLE)
+		{
+			state = PATROLLING;
+		}
+		else
+		{
+			if(orientation.currently_turning_static == true)
+			{
+				state = SAWDOG;
+			}
+			else
+			{
+				state = PATROLLING;
+			}
+		}
 		
-		ROS_INFO("Angle: %f", this->orientation.angle);	
+
+		ROS_INFO("X Position: %f",this->pose.px);
+		ROS_INFO("Y Position: %f",this->pose.py);
+		ROS_INFO("Status: %s",enum_to_string(this->state));		
+		
 	}
 
 
@@ -71,11 +93,14 @@
 
 		if(this->orientation.currently_turning == false && this->orientation.currently_turning_static == false)
 		{
-			for(int i=100; i<130; i++)
+			if(this->checkedThisRot == false)
 			{
-				if(msg.ranges[i] < 10)
+				for(int i=100; i<130; i++)
 				{
-					spinOnTheSpot();
+					if(msg.ranges[i] < 10)
+					{
+						spinOnTheSpot();
+					}
 				}
 			}
 		}
@@ -119,6 +144,11 @@
 		this->speed.linear_x = 0.5;
 		this->speed.angular_z = 5.0;
 
+		if(orientation.desired_angle != M_PI)
+		{
+			checkedThisRot = false;
+		}
+
 		//ROS_INFO("Turn Left Desired Angle: %f", this->orientation.desired_angle);	
 	}
 
@@ -129,7 +159,7 @@
 		this->orientation.desired_angle = (M_PI);
 		this->speed.linear_x = 0.0;
 		this->speed.angular_z = 5.0;
-
+		this->checkedThisRot = true;
 		
 		//ROS_INFO("Spin on the spot", "");	
 	}
@@ -204,6 +234,24 @@
 	}
 		
 	void Worker::collisionDetected(){}
+
+	char* Worker::enum_to_string(State t)
+	{
+		switch(t){
+			case IDLE:
+				return "IDLE";
+			case PATROLLING:
+				return "PATROLLING";
+			case RESPONDING:
+				return "RESPONDING";
+			case SAWDOG:
+				return "SAWDOG";
+			default:
+				return "";
+		}
+		
+
+	}
 
 int main(int argc, char **argv)
 {	
