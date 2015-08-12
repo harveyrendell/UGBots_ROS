@@ -1,4 +1,3 @@
-/*
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <geometry_msgs/Twist.h>
@@ -17,11 +16,20 @@ public:
 	void laser_callback(sensor_msgs::LaserScan msg);
 	void move();
 	void stop();
+	void stopTurn();
 	void turnLeft();
 	void turnRight();
 	void collisionDetected();
+	void calculateOrientation();
+	void doAngleCheck();
 
 	enum State { IDLE, ROAMING, AGGRESSIVE, FLEEING };
 	State state;
+
+	char* enum_to_string(State t);
+
+	bool endOfPath;
+	bool facingRight;
+	bool facingLeft;
 };
-*/
+
