@@ -154,8 +154,9 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	//This is the call back function to process odometry messages coming from Stage. 	
 	pose.px = -10 + msg.pose.pose.position.x;
 	pose.py = -40 + msg.pose.pose.position.y;
-	ROS_INFO("Current x position is: %f", pose.px);
-	ROS_INFO("Current y position is: %f", pose.py);
+	ROS_INFO("/position/x/%f", pose.px);
+	ROS_INFO("/position/y/%f", pose.py);
+	ROS_INFO("/status/%s", enum_to_string(state));
 	orientation.rotx = msg.pose.pose.orientation.x;
 	orientation.roty = msg.pose.pose.orientation.y;
 	orientation.rotz = msg.pose.pose.orientation.z;
