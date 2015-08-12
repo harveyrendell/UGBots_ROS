@@ -34,6 +34,7 @@
 		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Worker::odom_callback, this);
 		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Worker::laser_callback, this);
 		this->state = IDLE;
+		this->checkedThisRot = false;
 	
 	}
 
@@ -92,11 +93,14 @@
 
 		if(this->orientation.currently_turning == false && this->orientation.currently_turning_static == false)
 		{
-			for(int i=100; i<130; i++)
+			if(this->checkedThisRot == false)
 			{
-				if(msg.ranges[i] < 10)
+				for(int i=100; i<130; i++)
 				{
-					spinOnTheSpot();
+					if(msg.ranges[i] < 10)
+					{
+						spinOnTheSpot();
+					}
 				}
 			}
 		}
@@ -140,6 +144,11 @@
 		this->speed.linear_x = 0.5;
 		this->speed.angular_z = 5.0;
 
+		if(orientation.desired_angle != M_PI)
+		{
+			checkedThisRot = false;
+		}
+
 		//ROS_INFO("Turn Left Desired Angle: %f", this->orientation.desired_angle);	
 	}
 
@@ -150,7 +159,7 @@
 		this->orientation.desired_angle = (M_PI);
 		this->speed.linear_x = 0.0;
 		this->speed.angular_z = 5.0;
-
+		this->checkedThisRot = true;
 		
 		//ROS_INFO("Spin on the spot", "");	
 	}

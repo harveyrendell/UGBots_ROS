@@ -33,4 +33,6 @@ public:
 	
 	char* enum_to_string(State t);
 
+	bool checkedThisRot;
+
 };
