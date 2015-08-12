@@ -53,7 +53,10 @@ public:
 		this->orientation.rotw = msg.pose.pose.orientation.w;
 		this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
 
-		ROS_INFO("X POS: %f", msg.pose.pose.position.x);		
+		ROS_INFO("X POS: %f", this->pose.px);
+		ROS_INFO("Y POS: %f", this->pose.py);
+		ROS_INFO("Angle: %f", this->orientation.angle);
+
 
 		calculateOrientation();
 
@@ -79,8 +82,6 @@ public:
 		}
 
 		if ((msg.pose.pose.position.x - 0.2 <= 0) && (facingLeft == true)) {
-
-			ROS_INFO("HHHHEEELLLOOO");
 
 			endOfPath = true;
 
