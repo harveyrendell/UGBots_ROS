@@ -8,9 +8,29 @@
 #include <stdlib.h>
 #include <node_defs/carrier.h>
 
+Carrier::Carrier()
+{
+	//setting base attribute defaults
+	pose.theta = M_PI/2.0;
+	pose.px = 10;
+	pose.py = 20;
+	speed.linear_x = 0.0;
+	speed.max_linear_x = 3.0;
+	speed.angular_z = 0.0;
+	state = IDLE;
+
+	moving = false;
+	undergoing_task = false;
+	swag = false;
+
+	tempx = -10.0;
+	tempy = -48.0;
+	temprad = 0.0;
+}
+
 Carrier::Carrier(ros::NodeHandle &n)
 {
-	this->n = n;
+	//this->n = n;
 
 	//setting base attribute defaults
 	pose.theta = M_PI/2.0;
@@ -176,8 +196,8 @@ bool Carrier::move_to(double x, double y)
 				temprad = orientation.angle;
 			}	
 		}
-	/*}
-	return false;*/
+	//}
+	return false;
 }
 
 

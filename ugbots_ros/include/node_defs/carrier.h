@@ -12,11 +12,11 @@
 class Carrier : public Node
 {
 public:
-	bool moving = false;
-	bool undergoing_task = false;
+	bool moving;
+	bool undergoing_task;
 	double tempx;
 	double tempy;
-	bool swag = false;
+	bool swag;
 	double zero_angle;
 	double temprad;
 
@@ -27,7 +27,7 @@ public:
 	ugbots_ros::bin_status localBinStatus;
 
 
-
+	Carrier();
 	Carrier(ros::NodeHandle &n);
 
 	void bin_callback(ugbots_ros::bin_status msg);
