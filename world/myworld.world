@@ -2,7 +2,6 @@ include "worldinstances.inc"
 include "./config/robotinstances.inc"
 include "./config/workerinstances.inc"
 include "./config/animalinstances.inc"
-include "floor.inc"
 
 define floorplan model
 (
@@ -23,8 +22,8 @@ interval_sim 100  # simulation timestep in milliseconds. length of each simulati
 
 window
 ( 
-  size [ 1000 700 ] #size of the window in pixels
-  scale 575.830 
+  size [ 1615 1026 ] #size of the window in pixels
+  scale 10.515 
 )
 
 # load an environment bitmap
