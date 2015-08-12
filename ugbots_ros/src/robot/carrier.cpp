@@ -120,7 +120,7 @@ void Carrier::turn(bool clockwise, double desired_angle, double temprad) {
 	}
 
 	//turn until desired angle is reached, taking into account of the 2 clock time ahead
-	if (orientation.desired_angle - 3*(speed.angular_z/10) >= orientation.angle - 0.1) {
+	if (orientation.desired_angle - 3*(speed.angular_z/10) >= orientation.angle - 0.001) {
 		orientation.currently_turning = true;
 	//if desired angle is reached, robot stops turning and moves again 
 	} else {
@@ -167,6 +167,7 @@ bool Carrier::move_to(double x, double y)
 			turn(false, M_PI/2, 0.0);
 			if (speed.angular_z == 0.0)
 			{
+			state = TRAVELLING;
 				speed.linear_x = 1.0;
 				moveY(abs(tempy-y),tempy);
 				temprad = orientation.angle;
