@@ -15,22 +15,6 @@ define carrierRobot position
 (
   size [1.8 1.5 1.0]
   drive "diff"
-  block(
-	points 4
-	point[0] [0 0]
-	point[1] [1 0]
-	point[2] [1 1]
-	point[3] [0 1]
-	z [0 0.5]
-  )
-  block(
-	points 4
-	point[0] [0.25 0.25]
-	point[1] [0.75 0.25]
-	point[2] [0.75 0.75]
-	point[3] [0.25 0.75]
-	z [0.5 1.0]
-  )
   mylaser(pose [ 0.050 0.000 0 0.000 ])
 )
 
