@@ -15,8 +15,8 @@ public:
 	void publish()
 	{
 		//messages to stage
-		node_cmdvel.linear.x = speed.linear_x;
-		node_cmdvel.angular.z = speed.angular_z;
+		node_cmdvel.linear.x = speed.getLinearX;
+		node_cmdvel.angular.z = speed.getAngularZ;
 		//publish the message
 		sub_list.node_stage_pub.publish(node_cmdvel);
 	}
