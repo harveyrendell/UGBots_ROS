@@ -22,6 +22,12 @@ public:
 	void doAngleCheck();
 	void collisionDetected();
 
+	void stopTurnStatic();
+	void spinOnTheSpot();
+	void checkTurningStatus();
+	void checkStaticTurningStatus();
+	void calculateOrientation();
+
 	enum State { IDLE, PATROLLING, RESPONDING, AVOIDING, STOPPED };
 	State state;
 };
