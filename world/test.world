@@ -1,7 +1,31 @@
 include "worldinstances.inc"
-include "./config/robotinstances.inc"
-include "./config/workerinstances.inc"
-include "./config/animalinstances.inc"
+
+define mylaser ranger
+(
+  sensor(
+  range [ 0.0 30.0 ] # range
+  fov 180       # field of vision
+  samples 180   # samples 
+  )
+  # generic model properties
+  color "black"
+  size [ 0.05 0.05 0.1 ]
+  
+)
+
+define carrierRobot position
+(
+  size [1.8 1.5 1.0]
+  drive "diff"
+  mylaser(pose [ 0.050 0.000 0 0.000 ])
+)
+
+define pickerRobot position
+(
+  size [1.5 2.5 1.0]
+  drive "diff"
+  mylaser(pose [ 0.050 0.000 0 0.000 ])
+)
 
 define floorplan model
 (
@@ -34,3 +58,6 @@ floorplan
   size [50 50 0.5]
   pose [ 0 0 0 0 ]
 )
+
+pickerRobot(pose [ -10 -40 0 0 ] name "R0" color "red")
+carrierRobot(pose [ -10 -48 0 0 ] name "R1" color "blue")
