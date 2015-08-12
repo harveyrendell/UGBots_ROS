@@ -15,13 +15,14 @@ public:
 	double tempx;
 	double tempy;
 	double temprad;
-	double station_x = 0;
-	double station_y = -33;
+	double station_x;
+	double station_y;
 	double zero_angle;
 
 	ros::Publisher carrier_alert;
 	ugbots_ros::bin_status binStatus;
 
+	Picker();
 	Picker(ros::NodeHandle &n);
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);

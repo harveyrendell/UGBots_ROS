@@ -24,35 +24,21 @@ void laser_callback(sensor_msgs::LaserScan msg)
 	//Mock callback function
 }
 
-TEST(UnitTest, testNodeInstantiation)
+TEST(UnitTest, testNodeInitialisedSpeed)
 {
-	
-	EXPECT_EQ(node.speed.max_linear_x, 3.0);
-	EXPECT_EQ(node.speed.linear_x, 3.0);
-	EXPECT_EQ(node.speed.angular_z, 2.0);
+	EXPECT_EQ(node.speed.linear_x, 0.0);
+	EXPECT_EQ(node.speed.angular_z, 0.0);
 }
 
-TEST(TestSuite, testStartupState)
+TEST(UnitTest, testNodeTopSpeed)
+{
+	EXPECT_EQ(node.speed.max_linear_x, 3.0);
+}
+
+TEST(UnitTest, testStartupState)
 {
 	EXPECT_EQ(node.state, Visitor::IDLE); 
 }
-
-/*
-TEST(TestSuite, )
-{
-
-}
-
-TEST(TestSuite, )
-{
-
-}
-
-TEST(TestSuite, )
-{
-
-}
-*/
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){

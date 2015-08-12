@@ -8,6 +8,20 @@
 #include <stdlib.h>
 #include <node_defs/picker.h>
 
+Picker::Picker()
+{
+	//setting base attribute defaults
+	pose.theta = M_PI/2.0;
+	pose.px = 10;
+	pose.py = 20;
+	speed.linear_x = 1.0;
+	speed.max_linear_x = 3.0;
+	speed.angular_z = 0.0;
+	state = IDLE;
+	station_x = 0;
+	station_y = -33;
+
+}
 
 Picker::Picker(ros::NodeHandle &n)
 {
@@ -21,6 +35,8 @@ Picker::Picker(ros::NodeHandle &n)
 	speed.max_linear_x = 3.0;
 	speed.angular_z = 0.0;
 	state = IDLE;
+	station_x = 0;
+	station_y = -33;
 
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Picker::odom_callback, this);

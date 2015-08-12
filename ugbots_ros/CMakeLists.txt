@@ -41,7 +41,7 @@ rosbuild_add_executable(WORKER src/person/worker.cpp)
 rosbuild_add_executable(VISITOR src/person/visitor.cpp)
 
 rosbuild_add_library(CarrierLib src/robot/carrier.cpp)
-#rosbuild_add_library(PickerLib src/robot/picker.cpp)
+rosbuild_add_library(PickerLib src/robot/picker.cpp)
 #rosbuild_add_library(DogLib src/animal/dog.cpp)
 #rosbuild_add_library(CatLib src/animal/cat.cpp)
 #rosbuild_add_library(PossumLib src/animal/possum.cpp)
@@ -55,8 +55,8 @@ target_link_libraries(CarrierTests CarrierLib)
 
 #Picker
 #rosbuild_add_executable(PickerTests EXCLUDE_FROM_ALL test/picker_test.cpp)
-#rosbuild_add_gtest(PickerTests test/picker_test.cpp)
-#target_link_libraries(PickerTests PickerLib)
+rosbuild_add_gtest(PickerTests test/picker_test.cpp)
+target_link_libraries(PickerTests PickerLib)
 
 #Dog
 #rosbuild_add_executable(DogTests EXCLUDE_FROM_ALL test/dog_test.cpp)

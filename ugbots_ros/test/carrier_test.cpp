@@ -24,35 +24,33 @@ void laser_callback(sensor_msgs::LaserScan msg)
 	//Mock callback function
 }
 
-TEST(UnitTest, testNodeInstantiation)
+TEST(UnitTest, testNodeInitialisedSpeed)
 {
-	
-	EXPECT_EQ(node.speed.max_linear_x, 3.0);
-	EXPECT_EQ(node.speed.linear_x, 3.0);
-	EXPECT_EQ(node.speed.angular_z, 2.0);
+	EXPECT_EQ(node.speed.linear_x, 0.0);
+	EXPECT_EQ(node.speed.angular_z, 0.0);
 }
 
-TEST(TestSuite, testStartupState)
+TEST(UnitTest, testNodeTopSpeed)
+{
+	EXPECT_EQ(node.speed.max_linear_x, 3.0);
+}
+
+TEST(UnitTest, testStartupState)
 {
 	EXPECT_EQ(node.state, Carrier::IDLE); 
 }
 
-TEST(TestSuite, basicTest)
+TEST(TestSuite, testStateSwitchStopped)
 {
-	EXPECT_TRUE(true);
-}
-/*
-
-TEST(TestSuite, )
-{
-
+	node.moveX(10.0, 0.0);
+	EXPECT_EQ(node.state, Carrier::STOPPED); 	
 }
 
-TEST(TestSuite, )
+/*TEST(UnitTest, testStateSwitchTravelling)
 {
-
-}
-*/
+	node.move_to(10.0, 10.0);
+	EXPECT_EQ(node.state, Carrier::TRAVELLING); 
+}*/
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){
@@ -60,10 +58,10 @@ int main(int argc, char **argv){
 	ros::init(argc, argv, "CARRIER");
 	ros::NodeHandle n;
 	
-	/*node.sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	node.sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	node.sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, odom_callback);
 	node.sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,laser_callback);
-*/
+
 	//Run the test suite
 	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
