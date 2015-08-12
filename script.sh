@@ -32,13 +32,8 @@ a=0
 while [ $i -lt $picker ];
 do
 
-<<<<<<< HEAD
-echo \<group ns=\"robot_$i\"\> >> ugbots_ros/launch/example2.launch
-echo \<node pkg=\"ugbots_ros\" name=\"robotnode\" type=\"PICKER\"\/\> >> ugbots_ros/launch/example2.launch 
-=======
 echo \<group ns=\"robot_$i\"\> >> ugbots_ros\/launch\/example2.launch
 echo \<node pkg=\"ugbots_ros\" name=\"robotnode\" type=\"PICKER\"\/\> >> ugbots_ros\/launch\/example2.launch 
->>>>>>> 77b41c98ce023dcc0f23d687c19aa756659563d2
 echo \<\/group\> >> ugbots_ros\/launch\/example2.launch
 
 echo pickerRobot\(pose [ 0 $((33-$(($i * 5)))) 0 0 ]\ name \"R$i\" color \"red\"\) >> world/config/robotinstances.inc
@@ -61,7 +56,6 @@ i=$(($i+1))
 
 done
 
-<<<<<<< HEAD
 while [ $w -lt $worker ];
 do
 
@@ -89,8 +83,5 @@ i=$(($i+1))
 done
 
 echo  \<launch\> >> ugbots_ros/launch/example2.launch
-=======
-echo  \<\/launch\> >> ugbots_ros/launch/example2.launch
->>>>>>> 77b41c98ce023dcc0f23d687c19aa756659563d2
 
 rosrun stage_ros stageros ./world/myworld.world
