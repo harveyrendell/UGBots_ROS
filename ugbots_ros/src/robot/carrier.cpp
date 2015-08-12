@@ -11,12 +11,12 @@
 //Constructor with no nodehandler argument for testing
 Carrier::Carrier()
 {
-	init();
+	this->init();
 }
 
 Carrier::Carrier(ros::NodeHandle &n)
 {
-	init();
+	this->init();
 
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Carrier::odom_callback, this);

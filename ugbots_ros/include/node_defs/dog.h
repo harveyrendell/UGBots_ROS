@@ -11,7 +11,9 @@
 class Dog : public Node
 {
 public:
+	Dog();
 	Dog(ros::NodeHandle &n);
+	virtual ~Dog() {}
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
 	void move();
@@ -22,4 +24,7 @@ public:
 
 	enum State { IDLE, ROAMING, AGGRESSIVE, FLEEING };
 	State state;
+
+private:
+	void init();
 };

@@ -10,9 +10,9 @@
 #include <sstream>
 #include <stdlib.h>
 
-#include <node_defs/carrier.h>
+#include <node_defs/possum.h>
 
-Carrier carrier;
+Possum node;
 
 void odom_callback(nav_msgs::Odometry msg)
 {
@@ -32,14 +32,14 @@ void laser_callback(sensor_msgs::LaserScan msg)
 TEST(UnitTest, testNodeInstantiation)
 {
 	
-	EXPECT_EQ(carrier.speed.max_linear_x, 3.0);
-	EXPECT_EQ(carrier.speed.linear_x, 3.0);
-	EXPECT_EQ(carrier.speed.angular_z, 2.0);
+	EXPECT_EQ(node.speed.max_linear_x, 3.0);
+	EXPECT_EQ(node.speed.linear_x, 0.0);
+	EXPECT_EQ(node.speed.angular_z, 2.0);
 }
 
 TEST(TestSuite, testStartupState)
 {
-	EXPECT_EQ(carrier.state, Carrier::IDLE); 
+	EXPECT_EQ(node.state, Possum::IDLE); 
 }
 
 /*
@@ -61,14 +61,13 @@ TEST(TestSuite, )
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){
-	//Create a carrier node to test with
-	ros::init(argc, argv, "CARRIER");
+	//Create a node to test with
+	ros::init(argc, argv, "POSSUM");
 	ros::NodeHandle n;
 	
-
-	carrier.sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	carrier.sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, odom_callback);
-	carrier.sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,laser_callback);
+	node.sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	node.sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, odom_callback);
+	node.sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,laser_callback);
 
 	//Run the test suite
 	testing::InitGoogleTest(&argc, argv);

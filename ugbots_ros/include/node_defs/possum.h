@@ -11,7 +11,9 @@
 class Possum : public Node
 {
 public:
+	Possum();
 	Possum(ros::NodeHandle &n);
+	virtual ~Possum() {}
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
 	void move();
@@ -22,4 +24,7 @@ public:
 
 	enum State { IDLE, ROAMING, FLEEING };
 	State state;
+
+private:
+	void init();
 };

@@ -8,26 +8,37 @@
 #include <stdlib.h>
 #include <node_defs/worker.h>
 
+Worker::Worker()
+{
+	init();
+}
+
 Worker::Worker(ros::NodeHandle &n)
 {
-	//setting base attribute defaults
-	this->pose.theta = M_PI/2.0;
-	this->pose.px = 5;
-	this->pose.py = 10;
-	this->speed.linear_x = 1.0;
-	this->speed.max_linear_x = 30.0;
-	this->speed.angular_z = 0.0;
-
-	this->orientation.previous_right_distance = 0;
-	this->orientation.previous_left_distance = 0;
-	this->orientation.previous_front_distance = 0;
-	this->orientation.angle = 0;
-	this->orientation.desired_angle = M_PI / 2;
-	this->orientation.currently_turning = false;
+	init();
 
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Worker::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Worker::laser_callback, this);
+}
+
+void Worker::init()
+{
+	//setting base attribute defaults
+	pose.theta = M_PI/2.0;
+	pose.px = 5;
+	pose.py = 10;
+	speed.linear_x = 1.0;
+	speed.max_linear_x = 3.0;
+	speed.angular_z = 0.0;
+	state = IDLE;
+
+	orientation.previous_right_distance = 0;
+	orientation.previous_left_distance = 0;
+	orientation.previous_front_distance = 0;
+	orientation.angle = 0;
+	orientation.desired_angle = M_PI / 2;
+	orientation.currently_turning = false;
 }
 
 void Worker::odom_callback(nav_msgs::Odometry msg)
@@ -36,14 +47,13 @@ void Worker::odom_callback(nav_msgs::Odometry msg)
 	this->pose.px = 5 + msg.pose.pose.position.x;
 	this->pose.py = 10 + msg.pose.pose.position.y;
 	this->orientation.rotx = msg.pose.pose.orientation.x;
-		this->orientation.roty = msg.pose.pose.orientation.y;
-		this->orientation.rotz = msg.pose.pose.orientation.z;
-		this->orientation.rotw = msg.pose.pose.orientation.w;
+	this->orientation.roty = msg.pose.pose.orientation.y;
+	this->orientation.rotz = msg.pose.pose.orientation.z;
+	this->orientation.rotw = msg.pose.pose.orientation.w;
 	this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
 
 	doAngleCheck();
 }
-
 
 void Worker::laser_callback(sensor_msgs::LaserScan msg)
 {

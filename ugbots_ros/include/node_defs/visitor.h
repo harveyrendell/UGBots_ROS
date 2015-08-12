@@ -11,7 +11,9 @@
 class Visitor : public Node
 {
 public:
+	Visitor();
 	Visitor(ros::NodeHandle &n);
+	virtual ~Visitor() {}
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
 	void move();
@@ -22,4 +24,7 @@ public:
 
 	enum State { IDLE, LOITERING, HARASSING, STOPPED };
 	State state;
+
+private:
+	void init();
 };

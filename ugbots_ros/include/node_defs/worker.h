@@ -11,7 +11,9 @@
 class Worker : public Node
 {
 public:
+	Worker();
 	Worker(ros::NodeHandle &n);
+	virtual ~Worker() {}
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
 	void move();
@@ -24,4 +26,7 @@ public:
 
 	enum State { IDLE, PATROLLING, RESPONDING, AVOIDING, STOPPED };
 	State state;
+
+private:
+	void init();
 };
