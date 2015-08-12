@@ -73,9 +73,9 @@
 		}
 		
 
-		ROS_INFO("X Position: %f",this->pose.px);
-		ROS_INFO("Y Position: %f",this->pose.py);
-		ROS_INFO("Status: %s",enum_to_string(this->state));		
+		ROS_INFO("/position/x/%f",this->pose.px);
+		ROS_INFO("/position/y/%f",this->pose.py);
+		ROS_INFO("/status/%s",enum_to_string(this->state));		
 		
 	}
 
