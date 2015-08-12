@@ -22,10 +22,10 @@ Picker::Picker(ros::NodeHandle &n)
 	speed.angular_z = 0.0;
 	state = IDLE;
 
-	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
-	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Picker::odom_callback, this);
-	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Picker::laser_callback, this);
-	carrier_alert = n.advertise<ugbots_ros::bin_status>("alert",1000);
+	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Picker::odom_callback, this);
+	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
+	carrier_alert = n.advertise<ugbots_ros::bin_status>("/alert",1000);
 }
 
 /*void Picker::logic() {

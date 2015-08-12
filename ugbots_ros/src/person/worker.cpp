@@ -34,7 +34,7 @@
 		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Worker::odom_callback, this);
 		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Worker::laser_callback, this);
 		this->state = IDLE;
-		this->checkedThisRot = false;
+		this->checkedThisRot = true;
 	
 	}
 
@@ -82,7 +82,7 @@
 
 	void Worker::laser_callback(sensor_msgs::LaserScan msg)
 	{		
-		if(msg.ranges[90] < 18.0 && this->orientation.currently_turning == false && this->orientation.currently_turning_static == false) // stop when 5 meteres from the wall is reached directly to the front
+		if(msg.ranges[90] < 6.5 && this->orientation.currently_turning == false && this->orientation.currently_turning_static == false) // stop when 5 meteres from the wall is reached directly to the front
 		{				
 			this->orientation.previous_right_distance = msg.ranges[0];
 			this->orientation.previous_left_distance = msg.ranges[180];
@@ -97,7 +97,7 @@
 			{
 				for(int i=100; i<130; i++)
 				{
-					if(msg.ranges[i] < 10)
+					if(msg.ranges[i] < 5.5)
 					{
 						spinOnTheSpot();
 					}

@@ -105,7 +105,7 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 	//you can access the range data from msg.ranges[i]. i = sample number
 	bool detection = false;
 	for(int a = 0 ; a < 180; a++){
-		if (msg.ranges[a] < 7) {
+		if (msg.ranges[a] < 5.8) {
 			detection = true;
 			continue;
 		} 
