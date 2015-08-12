@@ -51,6 +51,24 @@ void Carrier::bin_callback(ugbots_ros::bin_status msg)
 	}
 }
 
+char* Carrier::enum_to_string(State t){
+    switch(t){
+        case IDLE:
+            return "IDLE";
+        case TRAVELLING:
+            return "TRAVELLING";
+        case CARRYING:
+            return "CARRYING";
+        case AVOIDING:
+            return "AVOIDING";
+        case STOPPED:
+            return "STOPPED";     
+        default:
+            return "INVALID ENUM";
+    }
+ }
+
+
 void Carrier::odom_callback(nav_msgs::Odometry msg)
 {
 	//This is the call back function to process odometry messages coming from Stage. 	
@@ -65,8 +83,7 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 	orientation.roty-orientation.rotz*orientation.rotz);
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
-	ROS_INFO("/orientation/angle/%f", orientation.angle*180/M_PI);
-	ROS_INFO("/status/");
+	ROS_INFO("/status/%s", enum_to_string(state));
 }
 
 
@@ -103,13 +120,13 @@ void Carrier::turn(bool clockwise, double desired_angle, double temprad) {
 	}
 
 	//turn until desired angle is reached, taking into account of the 2 clock time ahead
-	if (orientation.desired_angle - 3*(speed.angular_z/10)>= orientation.angle) {
+	if (orientation.desired_angle - 3*(speed.angular_z/10) >= orientation.angle - 0.1) {
 		orientation.currently_turning = true;
 	//if desired angle is reached, robot stops turning and moves again 
 	} else {
 		orientation.currently_turning = false;
 		//stopped = false;
-		ROS_INFO("STOP!");
+		state = STOPPED;
 		speed.angular_z = 0.0;
 		zero_angle = orientation.desired_angle;
 	}
@@ -118,6 +135,7 @@ void Carrier::moveX(double distance, double px) {
 	double x = distance + px;
 	double distance_x = x - pose.px;
 	if (distance_x < 0.20001) {
+		state = STOPPED;
 		speed.linear_x = 0.0;
 	}
 }
@@ -127,6 +145,7 @@ void Carrier::moveY(double distance, double py) {
 	double distance_y = y - pose.py;
 	ROS_INFO("y:%f",distance);
 	if (distance_y < 0.20001) {
+		state = IDLE;
 		speed.linear_x = 0.0;
 	}
 }
@@ -140,6 +159,7 @@ bool Carrier::move_to(double x, double y)
 	}
 	else
 	{
+		state = TRAVELLING;
 		speed.linear_x = 1.0;
 		moveX(abs(tempx - x), tempx);
 		if (speed.linear_x == 0.0) 

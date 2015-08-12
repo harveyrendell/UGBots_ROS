@@ -43,6 +43,8 @@ public:
 	void turnRight();
 	void collisionDetected();
 
-	enum State { IDLE, TRAVELLING, CARRYING, AVOIDING, STOPPED };
+	enum State {IDLE, TRAVELLING, CARRYING, AVOIDING, STOPPED};
 	State state;
+
+	char* enum_to_string(State t);
 };
