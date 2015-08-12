@@ -24,6 +24,7 @@ public:
 	ros::Publisher carrier_alert_pub;
 
 	ugbots_ros::bin_status binStatus;
+	ugbots_ros::bin_status localBinStatus;
 
 
 

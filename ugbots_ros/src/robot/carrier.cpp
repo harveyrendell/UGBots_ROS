@@ -38,17 +38,10 @@ Carrier::Carrier(ros::NodeHandle &n)
 
 void Carrier::bin_callback(ugbots_ros::bin_status msg)
 {
-	double bin_x;
-	double bin_y;
-	if(msg.bin_stat == "FULL")
-	{
-		bin_x = msg.bin_x;
-		bin_y = msg.bin_y;
-		if(move_to(bin_x,bin_y))
-		{
-			binStatus.bin_stat = "EMPTY";
-		}
-	}
+	localBinStatus.bin_x = msg.bin_x;
+	localBinStatus.bin_y = msg.bin_y;
+	localBinStatus.bin_stat = msg.bin_stat;
+
 }
 
 char* Carrier::enum_to_string(State t){
@@ -84,6 +77,16 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
 	ROS_INFO("/status/%s", enum_to_string(state));
+
+
+	if(localBinStatus.bin_stat == "FULL")
+	{
+		move_to(localBinStatus.bin_x,localBinStatus.bin_y);
+		/*if(move_to(bin_x,bin_y))
+		{
+			binStatus.bin_stat = "EMPTY";
+		}*/
+	}
 }
 
 
@@ -120,14 +123,14 @@ void Carrier::turn(bool clockwise, double desired_angle, double temprad) {
 	}
 
 	//turn until desired angle is reached, taking into account of the 2 clock time ahead
-	if (orientation.desired_angle - 3*(speed.angular_z/10) >= orientation.angle - 0.001) {
+	if (orientation.desired_angle-3*(current_angular_z/10) >= orientation.angle) {
 		orientation.currently_turning = true;
 	//if desired angle is reached, robot stops turning and moves again 
 	} else {
+		speed.angular_z = 0.0;
 		orientation.currently_turning = false;
 		//stopped = false;
 		state = STOPPED;
-		speed.angular_z = 0.0;
 		zero_angle = orientation.desired_angle;
 	}
 }
@@ -152,29 +155,28 @@ void Carrier::moveY(double distance, double py) {
 
 bool Carrier::move_to(double x, double y)
 {
-	if(abs(pose.px - x) < 0.00001 && abs(pose.py - y) < 0.00001)
+	/*if(abs(pose.px - x) < 0.00001 && abs(pose.py - y) < 0.00001)
 	{
 		speed.linear_x = 0.0;
 		return true;
 	}
 	else
-	{
+	{*/
 		state = TRAVELLING;
 		speed.linear_x = 1.0;
-		moveX(abs(tempx - x), tempx);
+		moveX(abs(x - tempx), tempx);
 		if (speed.linear_x == 0.0) 
 		{
 			turn(false, M_PI/2, 0.0);
 			if (speed.angular_z == 0.0)
 			{
-			state = TRAVELLING;
 				speed.linear_x = 1.0;
-				moveY(abs(tempy-y),tempy);
+				moveY(abs(y - tempy),tempy);
 				temprad = orientation.angle;
 			}	
 		}
-	}
-	return false;
+	/*}
+	return false;*/
 }
 
 

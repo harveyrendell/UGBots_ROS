@@ -30,9 +30,9 @@
 
 		this->orientation.currently_turning_static = false;
 
-		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
-		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Worker::odom_callback, this);
-		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Worker::laser_callback, this);
+		this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Worker::odom_callback, this);
+		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Worker::laser_callback, this);
 		this->state = IDLE;
 		this->checkedThisRot = false;
 	
