@@ -14,6 +14,8 @@ gnome-terminal -x bash -c 'rosrun stage_ros stageros world/myworld.world'
 #Open terminal to run script that runs the example launch file
 gnome-terminal -x bash -c 'bash use-launch.bash'
 
+#FOR JAVA DEBUG VIEW
+rostopic echo -c rosout
 
 #gnome-terminal -x bash -c 'rosrun rqt_console rqt_console'
 #FOR INDIVIDUAL ROSRUN

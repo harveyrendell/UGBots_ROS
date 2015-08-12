@@ -8,7 +8,6 @@ define robolaser ranger
   # generic model properties
   color "black"
   size [ 0.05 0.05 0.1 ]
-  
 )
 
 define carrierRobot position

@@ -2,9 +2,11 @@ include "robots.inc"
 
 define etc position
 (
-  size [0.5 0.5 0.5]
+  size [1.5 1.5 1]
   drive "diff"
-  robolaser(pose [ 0.050 0.000 0 0.000 ])
+  robolaser(pose [ 0.050 0.000 -0.5 0.000 ])
+  velocity_bounds [-10 10 -10 10 -10 10 -90 90]
+
 )
 
 

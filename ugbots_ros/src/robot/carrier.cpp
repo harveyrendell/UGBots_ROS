@@ -76,7 +76,7 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 	orientation.roty-orientation.rotz*orientation.rotz);
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
-	ROS_INFO("/status/%s", enum_to_string(state));
+	ROS_INFO("/status/%s/./", enum_to_string(state));
 
 
 	if(localBinStatus.bin_stat == "FULL")
@@ -170,6 +170,7 @@ bool Carrier::move_to(double x, double y)
 			turn(false, M_PI/2, 0.0);
 			if (speed.angular_z == 0.0)
 			{
+				state = TRAVELLING;
 				speed.linear_x = 1.0;
 				moveY(abs(y - tempy),tempy);
 				temprad = orientation.angle;
@@ -181,7 +182,8 @@ bool Carrier::move_to(double x, double y)
 
 
 void Carrier::move_forward(double distance)
-{
+{	
+	
 	undergoing_task = true;
 	speed.linear_x = 2.0;
 	if(!moving)

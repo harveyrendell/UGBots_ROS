@@ -156,7 +156,7 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	pose.py = -40 + msg.pose.pose.position.y;
 	ROS_INFO("/position/x/%f", pose.px);
 	ROS_INFO("/position/y/%f", pose.py);
-	ROS_INFO("/status/%s", enum_to_string(state));
+	ROS_INFO("/status/%s/./", enum_to_string(state));
 	orientation.rotx = msg.pose.pose.orientation.x;
 	orientation.roty = msg.pose.pose.orientation.y;
 	orientation.rotz = msg.pose.pose.orientation.z;
@@ -184,7 +184,7 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 		pickKiwi();
 	} else if (state == WAITING) {
 		binStatus.bin_x = 0.0;
-		binStatus.bin_y = binStatus.bin_y-1.5;
+		binStatus.bin_y = pose.py-2;
 		speed.angular_z = M_PI;
 	}
 

@@ -14,9 +14,9 @@
 
 		//setting base attribute defaults
 		this->pose.theta = M_PI/2.0;
-		this->pose.px = 5;
-		this->pose.py = 10;
-		this->speed.linear_x = 1.0;
+		this->pose.px = -40;
+		this->pose.py = -44;
+		this->speed.linear_x = 2.0;
 		this->speed.max_linear_x = 30.0;
 		this->speed.angular_z = 0.0;
 
@@ -34,15 +34,15 @@
 		this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Worker::odom_callback, this);
 		this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Worker::laser_callback, this);
 		this->state = IDLE;
-		this->checkedThisRot = true;
+		this->checkedThisRot = false;
 	
 	}
 
 	void Worker::odom_callback(nav_msgs::Odometry msg)
 	{
 		//gets the current position and angle and sets it to the object's fields 	
-		this->pose.px = 5 + msg.pose.pose.position.x;
-		this->pose.py = 10 + msg.pose.pose.position.y;
+		this->pose.px = -40 + msg.pose.pose.position.x;
+		this->pose.py = -44 + msg.pose.pose.position.y;
 		this->orientation.rotx = msg.pose.pose.orientation.x;
     		this->orientation.roty = msg.pose.pose.orientation.y;
     		this->orientation.rotz = msg.pose.pose.orientation.z;
@@ -75,14 +75,14 @@
 
 		ROS_INFO("/position/x/%f",this->pose.px);
 		ROS_INFO("/position/y/%f",this->pose.py);
-		ROS_INFO("/status/%s",enum_to_string(this->state));		
+		ROS_INFO("/status/%s/./",enum_to_string(this->state));		
 		
 	}
 
 
 	void Worker::laser_callback(sensor_msgs::LaserScan msg)
 	{		
-		if(msg.ranges[90] < 6.5 && this->orientation.currently_turning == false && this->orientation.currently_turning_static == false) // stop when 5 meteres from the wall is reached directly to the front
+		if(msg.ranges[90] < 5.5 && this->orientation.currently_turning == false && this->orientation.currently_turning_static == false) // stop when 5 meteres from the wall is reached directly to the front
 		{				
 			this->orientation.previous_right_distance = msg.ranges[0];
 			this->orientation.previous_left_distance = msg.ranges[180];
@@ -97,7 +97,7 @@
 			{
 				for(int i=100; i<130; i++)
 				{
-					if(msg.ranges[i] < 5.5)
+					if(msg.ranges[i] < 4.5)
 					{
 						spinOnTheSpot();
 					}
@@ -120,7 +120,7 @@
 	void Worker::stopTurn()
 	{
 		this->orientation.currently_turning = false;
-		this->speed.linear_x = 1.0;
+		this->speed.linear_x = 2.0;
 		this->speed.angular_z = 0.0;
 		
 		//ROS_INFO("Stop Turn", "");	
@@ -129,7 +129,7 @@
 	void Worker::stopTurnStatic()
 	{
 		this->orientation.currently_turning_static = false;
-		this->speed.linear_x = 1.0;
+		this->speed.linear_x = 2.0;
 		this->speed.angular_z = 0.0;	
 
 		
