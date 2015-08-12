@@ -1,0 +1,67 @@
+define mylaser ranger
+(
+  sensor(
+  range [ 0.0 7.0 ] # range
+  fov 180       # field of vision
+  samples 180   # samples 
+  )
+  # generic model properties
+  color "black"
+  size [ 0.050 0.050 0.100 ]
+  
+)
+
+define myRobot position
+(
+  size [0.350 0.350 0.250]
+  drive "diff"
+  mylaser(pose [ 0.050 0.000 0.000 0.000 ])
+)
+
+define rows model
+(
+  color "green"
+  size [1.000 70.000 1.800]
+)
+
+define fence model
+(
+  color "black"
+  size [50.000 0.500 2.000]
+)
+
+define floorplan model
+(
+  size [ 50.000 50.000 0.500 ]
+  # sombre, sensible, artistic
+  color "gray30"
+)
+
+floorplan
+( 
+  name "swarm"
+  bitmap "swarm_world.pgm"
+  pose [ 0.000 0.000 0.000 0.000 ]
+)
+
+fence (pose [ -50.000 25.000 0.000 90.000 ])
+fence (pose [ 50.000 25.000 0.000 90.000 ])
+fence (pose [ -50.000 -25.000 0.000 90.000 ])
+fence (pose [ 50.000 -25.000 0.000 90.000 ])
+
+fence (pose [ -25.000 50.000 0.000 0.000 ])
+fence (pose [ 25.000 50.000 0.000 0.000 ])
+fence (pose [ -25.000 -50.000 0.000 0.000 ])
+fence (pose [ 25.000 -50.000 0.000 0.000 ])
+
+rows (pose [ -2.250 0.000 0.000 0.000 ])
+rows (pose [ 2.250 0.000 0.000 0.000 ])
+
+# throw in a robot
+myRobot( pose [ -16.000 42.500 0.000 0.000 ] name "r0" color "blue")
+#myRobot( pose [ 15 20 0 0 ] name "r1" color "green")
+#myRobot( pose [ 10 30 0 0 ] name "r2" color "black")
+#myRobot( pose [ 25 16 0 0 ] name "r3" color "yellow")
+#myRobot( pose [ 5 28 0 0 ] name "r4" color "brown")
+#myRobot( pose [ 25 25 0 0 ] name "mycarrier" color "brown")
+
