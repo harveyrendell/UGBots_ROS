@@ -154,8 +154,9 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	//This is the call back function to process odometry messages coming from Stage. 	
 	pose.px = -10 + msg.pose.pose.position.x;
 	pose.py = -40 + msg.pose.pose.position.y;
-	ROS_INFO("Current x position is: %f", pose.px);
-	ROS_INFO("Current y position is: %f", pose.py);
+	ROS_INFO("/position/x/%f", pose.px);
+	ROS_INFO("/position/y/%f", pose.py);
+	ROS_INFO("/status/%s", enum_to_string(state));
 	orientation.rotx = msg.pose.pose.orientation.x;
 	orientation.roty = msg.pose.pose.orientation.y;
 	orientation.rotz = msg.pose.pose.orientation.z;
@@ -184,7 +185,7 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	} else if (state == WAITING) {
 		binStatus.bin_x = 0.0;
 		binStatus.bin_y = binStatus.bin_y-1.5;
-		binStatus.bin_stat = "FULL";
+		speed.angular_z = M_PI;
 	}
 
 	//publish topic about current bin status
@@ -224,6 +225,22 @@ void Picker::pickKiwi() {
 	moveY(70.0,tempy);
 	if (speed.linear_x == 0.0) {
 		state = WAITING;
+		binStatus.bin_stat = "FULL";
+	}
+}
+
+char* Picker::enum_to_string(State t) {
+	switch (t){
+		case IDLE:
+			return "IDLE";
+		case TRAVELLING:
+			return "TRAVELLING";
+		case PICKING:
+			return "PICKING";
+		case WAITING:
+			return "WAITING";
+		default:
+			return ""; 
 	}
 }
 
