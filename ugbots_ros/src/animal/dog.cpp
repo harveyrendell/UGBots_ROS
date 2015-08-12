@@ -16,7 +16,7 @@ Dog::Dog(ros::NodeHandle &n)
 	this->pose.theta = M_PI/2.0;
 	this->pose.px = 10;
 	this->pose.py = 20;
-	this->speed.linear_x = 2.0;
+	this->speed.linear_x = 4.0;
 	//this->speed.max_linear_x = 3.0;
 	this->speed.angular_z = 0.0;
 
@@ -62,7 +62,7 @@ void Dog::odom_callback(nav_msgs::Odometry msg)
 
 	//ROS_INFO("Lets check the angle : %f", this->orientation.angle);
 
-	if ((msg.pose.pose.position.x + 0.3 >= 32) && (facingRight == true)){
+	if ((msg.pose.pose.position.x + 1.1 >= 32) && (facingRight == true)){
 		
 		endOfPath = true;
 
@@ -79,7 +79,7 @@ void Dog::odom_callback(nav_msgs::Odometry msg)
 		}
 	}
 
-	if ((msg.pose.pose.position.x - 0.2 <= 0) && (facingLeft == true)) {
+	if ((msg.pose.pose.position.x - 1.0 <= 0) && (facingLeft == true)) {
 
 		endOfPath = true;
 
@@ -119,7 +119,7 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 	} else {
 		state = ROAMING;
 		if (endOfPath == false){
-			this->speed.linear_x = 2.0;
+			this->speed.linear_x = 4.0;
 			if (this->orientation.currently_turning == true){
 				this->speed.angular_z = 3.0;
 			}

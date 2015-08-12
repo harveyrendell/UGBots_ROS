@@ -16,6 +16,7 @@ define myRobot position
   size [0.350 0.350 0.250]
   drive "diff"
   mylaser(pose [ 0.050 0.000 0.000 0.000 ])
+  velocity_bounds [-10 10 -10 10 -10 10 -90 90]
 )
 
 define rows model
@@ -58,10 +59,9 @@ rows (pose [ -2.250 0.000 0.000 0.000 ])
 rows (pose [ 2.250 0.000 0.000 0.000 ])
 
 # throw in a robot
-myRobot( pose [ -16.000 42.500 0.000 0.000 ] name "r0" color "blue")
+myRobot( pose [ -16.800 42.500 0.000 0.000 ] name "r0" color "blue")
 #myRobot( pose [ 15 20 0 0 ] name "r1" color "green")
 #myRobot( pose [ 10 30 0 0 ] name "r2" color "black")
 #myRobot( pose [ 25 16 0 0 ] name "r3" color "yellow")
 #myRobot( pose [ 5 28 0 0 ] name "r4" color "brown")
 #myRobot( pose [ 25 25 0 0 ] name "mycarrier" color "brown")
-
