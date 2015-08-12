@@ -32,6 +32,7 @@ void laser_callback(sensor_msgs::LaserScan msg)
 TEST(UnitTest, testNodeInstantiation)
 {
 	double a = carrier.speed.max_linear_x;
+	carrier.speed.linear_x = 10;
 	EXPECT_EQ(a, 3.0);
 }
 

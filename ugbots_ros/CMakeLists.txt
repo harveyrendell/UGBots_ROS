@@ -32,12 +32,12 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 find_package(rostest REQUIRED)
 
 rosbuild_add_library(CarrierLib src/robot/carrier.cpp)
-rosbuild_add_library(PickerLib src/robot/picker.cpp)
-rosbuild_add_library(DogLib src/animal/dog.cpp)
-rosbuild_add_library(CatLib src/animal/cat.cpp)
-rosbuild_add_library(PossumLib src/animal/possum.cpp)
-rosbuild_add_library(WorkerLib src/person/worker.cpp)
-rosbuild_add_library(VisitorLib src/person/visitor.cpp)
+#rosbuild_add_library(PickerLib src/robot/picker.cpp)
+#rosbuild_add_library(DogLib src/animal/dog.cpp)
+#rosbuild_add_library(CatLib src/animal/cat.cpp)
+#rosbuild_add_library(PossumLib src/animal/possum.cpp)
+#rosbuild_add_library(WorkerLib src/person/worker.cpp)
+#rosbuild_add_library(VisitorLib src/person/visitor.cpp)
 
 
 #Executable nodes
