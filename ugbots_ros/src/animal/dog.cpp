@@ -67,12 +67,14 @@ public:
 
 			this->speed.linear_x = 0.0;
 			this->speed.angular_z = 3.0;
+			this->orientation.currently_turning = true;
 
 			if((this->orientation.angle + (M_PI / (this->speed.angular_z * 3))) >= this->orientation.desired_angle){
 				this->speed.angular_z = 0.0;// stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
 				facingRight = false;
 				facingLeft = true;
 				endOfPath = false;
+				this->orientation.currently_turning = false;
 			}
 		}
 
@@ -84,12 +86,14 @@ public:
 
 			this->speed.linear_x = 0.0;
 			this->speed.angular_z = 3.0;
+			this->orientation.currently_turning = true;
 
 			if((this->orientation.angle + (M_PI / (this->speed.angular_z * 3))) >= (M_PI * 2)){
 				this->speed.angular_z = 0.0;// stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
 				facingLeft = false;
 				facingRight = true;
 				endOfPath = false;
+				this->orientation.currently_turning = false;
 			}
 		}
 
@@ -111,10 +115,14 @@ public:
 
 		if (detection == true){
 			this->speed.linear_x = 0.0;
+			this->speed.angular_z = 0.0;
 			ROS_INFO("BARK BARK BARK BARK!");
 		} else {
 			if (endOfPath == false){
 				this->speed.linear_x = 2.0;
+				if (this->orientation.currently_turning == true){
+					this->speed.angular_z = 3.0;
+				}
 			}
 		}
 
