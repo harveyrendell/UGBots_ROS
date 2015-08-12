@@ -184,7 +184,7 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	} else if (state == WAITING) {
 		binStatus.bin_x = 0.0;
 		binStatus.bin_y = binStatus.bin_y-1.5;
-		binStatus.bin_stat = "FULL";
+		speed.angular_z = M_PI;
 	}
 
 	//publish topic about current bin status
@@ -224,6 +224,22 @@ void Picker::pickKiwi() {
 	moveY(70.0,tempy);
 	if (speed.linear_x == 0.0) {
 		state = WAITING;
+		binStatus.bin_stat = "FULL";
+	}
+}
+
+char* Picker::enum_to_string(State t) {
+	switch (t){
+		case IDLE:
+			return "IDLE";
+		case TRAVELLING:
+			return "TRAVELLING";
+		case PICKING:
+			return "PICKING";
+		case WAITING:
+			return "WAITING";
+		default:
+			return ""; 
 	}
 }
 
