@@ -1,6 +1,8 @@
 include "kiwirow.inc" 
 include "boundary.inc"
 include "robots.inc"
+include "workers.inc"
+include "animals.inc"
 
 rows (pose [ -2.25 0 0 0 ])
 rows (pose [ 2.25 0 0 0 ])
@@ -14,5 +16,6 @@ boundary (pose [ -25 50 0 0 ])
 boundary (pose [ 25 50 0 0 ])
 boundary (pose [ -25 -50 0 0 ])
 boundary (pose [ 25 -50 0 0 ])
+
 
 
