@@ -5,6 +5,7 @@ public:
 	int previous_left_distance;
 	int previous_front_distance;
 	bool currently_turning;
+	bool currently_turning_static;
 
 	double rotx;
 	double roty;
