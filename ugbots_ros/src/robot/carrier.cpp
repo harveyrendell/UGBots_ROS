@@ -29,9 +29,9 @@ void Carrier::init()
 	pose.theta = M_PI/2.0;
 	pose.px = 10;
 	pose.py = 20;
-	speed.linear_x = 30.0;
+	speed.linear_x = 3.0;
 	speed.max_linear_x = 3.0;
-	speed.angular_z = 20.0;
+	speed.angular_z = 2.0;
 	state = IDLE;
 }
 
