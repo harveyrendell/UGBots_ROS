@@ -221,13 +221,14 @@ geometry_msgs::Twist RobotNode_cmdvel;
 
 while (ros::ok())
 {
+
 	//messages to stage
 	RobotNode_cmdvel.linear.x = dg.speed.linear_x;
 	RobotNode_cmdvel.angular.z = dg.speed.angular_z;
         
 	//publish the message
 	dg.sub_list.node_stage_pub.publish(RobotNode_cmdvel);
-	
+
 	ros::spinOnce();
 
 	loop_rate.sleep();
