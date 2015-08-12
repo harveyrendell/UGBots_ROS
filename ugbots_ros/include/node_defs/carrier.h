@@ -21,6 +21,10 @@ public:
 	double temprad;
 
 	ros::Subscriber carrier_alert;
+	ros::Publisher carrier_alert_pub;
+
+	ugbots_ros::bin_status binStatus;
+
 
 
 	Carrier(ros::NodeHandle &n);
@@ -39,6 +43,8 @@ public:
 	void turnRight();
 	void collisionDetected();
 
-	enum State { IDLE, TRAVELLING, CARRYING, AVOIDING, STOPPED };
+	enum State {IDLE, TRAVELLING, CARRYING, AVOIDING, STOPPED};
 	State state;
+
+	char* enum_to_string(State t);
 };

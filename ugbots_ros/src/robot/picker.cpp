@@ -162,8 +162,8 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	orientation.rotz = msg.pose.pose.orientation.z;
 	orientation.rotw = msg.pose.pose.orientation.w;
 	orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
-		orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
-		orientation.roty-orientation.rotz*orientation.rotz);
+	orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
+	orientation.roty-orientation.rotz*orientation.rotz);
 	ROS_INFO("Current angle is: %f", orientation.angle);
 
 	//bin location, currently attached to the centre of robot
