@@ -1,0 +1,17 @@
+<launch>
+	<group ns="robot_0">
+		<node pkg="ugbots_ros" name="robotnode" type="PICKER"/>
+	</group>
+	
+	<group ns="robot_1">
+		<node pkg="ugbots_ros" name="robotnode" type="CARRIER"/>
+	</group>
+
+	<group ns="robot_2">
+		<node pkg="ugbots_ros" name="robotnode" type="DOG"/>
+	</group>
+
+	<group ns="robot_3">
+		<node pkg="ugbots_ros" name="robotnode" type="WORKER"/>
+	</group>
+</launch>
