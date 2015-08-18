@@ -1,12 +1,15 @@
 include "worldinstances.inc"
-include "robotinstances.inc"
+include "./config/robotinstances.inc"
+include "./config/workerinstances.inc"
+include "./config/animalinstances.inc"
 
 define floorplan model
 (
   # sombre, sensible, artistic
-  color "gray30"
+  color "brown"
 
   # most maps will need a bounding box
+
   ranger_return 1
   laser_return 1
 )
@@ -19,8 +22,8 @@ interval_sim 100  # simulation timestep in milliseconds. length of each simulati
 
 window
 ( 
-  size [ 1000.000 700.000 ] #size of the window in pixels
-  scale 30 
+  size [ 1615 1026 ] #size of the window in pixels
+  scale 10.515 
 )
 
 # load an environment bitmap
@@ -28,8 +31,8 @@ floorplan
 ( 
   name "swarm"
   bitmap "swarm_world.pgm"
-  size [50 50 0.5]
-  pose [ 0 0 0 0 ]
+  size [50.000 50.000 0.500]
+  pose [ 0.000 0.000 0.000 0.000 ]
 )
 
 

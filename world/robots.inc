@@ -12,14 +12,14 @@ define robolaser ranger
 
 define carrierRobot position
 (
-  size [1.5 1.8 1.0]
+  size [1.8 1.5 1.0]
   drive "diff"
   robolaser(pose [ 0.050 0.000 0 0.000 ])
 )
 
 define pickerRobot position
 (
-  size [1.5 2.5 1.0]
+  size [2.5 1.5 1.0]
   drive "diff"
   robolaser(pose [ 0.050 0.000 0 0.000 ])
 )
