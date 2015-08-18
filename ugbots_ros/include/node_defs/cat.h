@@ -11,6 +11,7 @@
 class Cat : public Node
 {
 public:
+	Cat();
 	Cat(ros::NodeHandle &n);
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);

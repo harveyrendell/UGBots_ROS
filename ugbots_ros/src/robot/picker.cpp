@@ -8,10 +8,24 @@
 #include <stdlib.h>
 #include <node_defs/picker.h>
 
+Picker::Picker()
+{
+	//setting base attribute defaults
+	pose.theta = M_PI/2.0;
+	pose.px = 10;
+	pose.py = 20;
+	speed.linear_x = 1.0;
+	speed.max_linear_x = 3.0;
+	speed.angular_z = 0.0;
+	state = IDLE;
+	station_x = 0;
+	station_y = -33;
+
+}
 
 Picker::Picker(ros::NodeHandle &n)
 {
-	this->n = n;
+	//this->n = n;
 
 	//setting base attribute defaults
 	pose.theta = M_PI/2.0;
@@ -21,11 +35,13 @@ Picker::Picker(ros::NodeHandle &n)
 	speed.max_linear_x = 3.0;
 	speed.angular_z = 0.0;
 	state = IDLE;
+	station_x = 0;
+	station_y = -33;
 
-	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
-	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Picker::odom_callback, this);
-	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Picker::laser_callback, this);
-	carrier_alert = n.advertise<ugbots_ros::bin_status>("alert",1000);
+	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Picker::odom_callback, this);
+	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
+	carrier_alert = n.advertise<ugbots_ros::bin_status>("/alert",1000);
 }
 
 /*void Picker::logic() {
@@ -154,15 +170,16 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	//This is the call back function to process odometry messages coming from Stage. 	
 	pose.px = -10 + msg.pose.pose.position.x;
 	pose.py = -40 + msg.pose.pose.position.y;
-	ROS_INFO("Current x position is: %f", pose.px);
-	ROS_INFO("Current y position is: %f", pose.py);
+	ROS_INFO("/position/x/%f", pose.px);
+	ROS_INFO("/position/y/%f", pose.py);
+	ROS_INFO("/status/%s/./", enum_to_string(state));
 	orientation.rotx = msg.pose.pose.orientation.x;
 	orientation.roty = msg.pose.pose.orientation.y;
 	orientation.rotz = msg.pose.pose.orientation.z;
 	orientation.rotw = msg.pose.pose.orientation.w;
 	orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
-		orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
-		orientation.roty-orientation.rotz*orientation.rotz);
+	orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
+	orientation.roty-orientation.rotz*orientation.rotz);
 	ROS_INFO("Current angle is: %f", orientation.angle);
 
 	//bin location, currently attached to the centre of robot
@@ -183,8 +200,8 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 		pickKiwi();
 	} else if (state == WAITING) {
 		binStatus.bin_x = 0.0;
-		binStatus.bin_y = binStatus.bin_y-1.5;
-		binStatus.bin_stat = "FULL";
+		binStatus.bin_y = pose.py-2;
+		speed.angular_z = M_PI;
 	}
 
 	//publish topic about current bin status
@@ -224,6 +241,22 @@ void Picker::pickKiwi() {
 	moveY(70.0,tempy);
 	if (speed.linear_x == 0.0) {
 		state = WAITING;
+		binStatus.bin_stat = "FULL";
+	}
+}
+
+char* Picker::enum_to_string(State t) {
+	switch (t){
+		case IDLE:
+			return "IDLE";
+		case TRAVELLING:
+			return "TRAVELLING";
+		case PICKING:
+			return "PICKING";
+		case WAITING:
+			return "WAITING";
+		default:
+			return ""; 
 	}
 }
 

@@ -18,4 +18,13 @@
 	<group ns="robot_4">
 		<node pkg="ugbots_ros" name="robotnode" type="WORKER"/>
 	</group>
+
+	<group ns="robot_4">
+		<node pkg="ugbots_ros" name="robotnode" type="DOG"/>
+	</group>
+
+	<group ns="robot_5">
+		<node pkg="ugbots_ros" name="robotnode" type="DOG"/>
+	</group>
+
 </launch>

@@ -9,8 +9,8 @@ define floorplan model
   color "brown"
 
   # most maps will need a bounding box
-  boundary 1
-  ranger_return 1.000
+
+  ranger_return 1
   laser_return 1
 )
 
@@ -34,3 +34,6 @@ floorplan
   size [50.000 50.000 0.500]
   pose [ 0.000 0.000 0.000 0.000 ]
 )
+
+
+

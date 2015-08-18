@@ -1,4 +1,4 @@
-define mylaser ranger
+define workerlaser ranger
 (
   sensor(
   range [ 0.0 30.0 ] # range
@@ -101,6 +101,7 @@ define worker position
 	point[3] [0.3 0.6]
 	z [1.72 1.8]
   )
-  mylaser(pose [ 0.050 0.000 0 0.000 ])
+  workerlaser(pose [ 0.050 0.000 0 90.000 ])
 )
+
 

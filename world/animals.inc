@@ -1,7 +1,7 @@
-define mylaser ranger
+define anilaser ranger
 (
   sensor(
-  range [ 0.0 30.0 ] # range
+  range [ 0.0 7.0 ] # range
   fov 180       # field of vision
   samples 180   # samples 
   )
@@ -95,6 +95,6 @@ define animal position
 	z [0 0.15]
   )
 
-
-  mylaser(pose [ 0.050 0.000 0 0.000 ])
+  anilaser(pose [ 0.050 0.000 0 90.000 ])
 )
+

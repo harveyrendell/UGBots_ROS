@@ -11,6 +11,7 @@
 class Visitor : public Node
 {
 public:
+	Visitor();
 	Visitor(ros::NodeHandle &n);
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);

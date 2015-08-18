@@ -1,4 +1,4 @@
-define mylaser ranger
+define robolaser ranger
 (
   sensor(
   range [ 0.0 30.0 ] # range
@@ -8,21 +8,20 @@ define mylaser ranger
   # generic model properties
   color "black"
   size [ 0.05 0.05 0.1 ]
-  
 )
 
 define carrierRobot position
 (
   size [1.8 1.5 1.0]
   drive "diff"
-  mylaser(pose [ 0.050 0.000 0 0.000 ])
+  robolaser(pose [ 0.050 0.000 0 0.000 ])
 )
 
 define pickerRobot position
 (
   size [2.5 1.5 1.0]
   drive "diff"
-  mylaser(pose [ 0.050 0.000 0 0.000 ])
+  robolaser(pose [ 0.050 0.000 0 0.000 ])
 )
 
 
