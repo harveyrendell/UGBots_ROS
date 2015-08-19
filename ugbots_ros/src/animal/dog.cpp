@@ -29,7 +29,7 @@ Dog::Dog()
 	facingRight = true;
 	facingLeft = false;
 
-	state = ROAMING;	
+	state = RUNNING;	
 }
 
 Dog::Dog(ros::NodeHandle &n)
@@ -54,12 +54,15 @@ Dog::Dog(ros::NodeHandle &n)
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Dog::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000, &Dog::laser_callback, this);
+	this->sub_list.sub_timer = n.createTimer(ros::Duration(0.1), &Dog::timerCallback, this);
+
+	//ros::Timer timer = n.createTimer(ros::Duration(10), timerCallback);
 
 	endOfPath = false;
 	facingRight = true;
 	facingLeft = false;
 
-	state = ROAMING;
+	state = RUNNING;
 
 }
 
@@ -132,12 +135,10 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 		for(int a = 0 ; a < 180; a++){
 			if ((msg.ranges[a] < 5.8) && (a <= 90)) {
 				detection = true;
-				ROS_INFO("TURN LEFT");
 				turnLeft();
 				continue;
 			} else if ((msg.ranges[a] < 5.8) && (a > 90)){
 				detection = true;
-				ROS_INFO("TURN RIGHT");
 				turnRight();
 				continue;
 			}
@@ -150,7 +151,7 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 		state = AGGRESSIVE;
 
 	} else {
-		state = ROAMING;
+		state = RUNNING;
 		if (endOfPath == false){
 			this->speed.linear_x = 4.0;
 			if (this->orientation.currently_turning == true){
@@ -160,6 +161,10 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 	}
 
 	
+}
+
+void Dog::timerCallback(const ros::TimerEvent& e){
+	ROS_INFO("Callback 1 triggered");
 }
 
 void Dog::move(){}
@@ -237,16 +242,32 @@ char* Dog::enum_to_string(State t){
     switch(t){
         case AGGRESSIVE:
             return "AGGRESSIVE";
-        case ROAMING:
-            return "ROAMING";
+        case WALKING:
+            return "WALKING";
+        case RUNNING:
+            return "RUNNING";
         case IDLE:
-            return "IDLE";
-        case FLEEING:
-            return "FLEEING";   
+            return "IDLE";   
         default:
             return "INVALID ENUM";
     }
  }
+
+Dog::State Dog::generateStatus(){
+	int randNum;
+	srand (time(NULL));
+/* generate secret number between 1 and 3: */
+	randNum = rand() % 3 + 1;
+	if (randNum == 1){
+		return IDLE;
+	}else if (randNum == 2){
+		return WALKING;
+	}else if (randNum == 3){
+		return RUNNING;
+	}else {
+		return AGGRESSIVE;
+	}
+}
 
 int main(int argc, char **argv)
 {	
@@ -257,6 +278,9 @@ ros::init(argc, argv, "DOG");
 ros::NodeHandle n;
 
 Dog dg(n);
+
+//ros::Timer timer = n.createTimer(ros::Duration(10), &Dog::timerCallback);
+
 
 /*//advertise() function will tell ROS that you want to publish on a given topic_
 //to stage

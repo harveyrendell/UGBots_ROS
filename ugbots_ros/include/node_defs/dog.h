@@ -13,8 +13,11 @@ class Dog : public Node
 public:
 	Dog();
 	Dog(ros::NodeHandle &n);
+	enum State { IDLE, WALKING, RUNNING, AGGRESSIVE };
+	State state;
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
+	void timerCallback(const ros::TimerEvent& e);
 	void move();
 	void stop();
 	void stopTurn();
@@ -24,9 +27,7 @@ public:
 	void calculateOrientation();
 	void doAngleCheck();
 	void checkTurningStatus();
-
-	enum State { IDLE, ROAMING, AGGRESSIVE, FLEEING };
-	State state;
+	State generateStatus();
 
 	char* enum_to_string(State t);
 
