@@ -61,7 +61,8 @@ void Carrier::bin_callback(ugbots_ros::bin_status msg)
 	localBinStatus = msg;
 }
 
-char* Carrier::enum_to_string(State t){
+char const * Carrier::enum_to_string(State t)
+{
     switch(t){
         case IDLE:
             return "IDLE";
@@ -98,17 +99,25 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 
 	if(localBinStatus.bin_stat == "FULL")
 	{
-		move_to(localBinStatus.bin_x,localBinStatus.bin_y);
-		/*if(move_to(bin_x,bin_y))
-		{
-			binStatus.bin_stat = "EMPTY";
-		}*/
+		geometry_msgs::Point location_point;
+		location_point.x = localBinStatus.bin_x;
+		location_point.y = localBinStatus.bin_y;
+		action_queue.push(location_point);
 	}
+
+	begin_action();
 }
 
 
 void Carrier::laser_callback(sensor_msgs::LaserScan msg)
 {
+	for (int i = 0; i < msg.ranges.length(); i++)
+	{
+		if(msg.ranges[i] < 10)
+		{
+
+		}
+	}
 	//This is the callback function to process laser scan messages
 	//you can access the range data from msg.ranges[i]. i = sample number	
 }
@@ -174,27 +183,26 @@ bool Carrier::begin_action()
 {
 	if (action_queue.empty())
 	{
+		state = IDLE;
 		return true;
 	}
+	geometry_msgs::Point end_point = action_queue.front();
 
-	geometry_msgs::point end_point = action_queue.front;
-	if(doubleComparator((end_point.x,this->pose.px) && (end_point.y,this->pose.py))
+	if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 	{
+		action_queue.pop();
+		state = IDLE;
 		return true;
 	}
-	
-
-
-	
-
-
+	state = TRAVELLING;
+	return false;
 	/*if(abs(pose.px - x) < 0.00001 && abs(pose.py - y) < 0.00001)
 	{
 		speed.linear_x = 0.0;
 		return true;
 	}
 	else
-	{*/
+	{
 		state = TRAVELLING;
 		speed.linear_x = 1.0;
 		moveX(abs(x - tempx), tempx);
@@ -209,14 +217,12 @@ bool Carrier::begin_action()
 				temprad = orientation.angle;
 			}	
 		}
-	//}
-	return false;
+	//}**/
 }
 
 
 void Carrier::move_forward(double distance)
 {	
-	
 	undergoing_task = true;
 	speed.linear_x = 2.0;
 	if(!moving)
@@ -243,9 +249,10 @@ void Carrier::stop(){}
 void Carrier::turnLeft(){}
 void Carrier::turnRight(){}
 void Carrier::collisionDetected(){}
+
 bool Carrier::doubleComparator(double a, double b)
 {
-    return fabs(a - b) < 0.001;
+    return abs(a - b) < 0.001;
 }
 
 int main(int argc, char **argv)

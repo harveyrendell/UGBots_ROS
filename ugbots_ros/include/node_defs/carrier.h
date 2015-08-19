@@ -2,6 +2,7 @@
 #include "std_msgs/String.h"
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
+#include <geometry_msgs/Point.h>
 #include <sensor_msgs/LaserScan.h>
 #include <ugbots_ros/bin_status.h>
 
@@ -41,17 +42,17 @@ public:
 	void turn(bool clockwise, double desired_angle, double temprad);
 	void moveX(double distance, double px);
 	void moveY(double distance, double py);
-	bool move_to();
+	bool begin_action();
 	void move_forward(double distance);
 	void move();
 	void stop();
 	void turnLeft();
 	void turnRight();
 	void collisionDetected();
-	bool Carrier::doubleComparator(double a, double b);
+	bool doubleComparator(double a, double b);
 
 	enum State {IDLE, TRAVELLING, CARRYING, AVOIDING, STOPPED};
 	State state;
 
-	char* enum_to_string(State t);
+	char const * enum_to_string(State t);
 };
