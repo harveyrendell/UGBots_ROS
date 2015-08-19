@@ -7,10 +7,8 @@ import javax.swing.BoxLayout;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 
+import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 @SuppressWarnings("serial")
 public class ROSinit extends JPanel {
@@ -41,11 +39,13 @@ public class ROSinit extends JPanel {
 	public ROSinit() {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		
-		JLabel prompt = new JLabel ("Enter the number of compentents to be added:");
+		JLabel prompt = new JLabel ("Enter the number of components to be added:");
 		JPanel top = new JPanel();
-		top.setSize(900, 15);
+		top.setMaximumSize(new Dimension(900, 40));
 		top.add(prompt);
 		
+		
+		this.setMaximumSize(new Dimension(900,450));
 		this.add(top);
 		addPromptPanel();
 	}
@@ -75,15 +75,6 @@ public class ROSinit extends JPanel {
 		this.add(panel);
 	}
 	
-	private void addStartButton(){
-		JPanel panel = new JPanel();
-		panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		
-		panel.add(_startButton);
-		
-		this.add(panel);
-	}
-	
 	//Method to disable all interactive components
 	public void disableAll(){
 		_pickerVal.setEnabled(false);
@@ -109,5 +100,18 @@ public class ROSinit extends JPanel {
 		_possumVal.setEnabled(true);
 		_tractorVal.setEnabled(true);
 		
+	}
+	
+	public int[] getVals(){
+		int[] vals = new int[8];
+		vals[0] = (int) _pickerVal.getValue();
+		vals[1] = (int) _carrierVal.getValue();
+		vals[2] = (int) _workerVal.getValue();
+		vals[3] = (int) _visitorVal.getValue();
+		vals[4] = (int) _dogVal.getValue();
+		vals[5] = (int) _catVal.getValue();
+		vals[6] = (int) _possumVal.getValue();
+		vals[7] = (int) _tractorVal.getValue();
+		return vals;
 	}
 }

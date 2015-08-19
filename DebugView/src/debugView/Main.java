@@ -3,8 +3,6 @@ package debugView;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
-import javax.swing.BoxLayout;
-import javax.swing.JScrollPane;
 
 public class Main {
 
