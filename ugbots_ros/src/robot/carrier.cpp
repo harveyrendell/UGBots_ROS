@@ -58,10 +58,7 @@ Carrier::Carrier(ros::NodeHandle &n)
 
 void Carrier::bin_callback(ugbots_ros::bin_status msg)
 {
-	localBinStatus.bin_x = msg.bin_x;
-	localBinStatus.bin_y = msg.bin_y;
-	localBinStatus.bin_stat = msg.bin_stat;
-
+	localBinStatus = msg;
 }
 
 char* Carrier::enum_to_string(State t){
@@ -173,8 +170,24 @@ void Carrier::moveY(double distance, double py) {
 	}
 }
 
-bool Carrier::move_to(double x, double y)
+bool Carrier::begin_action()
 {
+	if (action_queue.empty())
+	{
+		return true;
+	}
+
+	geometry_msgs::point end_point = action_queue.front;
+	if(doubleComparator((end_point.x,this->pose.px) && (end_point.y,this->pose.py))
+	{
+		return true;
+	}
+	
+
+
+	
+
+
 	/*if(abs(pose.px - x) < 0.00001 && abs(pose.py - y) < 0.00001)
 	{
 		speed.linear_x = 0.0;
@@ -230,6 +243,10 @@ void Carrier::stop(){}
 void Carrier::turnLeft(){}
 void Carrier::turnRight(){}
 void Carrier::collisionDetected(){}
+bool Carrier::doubleComparator(double a, double b)
+{
+    return fabs(a - b) < 0.001;
+}
 
 int main(int argc, char **argv)
 {	

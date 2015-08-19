@@ -6,6 +6,7 @@
 #include <ugbots_ros/bin_status.h>
 
 #include <sstream>
+#include <queue> 
 #include <stdlib.h>
 #include <node.h>
 
@@ -14,6 +15,10 @@ class Carrier : public Node
 public:
 	bool moving;
 	bool undergoing_task;
+
+	std::queue<geometry_msgs::Point> action_queue;
+
+
 	double tempx;
 	double tempy;
 	bool swag;
@@ -36,13 +41,14 @@ public:
 	void turn(bool clockwise, double desired_angle, double temprad);
 	void moveX(double distance, double px);
 	void moveY(double distance, double py);
-	bool move_to(double x, double y);
+	bool move_to();
 	void move_forward(double distance);
 	void move();
 	void stop();
 	void turnLeft();
 	void turnRight();
 	void collisionDetected();
+	bool Carrier::doubleComparator(double a, double b);
 
 	enum State {IDLE, TRAVELLING, CARRYING, AVOIDING, STOPPED};
 	State state;
