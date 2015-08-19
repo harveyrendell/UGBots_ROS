@@ -30,15 +30,7 @@ public:
 				break;
 			}
 		}
-
-		/*for (std::list<Point>::const_iterator iterator = beaconPositions.begin(), end = beaconPositions.end(); iterator != end; ++iterator)
-		{
-  			if ((iterator->x == p.x) && (iterator->y == p.y))
-  			{
-  				exists = true;
-  				break;
-  			}
-		}*/
+		
 		if (!exists)
 		{
 			beaconPositions.push_back(p);
@@ -70,8 +62,6 @@ int main(int argc, char **argv)
 	int count = 0;
 	while (ros::ok())
 	{
-
-		ROS_INFO('%d', sizeOf(c.getBeaconList()));
 
 		ros::spinOnce();
 		loop_rate.sleep();
