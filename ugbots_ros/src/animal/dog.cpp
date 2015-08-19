@@ -73,7 +73,6 @@ void Dog::odom_callback(nav_msgs::Odometry msg)
 	this->orientation.roty = msg.pose.pose.orientation.y;
 	this->orientation.rotz = msg.pose.pose.orientation.z;
 	this->orientation.rotw = msg.pose.pose.orientation.w;
-	this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
 
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
@@ -81,11 +80,11 @@ void Dog::odom_callback(nav_msgs::Odometry msg)
 
 
 	calculateOrientation();
-
 	doAngleCheck();
+	checkTurningStatus();
 
-	//ROS_INFO("Lets check the angle : %f", this->orientation.angle);
 
+/**
 	if ((msg.pose.pose.position.x + 1.1 >= 32) && (facingRight == true)){
 		
 		endOfPath = true;
@@ -119,6 +118,7 @@ void Dog::odom_callback(nav_msgs::Odometry msg)
 			this->orientation.currently_turning = false;
 		}
 	}
+**/
 
 }
 
@@ -128,16 +128,25 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 	//This is the callback function to process laser scan messages
 	//you can access the range data from msg.ranges[i]. i = sample number
 	bool detection = false;
-	for(int a = 0 ; a < 180; a++){
-		if (msg.ranges[a] < 5.8) {
-			detection = true;
-			continue;
-		} 
+	if (this->orientation.currently_turning == false){
+		for(int a = 0 ; a < 180; a++){
+			if ((msg.ranges[a] < 5.8) && (a <= 90)) {
+				detection = true;
+				ROS_INFO("TURN LEFT");
+				turnLeft();
+				continue;
+			} else if ((msg.ranges[a] < 5.8) && (a > 90)){
+				detection = true;
+				ROS_INFO("TURN RIGHT");
+				turnRight();
+				continue;
+			}
+		}
 	}
 
 	if (detection == true){
-		this->speed.linear_x = 0.0;
-		this->speed.angular_z = 0.0;
+		//this->speed.linear_x = 0.0;
+		//this->speed.angular_z = 0.0;
 		state = AGGRESSIVE;
 
 	} else {
@@ -165,9 +174,8 @@ void Dog::stop(){
 //Update the next desired angle
 void Dog::stopTurn(){
 	this->orientation.currently_turning = false;
-	this->speed.linear_x = 1.0;
+	this->speed.linear_x = 4.0;
 	this->speed.angular_z = 0.0;
-	this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2.000000);
 }
 
 //Turn left
@@ -209,6 +217,19 @@ void Dog::doAngleCheck(){
 		this->orientation.angle = this->orientation.angle - 2.000000 * M_PI;	
 	}
 }
+
+void Dog::checkTurningStatus()
+{
+	if(this->orientation.currently_turning == true)
+	{
+		if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) >= this->orientation.desired_angle)
+		{
+			stopTurn(); // stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
+		}
+		return;
+	}
+}
+
 
 void Dog::collisionDetected(){}
 

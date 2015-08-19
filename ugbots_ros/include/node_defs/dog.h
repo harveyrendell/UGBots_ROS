@@ -23,6 +23,7 @@ public:
 	void collisionDetected();
 	void calculateOrientation();
 	void doAngleCheck();
+	void checkTurningStatus();
 
 	enum State { IDLE, ROAMING, AGGRESSIVE, FLEEING };
 	State state;
