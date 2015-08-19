@@ -44,7 +44,7 @@ public class ContentPanel extends JPanel {
 		panel.add(_finishButton);
 		panel.add(new JSeparator());
 		panel.setMaximumSize(new Dimension(900, 30));
-		_infoWrapper.setLayout(new GridLayout(0,1,0,0));
+		_infoWrapper.setLayout(new GridLayout(0,2,0,0));
 		_debug.setViewportView(_infoWrapper);
 		
 		this.add(_top);

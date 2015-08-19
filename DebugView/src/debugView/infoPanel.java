@@ -1,5 +1,7 @@
 package debugView;
 
+import java.awt.Dimension;
+
 import javax.swing.JPanel;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -20,6 +22,7 @@ public class infoPanel extends JPanel {
 	private JLabel _yPos = new JLabel("y position: ");
 	private JLabel _status = new JLabel("status: ");
 	private JLabel _message = new JLabel("message: ");
+	private JPanel _progressWrapper = new JPanel();
 	private JProgressBar _binProgress = new JProgressBar();
 	
 	public infoPanel(String title, String type) {
@@ -43,7 +46,13 @@ public class infoPanel extends JPanel {
 		this.add(_message);
 		//Add progress bar to show the bins status
 		if (_type.getText().equals("Picker")){
-			this.add(_binProgress);
+			JLabel binLabel = new JLabel("Bin:");
+			_binProgress.setMaximumSize(new Dimension(100,15));
+			
+			_progressWrapper.add(binLabel);
+			_progressWrapper.add(_binProgress);
+			
+			this.add(_progressWrapper);
 		}
 	}
 	
