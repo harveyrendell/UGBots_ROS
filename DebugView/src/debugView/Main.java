@@ -7,7 +7,6 @@ import javax.swing.JFrame;
 public class Main {
 
 	private JFrame frame;
-	private ContentPanel _display = new ContentPanel();
 
 	/**
 	 * Launch the application.
@@ -40,6 +39,8 @@ public class Main {
 		frame.setBounds(100, 100, 1000, 700);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		frame.add(_display);
+		ContentPanel panel = new ContentPanel();
+		frame.add(panel);
+		
 	}
 }

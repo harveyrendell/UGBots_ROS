@@ -5,13 +5,21 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.HashMap;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.BoxLayout;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
 
 @SuppressWarnings("serial")
 public class ContentPanel extends JPanel {
@@ -26,7 +34,8 @@ public class ContentPanel extends JPanel {
 	private JScrollPane _debug = new JScrollPane();
 	private JPanel _infoWrapper = new JPanel();
 	private HashMap<String, infoPanel> _map = new HashMap<String, infoPanel>();
-	private Processes processes = new Processes(this);
+	private ContentPanel _self = this;
+	private Processes processes;
 	
 	public ContentPanel() {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -56,7 +65,7 @@ public class ContentPanel extends JPanel {
 		String[] names = {"Picker","Carrier","Worker","Visitor","Dog","Cat","Possum","Tractor"};
 		int vals[] = _top.getVals();
 		int k = 0;
-		String name = "Robot_";
+		String name = "robot_";
 		
 		for (int i = 0; i < vals.length; i++){
 			for (int j = 0; j <vals[i]; j++){
@@ -69,7 +78,7 @@ public class ContentPanel extends JPanel {
 	}
 	
 	private void paint(){
-		String name = "Robot_";
+		String name = "robot_";
 		
 		for (int i =0; i< _map.size(); i++){
 			_infoWrapper.add(_map.get(name + i));
@@ -77,11 +86,18 @@ public class ContentPanel extends JPanel {
 		
 	}
 	
+	public HashMap<String, infoPanel> getMap(){
+		return this._map;
+	}
+	
 	private void addListeners() {
 		_startButton.addActionListener(new ActionListener(){
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				processes = new Processes(_self, _top.getVals());
+				_infoWrapper.removeAll();
+				_map.clear();
 				_top.disableAll();
 				_startButton.setVisible(false);
 				_finishButton.setVisible(true);
@@ -101,8 +117,7 @@ public class ContentPanel extends JPanel {
 				_finishButton.setVisible(false);
 				_startButton.setVisible(true);
 				_top.enableAll();
-				_map.clear();
-				_infoWrapper.removeAll();
+
 				processes.killProcs();
 			}
 			

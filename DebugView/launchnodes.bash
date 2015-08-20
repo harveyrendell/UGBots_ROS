@@ -7,6 +7,6 @@ cd ugbots_ros
 
 sleep 5
 
-rosmake ugbots_ros --pre-clean -t
+rosmake ugbots_ros
 
 roslaunch ugbots_ros world.launch
