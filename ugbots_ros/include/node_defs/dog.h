@@ -32,7 +32,7 @@ public:
 	void checkTurningStatus();
 	State generateStatus();
 
-	char* enum_to_string(State t);
+	char const* enum_to_string(State t);
 
 	bool endOfPath;
 	bool facingRight;

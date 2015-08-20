@@ -199,6 +199,7 @@ Possum::State Possum::generateStatus(){
 }
 
 void Possum::collisionDetected(){}
+char const* Possum::enum_to_string(State t){ return ""; }
 
 int main(int argc, char **argv)
 {	
