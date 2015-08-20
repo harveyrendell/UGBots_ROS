@@ -58,6 +58,7 @@ void Cat::stop(){}
 void Cat::turnLeft(){}
 void Cat::turnRight(){}
 void Cat::collisionDetected(){}
+char const* Cat::enum_to_string(State t){ return ""; }
 
 int main(int argc, char **argv)
 {	

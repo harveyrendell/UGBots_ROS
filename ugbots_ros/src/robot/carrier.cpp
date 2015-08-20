@@ -61,8 +61,8 @@ void Carrier::bin_callback(ugbots_ros::bin_status msg)
 	localBinStatus = msg;
 }
 
-char const * Carrier::enum_to_string(State t)
-{
+
+char const* Carrier::enum_to_string(State t){
     switch(t){
         case IDLE:
             return "IDLE";

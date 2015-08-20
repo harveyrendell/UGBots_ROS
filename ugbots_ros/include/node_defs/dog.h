@@ -27,7 +27,7 @@ public:
 	enum State { IDLE, ROAMING, AGGRESSIVE, FLEEING };
 	State state;
 
-	char* enum_to_string(State t);
+	char const* enum_to_string(State t);
 
 	bool endOfPath;
 	bool facingRight;
