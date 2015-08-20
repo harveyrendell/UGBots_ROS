@@ -21,10 +21,7 @@ Carrier::Carrier()
 
 	moving = false;
 	undergoing_task = false;
-	swag = false;
 
-	tempx = -10.0;
-	tempy = -48.0;
 	temprad = 0.0;
 }
 
@@ -33,27 +30,28 @@ Carrier::Carrier(ros::NodeHandle &n)
 	//this->n = n;
 
 	//setting base attribute defaults
-	pose.theta = M_PI/2.0;
-	pose.px = 10;
-	pose.py = 20;
 	speed.linear_x = 0.0;
 	speed.max_linear_x = 3.0;
 	speed.angular_z = 0.0;
 	state = IDLE;
 
-	moving = false;
-	undergoing_task = false;
-	swag = false;
+	x_completed = false;
+	x_started = false;
+	y_completed = false;
+	x_started = false;
 
-	tempx = -10.0;
-	tempy = -48.0;
-	temprad = 0.0;
-
-	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Carrier::odom_callback, this);
-	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Carrier::laser_callback, this);
+	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_1/cmd_vel",1000);
+	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_1/base_pose_ground_truth",1000, &Carrier::odom_callback, this);
+	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_1/base_scan",1000,&Carrier::laser_callback, this);
 	carrier_alert = n.subscribe<ugbots_ros::bin_status>("/alert",1000,&Carrier::bin_callback,this);
 	carrier_alert_pub = n.advertise<ugbots_ros::bin_status>("/alert",1000);
+
+	geometry_msgs::Point point;
+	point.x = 36.0;
+	point.y = -4.0;
+	action_queue.push(point);
+	point.y = 0.0;
+	action_queue.push(point);
 }
 
 void Carrier::bin_callback(ugbots_ros::bin_status msg)
@@ -83,8 +81,8 @@ char const* Carrier::enum_to_string(State t){
 void Carrier::odom_callback(nav_msgs::Odometry msg)
 {
 	//This is the call back function to process odometry messages coming from Stage. 	
-	this->pose.px = -10 + msg.pose.pose.position.x;
-	this->pose.py = -48 + msg.pose.pose.position.y;	
+	pose.px = msg.pose.pose.position.x;
+	pose.py = msg.pose.pose.position.y;	
 	orientation.rotx = msg.pose.pose.orientation.x;
 	orientation.roty = msg.pose.pose.orientation.y;
 	orientation.rotz = msg.pose.pose.orientation.z;
@@ -92,10 +90,12 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 	orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
 	orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
 	orientation.roty-orientation.rotz*orientation.rotz);
-	ROS_INFO("/position/x/%f", this->pose.px);
-	ROS_INFO("/position/y/%f", this->pose.py);
-	ROS_INFO("/status/%s/./", enum_to_string(state));
-
+	//ROS_INFO("/position/x/%f", this->pose.px);
+	//ROS_INFO("/position/y/%f", this->pose.py);
+	//ROS_INFO("/speed/x/%f", msg.twist.twist.linear.x);
+	//ROS_INFO("/speed/y/%f", msg.twist.twist.linear.y);
+	//ROS_INFO("/status/%s/./", enum_to_string(state));
+	ROS_INFO("x should be: %f", pose.px);
 
 	if(localBinStatus.bin_stat == "FULL")
 	{
@@ -105,18 +105,17 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 		action_queue.push(location_point);
 	}
 
+		
 	begin_action();
+	publish();
 }
 
 
 void Carrier::laser_callback(sensor_msgs::LaserScan msg)
 {
-	for (int i = 0; i < msg.ranges.length(); i++)
+	for (int i = 0; i < 180; i++)
 	{
-		if(msg.ranges[i] < 10)
-		{
-
-		}
+		//ROS_INFO("swag = %s",msg.ranges[i]);
 	}
 	//This is the callback function to process laser scan messages
 	//you can access the range data from msg.ranges[i]. i = sample number	
@@ -149,7 +148,8 @@ void Carrier::turn(bool clockwise, double desired_angle, double temprad) {
 	}
 
 	//turn until desired angle is reached, taking into account of the 2 clock time ahead
-	if (orientation.desired_angle-3*(current_angular_z/10) >= orientation.angle) {
+	if (orientation.desired_angle - (current_angular_z/10) >= orientation.angle) {
+		
 		orientation.currently_turning = true;
 	//if desired angle is reached, robot stops turning and moves again 
 	} else {
@@ -160,64 +160,97 @@ void Carrier::turn(bool clockwise, double desired_angle, double temprad) {
 		zero_angle = orientation.desired_angle;
 	}
 }
-void Carrier::moveX(double distance, double px) {
-	double x = distance + px;
-	double distance_x = x - pose.px;
-	if (distance_x < 0.20001) {
-		state = STOPPED;
-		speed.linear_x = 0.0;
+void Carrier::moveX(double distance) {
+	double distance_x = distance - pose.px;
+	
+	speed.linear_x = 3.0;
+	if (distance_x < 0.0 && x_started == false)
+	{
+		turn(false, M_PI/2 + orientation.angle, 0.0);
+		x_started = true;
+		return;
+	}
+	speed.linear_x = 3.0;
+	if (abs(distance_x) < 0.1)
+	{
+		//ROS_INFO("distance_x is: %f", distance_x);
+		speed.linear_x = 0.1;
+	}
+
+	//ROS_INFO("distance_x: %f", distance_x);
+	
+	if (distance_x < 0.001) {
+		x_completed = true;
+		x_started = false;
+		stop();
 	}
 }
 
-void Carrier::moveY(double distance, double py) {
-	double y = distance + py;
-	double distance_y = y - pose.py;
-	ROS_INFO("y:%f",distance);
-	if (distance_y < 0.20001) {
-		state = IDLE;
-		speed.linear_x = 0.0;
+void Carrier::moveY(double distance) {
+	double distance_y = distance - pose.py;
+
+	
+	if (distance_y < 0.0 && y_started == false)
+	{
+		ROS_INFO("distance_x: %f", distance_y);
+		ROS_INFO("orientation: %f", M_PI + orientation.angle);
+		turn(false, M_PI + orientation.angle, 0.0);
+		return;
+	}
+	speed.linear_x = 3.0;
+	if (abs(distance_y) < 0.1)
+	{
+		speed.linear_x = 0.1; 
+	}
+	if (distance_y < 0.001) {
+		x_completed = false;
+		y_started = false;
+		stop();
 	}
 }
 
 bool Carrier::begin_action()
 {
+
 	if (action_queue.empty())
 	{
 		state = IDLE;
 		return true;
 	}
 	geometry_msgs::Point end_point = action_queue.front();
-
 	if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 	{
 		action_queue.pop();
-		state = IDLE;
-		return true;
+		stop();
 	}
 	state = TRAVELLING;
-	return false;
-	/*if(abs(pose.px - x) < 0.00001 && abs(pose.py - y) < 0.00001)
+	if(!x_completed)
 	{
-		speed.linear_x = 0.0;
-		return true;
+		moveX(end_point.x);
 	}
 	else
 	{
-		state = TRAVELLING;
-		speed.linear_x = 1.0;
-		moveX(abs(x - tempx), tempx);
-		if (speed.linear_x == 0.0) 
+		turn(false, M_PI/2, 0.0);
+		moveY(end_point.y);
+	}
+
+	
+
+
+/*
+	moveX(end_point.x);
+	if (speed.linear_x == 0.0) 
+	{
+		//turn(double angle, double linear, double angular)
+		turn(false, M_PI/2, 0.0);
+		if (speed.angular_z == 0.0)
 		{
-			turn(false, M_PI/2, 0.0);
-			if (speed.angular_z == 0.0)
-			{
-				state = TRAVELLING;
-				speed.linear_x = 1.0;
-				moveY(abs(y - tempy),tempy);
-				temprad = orientation.angle;
-			}	
-		}
-	//}**/
+			state = TRAVELLING;
+			speed.linear_x = 3.0;
+			moveY(end_point.y);
+			temprad = orientation.angle;
+		}	
+	}**/
 }
 
 
@@ -225,14 +258,9 @@ void Carrier::move_forward(double distance)
 {	
 	undergoing_task = true;
 	speed.linear_x = 2.0;
-	if(!moving)
-	{
-		tempx = pose.px;
-		tempy = pose.py;
-		moving = true;
-	}
-	double x = distance * cos(pose.theta) + tempx;
-	double y = distance * sin(pose.theta) + tempy;
+
+	double x = distance * cos(pose.theta);
+	double y = distance * sin(pose.theta);
 
 	double distance_x = x - pose.px;
 	double distance_y = y - pose.py;
@@ -245,7 +273,12 @@ void Carrier::move_forward(double distance)
 }
 
 void Carrier::move(){}
-void Carrier::stop(){}
+void Carrier::stop()
+{
+	state = IDLE;
+	speed.linear_x = 0.0;
+	speed.angular_z = 0.0;
+}
 void Carrier::turnLeft(){}
 void Carrier::turnRight(){}
 void Carrier::collisionDetected(){}
@@ -276,7 +309,7 @@ int count = 0;
 
 while (ros::ok())
 {
-	node.publish();	
+	//node.publish();	
 
 	node.carrier_alert_pub.publish(node.binStatus);
 

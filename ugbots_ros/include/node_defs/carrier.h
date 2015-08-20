@@ -19,10 +19,11 @@ public:
 
 	std::queue<geometry_msgs::Point> action_queue;
 
+	bool x_completed;
+	bool x_started;
+	bool y_completed;
+	bool y_started;
 
-	double tempx;
-	double tempy;
-	bool swag;
 	double zero_angle;
 	double temprad;
 
@@ -40,8 +41,8 @@ public:
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
 	void turn(bool clockwise, double desired_angle, double temprad);
-	void moveX(double distance, double px);
-	void moveY(double distance, double py);
+	void moveX(double distance);
+	void moveY(double distance);
 	bool begin_action();
 	void move_forward(double distance);
 	void move();
