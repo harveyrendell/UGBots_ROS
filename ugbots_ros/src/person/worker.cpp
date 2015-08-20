@@ -255,7 +255,7 @@ void Worker::calculateOrientation()
 	
 void Worker::collisionDetected(){}
 
-char* Worker::enum_to_string(State t)
+char const* Worker::enum_to_string(State t)
 {
 	switch(t){
 		case IDLE:

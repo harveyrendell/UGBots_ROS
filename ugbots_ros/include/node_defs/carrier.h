@@ -47,5 +47,6 @@ public:
 	enum State {IDLE, TRAVELLING, CARRYING, AVOIDING, STOPPED};
 	State state;
 
-	char* enum_to_string(State t);
+	char const* enum_to_string(State t);
+
 };

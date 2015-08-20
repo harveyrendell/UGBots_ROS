@@ -23,4 +23,7 @@ public:
 
 	enum State { IDLE, ROAMING, SLEEPING, FLEEING };
 	State state;
+	
+	char const* enum_to_string(State t);
+
 };
