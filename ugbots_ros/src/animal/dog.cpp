@@ -212,7 +212,7 @@ void Dog::doAngleCheck(){
 
 void Dog::collisionDetected(){}
 
-char* Dog::enum_to_string(State t){
+char const* Dog::enum_to_string(State t){
     switch(t){
         case AGGRESSIVE:
             return "AGGRESSIVE";

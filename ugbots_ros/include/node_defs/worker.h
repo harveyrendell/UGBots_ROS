@@ -22,7 +22,7 @@ public:
 	void turnRight();
 	void doAngleCheck();
 	void collisionDetected();
-
+	
 	void stopTurnStatic();
 	void spinOnTheSpot();
 	void checkTurningStatus();
@@ -32,7 +32,7 @@ public:
 	enum State { IDLE, PATROLLING, RESPONDING, SAWDOG };
 	State state;
 	
-	char* enum_to_string(State t);
+	char const* enum_to_string(State t);
 
 	bool checkedThisRot;
 
