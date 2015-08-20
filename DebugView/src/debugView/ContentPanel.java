@@ -103,6 +103,7 @@ public class ContentPanel extends JPanel {
 				_top.enableAll();
 				_map.clear();
 				_infoWrapper.removeAll();
+				processes.killProcs();
 			}
 			
 		});
