@@ -99,19 +99,19 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 			if ((msg.ranges[a] < 5.8) && (a > 85) && (a < 95)) {
 				detection = true;
 				turnBack();
-				continue;
+				break;
 			} else if ((msg.ranges[a] < 5.8) && (a <= 85)) {
 				detection = true;
 				turnLeft();
-				continue;
+				break;
 			} else if ((msg.ranges[a] < 5.8) && (a >= 95)){
 				detection = true;
 				turnRight();
-				continue;
+				break;
 			}
 		}
 	}
-
+/**
 	if (detection == true){
 		//this->speed.linear_x = 0.0;
 		//this->speed.angular_z = 0.0;
@@ -127,7 +127,7 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 		}
 	}
 
-	
+**/	
 }
 
 void Dog::timerCallback(const ros::TimerEvent& e){
@@ -136,11 +136,11 @@ void Dog::timerCallback(const ros::TimerEvent& e){
 	if (state == IDLE){
 		stop();
 	}else if (state == WALKING){
-
+		walk();
 	}else if (state == RUNNING){
-
+		run();
 	}else{
-
+		stop();
 	}
 }
 
@@ -161,11 +161,13 @@ void Dog::stopTurn(){
 }
 
 void Dog::walk(){
-
+	this->speed.linear_x = 1.5;
+	this->speed.angular_z = 0.0;
 }
 
 void Dog::run(){
-	
+	this->speed.linear_x = 4.0;
+	this->speed.angular_z = 0.0;
 }
 
 //Turn left
@@ -255,10 +257,8 @@ Dog::State Dog::generateStatus(){
 		return IDLE;
 	}else if (randNum == 2){
 		return WALKING;
-	}else if (randNum == 3){
+	}else{
 		return RUNNING;
-	}else {
-		return AGGRESSIVE;
 	}
 }
 
