@@ -54,7 +54,7 @@ Dog::Dog(ros::NodeHandle &n)
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Dog::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000, &Dog::laser_callback, this);
-	this->sub_list.sub_timer = n.createTimer(ros::Duration(0.1), &Dog::timerCallback, this);
+	this->sub_list.sub_timer = n.createTimer(ros::Duration(5), &Dog::timerCallback, this);
 
 	//ros::Timer timer = n.createTimer(ros::Duration(10), timerCallback);
 
@@ -86,43 +86,6 @@ void Dog::odom_callback(nav_msgs::Odometry msg)
 	doAngleCheck();
 	checkTurningStatus();
 
-
-/**
-	if ((msg.pose.pose.position.x + 1.1 >= 32) && (facingRight == true)){
-		
-		endOfPath = true;
-
-		this->speed.linear_x = 0.0;
-		this->speed.angular_z = 3.0;
-		this->orientation.currently_turning = true;
-
-		if((this->orientation.angle + (M_PI / (this->speed.angular_z * 3))) >= this->orientation.desired_angle){
-			this->speed.angular_z = 0.0;// stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
-			facingRight = false;
-			facingLeft = true;
-			endOfPath = false;
-			this->orientation.currently_turning = false;
-		}
-	}
-
-	if ((msg.pose.pose.position.x - 1.0 <= 0) && (facingLeft == true)) {
-
-		endOfPath = true;
-
-		this->speed.linear_x = 0.0;
-		this->speed.angular_z = 3.0;
-		this->orientation.currently_turning = true;
-
-		if((this->orientation.angle + (M_PI / (this->speed.angular_z * 3))) >= (M_PI * 2)){
-			this->speed.angular_z = 0.0;// stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
-			facingLeft = false;
-			facingRight = true;
-			endOfPath = false;
-			this->orientation.currently_turning = false;
-		}
-	}
-**/
-
 }
 
 
@@ -133,11 +96,15 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 	bool detection = false;
 	if (this->orientation.currently_turning == false){
 		for(int a = 0 ; a < 180; a++){
-			if ((msg.ranges[a] < 5.8) && (a <= 90)) {
+			if ((msg.ranges[a] < 5.8) && (a > 85) && (a < 95)) {
+				detection = true;
+				turnBack();
+				continue;
+			} else if ((msg.ranges[a] < 5.8) && (a <= 85)) {
 				detection = true;
 				turnLeft();
 				continue;
-			} else if ((msg.ranges[a] < 5.8) && (a > 90)){
+			} else if ((msg.ranges[a] < 5.8) && (a >= 95)){
 				detection = true;
 				turnRight();
 				continue;
@@ -165,6 +132,16 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 
 void Dog::timerCallback(const ros::TimerEvent& e){
 	ROS_INFO("Callback 1 triggered");
+	state = generateStatus();
+	if (state == IDLE){
+		stop();
+	}else if (state == WALKING){
+
+	}else if (state == RUNNING){
+
+	}else{
+
+	}
 }
 
 void Dog::move(){}
@@ -183,6 +160,14 @@ void Dog::stopTurn(){
 	this->speed.angular_z = 0.0;
 }
 
+void Dog::walk(){
+
+}
+
+void Dog::run(){
+	
+}
+
 //Turn left
 void Dog::turnLeft(){
 	this->orientation.currently_turning = true;
@@ -197,6 +182,14 @@ void Dog::turnRight(){
 	this->orientation.desired_angle = this->orientation.desired_angle - (M_PI / 2);
 	this->speed.linear_x = 0.5;
 	this->speed.angular_z = -5.0;
+}
+
+//Turn back
+void Dog::turnBack(){
+	this->orientation.currently_turning = true;
+	this->orientation.desired_angle = this->orientation.desired_angle + (M_PI);
+	this->speed.linear_x = 0.1;
+	this->speed.angular_z = 5.0;
 }
 
 void Dog::calculateOrientation()

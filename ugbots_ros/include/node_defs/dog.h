@@ -21,8 +21,11 @@ public:
 	void move();
 	void stop();
 	void stopTurn();
+	void walk();
+	void run();
 	void turnLeft();
 	void turnRight();
+	void turnBack();
 	void collisionDetected();
 	void calculateOrientation();
 	void doAngleCheck();
