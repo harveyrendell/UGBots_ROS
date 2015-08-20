@@ -74,9 +74,9 @@ void Possum::laser_callback(sensor_msgs::LaserScan msg)
 {
 	if (this->orientation.currently_turning == false){
 		if ((msg.ranges[90] <= 2) && (msg.ranges[179] <= 2)){
-			turnRight();
+			turn((- M_PI / 2.000000), 0.0,-5.0);
 		}else if ((msg.ranges[90] <= 2) && (msg.ranges[0] <= 2)){
-			turnLeft();
+			turn((M_PI / 2.000000), 0.5, 5.0);
 		}
 	}
 }
@@ -135,29 +135,6 @@ void Possum::turnBack(){
 	this->speed.linear_x = 0.0;
 	this->speed.angular_z = 5.0;
 }
-void Possum::calculateOrientation()
-{	
-	this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
-}
-
-//Angle translation for easier interpretation
-void Possum::doAngleCheck(){		
-	//if -ve rads, change to +ve rads
-	if(this->orientation.angle < 0)
-	{
-		this->orientation.angle = this->orientation.angle + 2.000000 * M_PI;
-	}
-	//if the desired angle is > 2pi, changed the desired angle to pi/2 
-	if(this->orientation.desired_angle > (2.000000 * M_PI))
-	{
-		this->orientation.desired_angle = M_PI / 2.000000;
-	}
-	//if the current angle is 2pi or more, translate the angle to 0< x <2pi 
-	if(this->orientation.angle > 2.000000 * M_PI)
-	{
-		this->orientation.angle = this->orientation.angle - 2.000000 * M_PI;	
-	}
-}
 
 void Possum::checkTurningStatus()
 {
@@ -199,7 +176,6 @@ Possum::State Possum::generateStatus(){
 }
 
 void Possum::collisionDetected(){}
-char const* Possum::enum_to_string(State t){ return ""; }
 
 int main(int argc, char **argv)
 {	

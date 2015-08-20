@@ -27,8 +27,6 @@ public:
 	void walk();
 	void run();
 	void collisionDetected();
-	void calculateOrientation();
-	void doAngleCheck();
 	void checkTurningStatus();
 	State generateStatus();
 	char* enum_to_string(State t);
