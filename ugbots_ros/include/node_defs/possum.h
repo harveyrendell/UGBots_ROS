@@ -13,14 +13,24 @@ class Possum : public Node
 public:
 	Possum();
 	Possum(ros::NodeHandle &n);
-	void odom_callback(nav_msgs::Odometry msg);
-	void laser_callback(sensor_msgs::LaserScan msg);
-	void move();
-	void stop();
-	void turnLeft();
-	void turnRight();
-	void collisionDetected();
-
 	enum State { IDLE, ROAMING, FLEEING };
 	State state;
+	void odom_callback(nav_msgs::Odometry msg);
+	void laser_callback(sensor_msgs::LaserScan msg);
+	void timerCallback(const ros::TimerEvent& e);
+	void move();
+	void stop();
+	void stopTurn();
+	void turnLeft();
+	void turnRight();
+	void turnBack();
+	void walk();
+	void run();
+	void collisionDetected();
+	void calculateOrientation();
+	void doAngleCheck();
+	void checkTurningStatus();
+	State generateStatus();
+
+	char* enum_to_string(State t);
 };
