@@ -245,7 +245,7 @@ void Picker::pickKiwi() {
 	}
 }
 
-char* Picker::enum_to_string(State t) {
+char const* Picker::enum_to_string(State t) {
 	switch (t){
 		case IDLE:
 			return "IDLE";

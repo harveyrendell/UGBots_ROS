@@ -59,6 +59,7 @@ void Visitor::stop(){}
 void Visitor::turnLeft(){}
 void Visitor::turnRight(){}
 void Visitor::collisionDetected(){}
+char const* Visitor::enum_to_string(State t){ return ""; }
 
 int main(int argc, char **argv)
 {	
