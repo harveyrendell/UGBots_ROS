@@ -25,31 +25,64 @@ Visitor::Visitor(ros::NodeHandle &n)
 	//this->n = n;
 
 	//setting base attribute defaults
-	pose.theta = M_PI/2.0;
-	pose.px = 10;
-	pose.py = 20;
-	speed.linear_x = 0.0;
-	speed.max_linear_x = 3.0;
-	speed.angular_z = 0.0;
-	state = IDLE;
+	this->pose.theta = M_PI/2.0;
+	this->pose.px = -40;
+	this->pose.py = -44;
+	this->speed.linear_x = 2.0;
+	this->speed.max_linear_x = 3.0;
+	this->speed.angular_z = 0.0;
+	this->state = IDLE;
 
-	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Visitor::odom_callback, this);
-	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Visitor::laser_callback, this);
+	this->orientation.previous_right_distance = 0;
+	this->orientation.previous_left_distance = 0;
+	this->orientation.previous_front_distance = 0;
+	this->orientation.angle = 0;
+	this->orientation.desired_angle = 0;
+
+	this->orientation.currently_turning = false;
+	this->orientation.currently_turning_static = false;
+
+	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Visitor::odom_callback, this);
+	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Visitor::laser_callback, this);
 }
 
 void Visitor::odom_callback(nav_msgs::Odometry msg)
 {
 	//This is the call back function to process odometry messages coming from Stage. 	
-	this->pose.px = 5 + msg.pose.pose.position.x;
-	this->pose.py = 10 + msg.pose.pose.position.y;
-	ROS_INFO("Current x position is: %f", this->pose.px);
-	ROS_INFO("Current y position is: %f", this->pose.py);
+	this->pose.px = -40 + msg.pose.pose.position.x;
+	this->pose.py = -44 + msg.pose.pose.position.y;
+	this->orientation.rotx = msg.pose.pose.orientation.x;
+	this->orientation.roty = msg.pose.pose.orientation.y;
+	this->orientation.rotz = msg.pose.pose.orientation.z;
+	this->orientation.rotw = msg.pose.pose.orientation.w;
+	
+	calculateOrientation();
+
+	doAngleCheck();		
+
+	checkTurningStatus();
+
+	//checkStaticTurningStatus();
+
+	/*ROS_INFO("/position/x/%f",this->pose.px);
+	ROS_INFO("/position/y/%f",this->pose.py);
+	ROS_INFO("/status/%s/./",enum_to_string(this->state));*/	
+
+	ROS_INFO("ANGLE: %f",this->orientation.angle);
+	ROS_INFO("DESIRED ANGLE: %f", this->orientation.desired_angle);
+
 }
 
 
 void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 {
+	if(msg.ranges[90] < 3.5)
+	{
+		turn(M_PI / 2, 2.0, 5.0);
+
+	}
+
 	//This is the callback function to process laser scan messages
 	//you can access the range data from msg.ranges[i]. i = sample number	
 }
