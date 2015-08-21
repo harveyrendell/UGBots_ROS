@@ -21,7 +21,8 @@ public:
 
 	void turn(double angle, double linear, double angular)
 	{
-			this->orientation.currently_turning = true;
+
+		this->orientation.currently_turning = true;
 		this->orientation.desired_angle = this->orientation.desired_angle + angle;
 		this->speed.linear_x = linear;
 		this->speed.angular_z = angular;
@@ -40,12 +41,12 @@ public:
 			this->orientation.desired_angle = this->orientation.desired_angle + 2.000000 * M_PI;
 		}
 		//if the desired angle is > 2pi, changed the desired angle to pi/2 
-		if(this->orientation.desired_angle > (2.000000 * M_PI))
+		while(this->orientation.desired_angle > (2.000000 * M_PI))
 		{
-			this->orientation.desired_angle = M_PI / 2.000000;
+			this->orientation.desired_angle = this->orientation.desired_angle - 2.000000 * M_PI;
 		}
 		//if the current angle is 2pi or more, translate the angle to 0< x <2pi 
-		if(this->orientation.angle > 2.000000 * M_PI)
+		while(this->orientation.angle > 2.000000 * M_PI)
 		{
 			this->orientation.angle = this->orientation.angle - 2.000000 * M_PI;	
 		}
@@ -66,8 +67,7 @@ public:
 				stopTurn();
 			}
 			return;
-		}
-		*/
+		}**/
 	}
 
 
