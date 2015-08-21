@@ -16,10 +16,9 @@ public:
 		Point point;
 		point.x = p.x;
 		point.y = p.y;
-		ROS_INFO("points x:, %f y: %f", p.x, p.y);
 		addBeacon(point);
 
-		ROS_INFO("start x: %f, y: %f; end x: %f, y = %f", rowPositions[0].start_point.x, rowPositions[0].start_point.y, rowPositions[0].end_point.x, rowPositions[0].end_point.y);
+		ROS_INFO("Number of Rows: %d ", rowPositions.size());
 	}
 
 	void addBeacon(Point p)
@@ -48,19 +47,26 @@ public:
 	{
 		//boolean to check if the x coordinate for the row exists
 		bool x_exists = false;
+		//loops counter to access list element
 		int i = 0;
+		//initialise new row for the list of rows
 		Row new_row;
+		new_row.status = UNASSIGNED;
 
+		//iterate through existing list of rows
 		for (std::vector<Row>::iterator row = rowPositions.begin(); row != rowPositions.end(); ++row) {
 			Row current = *row;
+			//when corresponding x coordinate found
 			if (current.x_pos == p.x) {
 				x_exists = true;
+				//if the existing start points y coordinate is greater than the new points
+				//replaces the row with appropriate start/end point
 				if (current.start_point.y > p.y) {
-					ROS_INFO("here");
 					new_row.start_point = p;
 					new_row.end_point = current.start_point;
 					new_row.x_pos = p.x;
 					rowPositions[i] = new_row;
+				//if not, new point is the end point
 				} else {
 					new_row.start_point = current.start_point;
 					new_row.end_point = p;
@@ -72,6 +78,7 @@ public:
 			i++;
 		}
 
+		//if the x coordinate does not exist, add to row as start point
 		if (!x_exists) {
 			new_row.start_point = p;
 			new_row.x_pos = p.x;

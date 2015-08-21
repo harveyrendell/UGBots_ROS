@@ -23,8 +23,10 @@ public:
 	// getter methods for x, y
 	double getX(){ return x; }
 	double getY(){ return y; }
+	bool isPublished() { return sent; }
 	void setX(double x) { this->x = x; }
 	void setY(double y) { this->y = y; }
+	void setAsPublished() { sent = true; }
 	void bpgt_callback(nav_msgs::Odometry msg)
 	{
 		setX(msg.pose.pose.position.x);
@@ -35,6 +37,7 @@ private:
 	// coordinates for the beacon
 	double x;
 	double y;
+	bool sent = false;
 };
 
 int main(int argc, char **argv)
@@ -56,9 +59,10 @@ int main(int argc, char **argv)
 		msg.x = b.getX();
 		msg.y = b.getY();
 
-		if (count > 1) {
+		if (count > 1 && !b.isPublished()) {
 			// publish it
 			b.position_pub.publish(msg);
+			b.setAsPublished();
 		}
 
 		ros::spinOnce();

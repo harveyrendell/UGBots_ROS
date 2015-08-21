@@ -53,5 +53,9 @@ floorplan
 
 beacon(pose [ 20 35 0 0 ] name "blazeit" color "green")
 beacon(pose [ 20 -35 0 0 ] name "itsblazed" color "red")
+beacon(pose [ 40 35 0 0 ] name "blazeit" color "green")
+beacon(pose [ 40 -35 0 0 ] name "itsblazed" color "red")
+beacon(pose [ 0 35 0 0 ] name "blazeit" color "green")
+beacon(pose [ 0 -35 0 0 ] name "itsblazed" color "red")
 beacon(pose [ 40 40 0 0 ] name "core" color "yellow")
 
