@@ -56,8 +56,10 @@ int main(int argc, char **argv)
 		msg.x = b.getX();
 		msg.y = b.getY();
 
-		// publish it
-		b.position_pub.publish(msg);
+		if (count > 1) {
+			// publish it
+			b.position_pub.publish(msg);
+		}
 
 		ros::spinOnce();
 		loop_rate.sleep();

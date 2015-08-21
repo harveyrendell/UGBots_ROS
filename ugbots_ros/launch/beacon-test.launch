@@ -8,4 +8,8 @@
 		<node pkg="ugbots_ros" name="robotnode" type="BEACON"/>
 	</group>
 
+	<group ns="robot_2">
+		<node pkg="ugbots_ros" name="robotnode" type="CORE"/>
+	</group>
+
 </launch>
