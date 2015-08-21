@@ -42,11 +42,13 @@ Visitor::Visitor(ros::NodeHandle &n)
 	this->orientation.currently_turning = false;
 	this->orientation.currently_turning_static = false;
 
-	this->temp_for_testing = false;
+	this->rightTurnInit = false;
+	this->leftTurnInit = false;
 
-	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Visitor::odom_callback, this);
-	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Visitor::laser_callback, this);
+	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
+	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Visitor::odom_callback, this);
+	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Visitor::laser_callback, this);
+
 }
 
 void Visitor::odom_callback(nav_msgs::Odometry msg)
@@ -62,17 +64,17 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 	calculateOrientation();
 
-	if(this->temp_for_testing == false)
-	{
-		this->orientation.desired_angle = this->orientation.angle;
-		this->temp_for_testing = true;
-	}
-
 	doAngleCheck();		
 
 	checkTurningStatus();
 
-	publish();
+	//ROS_INFO("LINEAR SPEED: %f", this->speed.linear_x);
+	//ROS_INFO("ANGULAR SPEED: %f", this->speed.angular_z);
+
+
+	ROS_INFO("ANGLE: %f",this->orientation.angle);
+	ROS_INFO("DESIRED ANGLE: %f", this->orientation.desired_angle);
+
 
 	//checkStaticTurningStatus();
 
@@ -90,10 +92,23 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 {
 	if(msg.ranges[90] < 3.0)
 	{
-		ROS_INFO("ANGLE: %f",this->orientation.angle);
-		ROS_INFO("DESIRED ANGLE: %f", this->orientation.desired_angle);
-		turn((M_PI) , 0.0, -5.0);
+		if(this->rightTurnInit == false)
+		{
+			if(this->orientation.currently_turning == false)
+			{
+				turn(-(M_PI/2.000000) , 3.0, -5.0);
+				this->rightTurnInit = true;
+			}
+		}
 
+		if(this->leftTurnInit == false)
+		{
+			if(this->orientation.currently_turning == false)
+			{
+				turn((M_PI/2.000000) , 2.0, 5.0);
+				this->leftTurnInit = true;
+			}
+		}
 	}
 
 	//This is the callback function to process laser scan messages
@@ -108,13 +123,18 @@ void Visitor::checkTurningStatus()
 		
 	if(this->orientation.currently_turning == true)
 	{
-		if(this->orientation.angle  == this->orientation.desired_angle)
+		if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) == this->orientation.desired_angle)
 		{
 			this->orientation.currently_turning = false;
 			this->speed.linear_x = 2.0;
-			this->speed.angular_z = 0.0; 	
+			this->speed.angular_z = 0.0;
+
+			if(this->leftTurnInit == true && this->rightTurnInit == true)
+			{
+				this->leftTurnInit = false;
+				this->rightTurnInit = false;
+			}
 		}
-		return;
 	}
 		
 }
@@ -147,6 +167,8 @@ int count = 0;
 while (ros::ok())
 {
 	
+	node.publish();
+
 	ros::spinOnce();
 
 	loop_rate.sleep();
