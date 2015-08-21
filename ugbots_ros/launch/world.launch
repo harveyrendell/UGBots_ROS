@@ -15,6 +15,6 @@
 <node pkg="ugbots_ros" name="dognode" type="DOG"/>
 </group>
 <group ns="robot_5">
-<node pkg="ugbots_ros" name="possumnode" type="DOG"/>
+<node pkg="ugbots_ros" name="possumnode" type="POSSUM"/>
 </group>
 </launch>

@@ -21,7 +21,7 @@ echo  \<launch\> > ugbots_ros/launch/world.launch
 echo include \"robots.inc\" > world/config/robotinstances.inc
 echo include \"workers.inc\" > world/config/workerinstances.inc
 echo include \"dogs.inc\" > world/config/animalinstances.inc
-#echo include \"possums.inc\" >> world/config/animalinstances.inc
+echo include \"possums.inc\" >> world/config/animalinstances.inc
 echo include \"workers.inc\" >> world/config/visitorinstances.inc
 
 i=0
@@ -104,10 +104,10 @@ while [ $po -lt $possum ];
 do
 
 echo \<group ns=\"robot_$i\"\> >> ugbots_ros/launch/world.launch #### DOG -> POSSUM
-echo \<node pkg=\"ugbots_ros\" name=\"possumnode\" type=\"DOG\"\/\> >> ugbots_ros/launch/world.launch 
+echo \<node pkg=\"ugbots_ros\" name=\"possumnode\" type=\"POSSUM\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
-echo dog\( pose [ 3.5 $((-1-$(($c * 2)))) 0 0 ] name \"P$po\" color \"brown\" \) >> world/config/animalinstances.inc
+echo possum\( pose [ 3.5 $((-1-$(($c * 2)))) 0 0 ] name \"P$po\" color \"brown\" \) >> world/config/animalinstances.inc
 po=$(($po+1))
 i=$(($i+1))
 
