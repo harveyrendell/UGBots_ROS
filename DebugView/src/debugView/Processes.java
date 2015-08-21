@@ -1,7 +1,6 @@
 package debugView;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 
@@ -30,11 +29,12 @@ public class Processes {
 
 	
 	public void start(){
+		writeWorldFiles();
 		runRos();
 		runWorld();
-		writeWorldFiles();
 		launchNodes();
 		readTopics();
+		
 	}
 	
 	//Process to run roscore
@@ -43,9 +43,10 @@ public class Processes {
 
 			@Override
 			protected Void doInBackground() throws Exception {
-				_core = new ProcessBuilder("/bin/bash", "runcore.bash").start();
-				
+				_core = new ProcessBuilder("/bin/bash", "JarResources/runcore.bash").start();
 				return null;
+				
+				
 			}
 		};
 		
@@ -60,7 +61,7 @@ public class Processes {
 			protected Void doInBackground() throws Exception {
 				
 				
-				_writeWorldFiles = new ProcessBuilder("/bin/bash","writeWorld.bash", "" + _vals[0],
+				_writeWorldFiles = new ProcessBuilder("/bin/bash","JarResources/writeWorld.bash", "" + _vals[0],
 						"" + _vals[1], "" + _vals[2], "" + _vals[3], "" + _vals[4], "" + _vals[5],
 						"" + _vals[6], "" + _vals[7]).start();
 				return null;
@@ -78,7 +79,7 @@ public class Processes {
 
 			@Override
 			protected Void doInBackground() throws Exception {
-				_world = new ProcessBuilder("/bin/bash", "runworld.bash").start();
+				_world = new ProcessBuilder("/bin/bash", "JarResources/runworld.bash").start();
 				
 				return null;
 			}
@@ -95,7 +96,7 @@ public class Processes {
 
 			@Override
 			protected Void doInBackground() throws Exception {
-				_launch = new ProcessBuilder("/bin/bash", "launchnodes.bash").start();
+				_launch = new ProcessBuilder("/bin/bash", "JarResources/launchnodes.bash").start();
 				return null;
 			}
 		};
@@ -108,7 +109,7 @@ public class Processes {
 
 			@Override
 			protected Void doInBackground() throws Exception {
-				_topic = new ProcessBuilder("/bin/bash","runtopic.bash").start();
+				_topic = new ProcessBuilder("/bin/bash","JarResources/runtopic.bash").start();
 				BufferedReader br;
 				//Running run.bash process to create roscore, and stage with moving nodes
 				//This process will also be responsible reading all published messages from topic rosout					
@@ -132,6 +133,7 @@ public class Processes {
 			}
 			
 			private void updateGUI(String name, String info){
+
 				HashMap<String, infoPanel> map = _panel.getMap();
 				infoPanel temp = map.get(name);
 				String[] split = info.split("/");
@@ -169,7 +171,7 @@ public class Processes {
 
 			@Override
 			protected Void doInBackground() throws Exception {
-				Process kill = new ProcessBuilder("/bin/bash", "kill.bash").start();
+				Process kill = new ProcessBuilder("/bin/bash", "JarResources/kill.bash").start();
 				return null;
 			}
 			

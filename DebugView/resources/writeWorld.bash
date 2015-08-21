@@ -98,7 +98,7 @@ echo \<group ns=\"robot_$i\"\> >> ugbots_ros/launch/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"dognode\" type=\"DOG\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
-echo dog\( pose [ 0 $((-1-$(($d * 2)))) 0 0 ] name \"D$d\" color \"brown\" \) >> world/config/animalinstances.inc
+echo dog\( pose [ 0 $((-1-$(($d * 2)))) 0 0 ] origin [ 0 0 0 270 ] name \"D$d\" color \"brown\" \) >> world/config/animalinstances.inc
 d=$(($d+1))
 i=$(($i+1))
 

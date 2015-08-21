@@ -3,6 +3,6 @@ source ~/.bashrc
 
 roscd
 
-sleep 5
+sleep 7
 
 rostopic echo -c rosout

@@ -8,10 +8,4 @@
 <group ns="robot_2">
 <node pkg="ugbots_ros" name="dognode" type="DOG"/>
 </group>
-<group ns="robot_3">
-<node pkg="ugbots_ros" name="dognode" type="DOG"/>
-</group>
-<group ns="robot_4">
-<node pkg="ugbots_ros" name="dognode" type="DOG"/>
-</group>
 </launch>
