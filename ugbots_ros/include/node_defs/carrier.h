@@ -40,11 +40,12 @@ public:
 	void bin_callback(ugbots_ros::bin_status msg);
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
-	void turn(bool clockwise, double desired_angle, double temprad);
-	void moveX(double distance);
-	void moveY(double distance);
+	//void turn(bool clockwise, double desired_angle, double temprad);
+	bool moveX(double distance);
+	bool moveY(double distance);
 	bool begin_action();
 	void move_forward(double distance);
+	void checkTurningStatus();
 	void move();
 	void stop();
 	void turnLeft();
