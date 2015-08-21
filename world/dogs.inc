@@ -95,6 +95,6 @@ define dog position
 	z [0 0.15]
   )
 
-  anilaser(pose [ 0.050 0.000 0 90.000 ])
+  anilaser(pose [ 0.050 0.000 0 0.000 ])
 )
 
