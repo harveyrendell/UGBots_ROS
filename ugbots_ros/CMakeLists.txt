@@ -17,7 +17,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 #uncomment if you have defined messages
-#rosbuild_genmsg()
+rosbuild_genmsg()
 #uncomment if you have defined services
 #rosbuild_gensrv()
 
@@ -39,6 +39,7 @@ rosbuild_add_executable(CAT src/animal/cat.cpp)
 rosbuild_add_executable(POSSUM src/animal/possum.cpp)
 rosbuild_add_executable(WORKER src/person/worker.cpp)
 rosbuild_add_executable(VISITOR src/person/visitor.cpp)
+rosbuild_add_executable(BEACON src/core/beacon.cpp)
 
 rosbuild_add_library(CarrierLib src/robot/carrier.cpp)
 rosbuild_add_library(PickerLib src/robot/picker.cpp)

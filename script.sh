@@ -13,11 +13,12 @@ echo "Number of animals to be generated: \c "
 read animal
 
 mkdir -p world/config
+mkdir -p ugbots_ros/launch
 
-rm ugbots_ros/launch/world.launch
-rm world/config/robotinstances.inc
-rm world/config/workerinstances.inc
-rm world/config/animalinstances.inc
+rm -f ugbots_ros/launch/world.launch
+rm -f world/config/robotinstances.inc
+rm -f world/config/workerinstances.inc
+rm -f world/config/animalinstances.inc
 
 echo  \<launch\> > ugbots_ros/launch/world.launch
 echo include \"robots.inc\" > world/config/robotinstances.inc
