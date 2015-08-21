@@ -1,3 +1,0 @@
-include "workers.inc"
-
-worker (pose [ 5 5 0 0 ])
