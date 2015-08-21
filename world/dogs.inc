@@ -16,50 +16,52 @@ define dog position
   size [0.25 0.5 0.5]
   drive "diff"
   
+  #tail
+  block(
+	points 4
+	point[0] [0 0.4]
+	point[1] [0 0.6]
+	point[2] [0.15 0.6]
+	point[3] [0.15 0.4]
+	z [0.6 0.75]
+  )
+
   #body
   block(
 	points 4
-	point[0] [0 0]
-	point[1] [1 0]
-	point[2] [1 0.65]
-	point[3] [0 0.65]
-	z [0.15 0.4]
+	point[0] [0.15 0.15]
+	point[1] [0.15 0.85]
+	point[2] [0.55 0.15]
+	point[3] [0.55 0.85] 
+	z [0.35 0.85]
+  )
+  #mane
+  block(
+	points 4
+	point[0] [0.55 0]
+	point[1] [0.55 1]
+	point[2] [0.80 1]
+	point[3] [0.80 0] 
+	z [0.35 1]
+  )
+  #face
+  block(
+	points 4
+	point[0] [0.8 0.15]
+	point[1] [0.8 0.85]
+	point[2] [0.86 0.15]
+	point[3] [0.86 0.85] 
+	z [0.5 0.9]
   )
 
-  #head
+  #nose
   block(
 	points 4
-	point[0] [0.2 0.65]
-	point[1] [0.8 0.65]
-	point[2] [0.8 0.95]
-	point[3] [0.2 0.95] 
-	z [0.35 0.5]
-  )
-  #snout
-  block(
-	points 4
-	point[0] [0.32 0.95]
-	point[1] [0.68 0.95]
-	point[2] [0.68 1]
-	point[3] [0.32 1] 
-	z [0.35 0.45]
-  )
-  #ears
-  block(
-	points 4
-	point[0] [0.15 0.8]
-	point[1] [0.2 0.8]
-	point[2] [0.2 0.9]
-	point[3] [0.15 0.9] 
-	z [0.4 0.5]
-  )
-  block(
-	points 4
-	point[0] [0.8 0.8]
-	point[1] [0.85 0.8]
-	point[2] [0.85 0.9]
-	point[3] [0.8 0.9] 
-	z [0.4 0.5]
+	point[0] [0.86 0.35]
+	point[1] [0.86.0.65]
+	point[2] [1 0.35]
+	point[3] [1 0.65] 
+	z [0.5 0.75]
   ) 
   #legs
    block(
