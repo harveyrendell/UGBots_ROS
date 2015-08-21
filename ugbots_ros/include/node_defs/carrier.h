@@ -7,7 +7,6 @@
 #include <ugbots_ros/bin_status.h>
 
 #include <sstream>
-#include <queue> 
 #include <stdlib.h>
 #include <node.h>
 
@@ -17,7 +16,6 @@ public:
 	bool moving;
 	bool undergoing_task;
 
-	std::queue<geometry_msgs::Point> action_queue;
 
 	bool x_completed;
 	bool x_started;
@@ -41,11 +39,11 @@ public:
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
 	//void turn(bool clockwise, double desired_angle, double temprad);
-	bool moveX(double distance);
-	bool moveY(double distance);
-	bool begin_action();
+	//bool moveX(double distance);
+	//bool moveY(double distance);
+	//bool begin_action();
 	void move_forward(double distance);
-	void checkTurningStatus();
+	//void checkTurningStatus();
 	void move();
 	void stop();
 	void turnLeft();

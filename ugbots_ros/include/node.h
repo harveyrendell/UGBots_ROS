@@ -2,6 +2,7 @@
 #include <node_structs/pose.h>
 #include <node_structs/subscriber_list.h>
 #include <node_structs/orientation.h>
+#include <queue> 
 
 class Node
 {
@@ -55,21 +56,17 @@ public:
 	//
 	void checkTurningStatus()
 	{
-		//Implement individually.
-		//Change 2-3 to which ever suits your node
-		//parse in ur desired linear speed to stopTurn()
-
-		/*
 		if(this->orientation.currently_turning == true)
-		{
-			if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) == this->orientation.desired_angle)
+		{	
+			if(doubleComparator(orientation.angle, orientation.desired_angle))
 			{
-				stopTurn();
+				this->orientation.currently_turning = false;
+				this->speed.linear_x = 3.0;
+				this->speed.angular_z = 0.0; 
 			}
-			return;
-		}**/
+		return;
+		}
 	}
-
 
 	//calculates current orientation using atan2
 	void calculateOrientation()
@@ -78,12 +75,93 @@ public:
 	}
 
 
+	bool move_x(double distance) {
+		double distance_x = distance - pose.px;
+		if (fabs(distance_x) < 0.001) {
+			stop();
+			return true;
+		}
+		if (distance_x < 0.0)
+		{
+			turn(M_PI - this->orientation.desired_angle , 0.0, M_PI/2);
+			checkTurningStatus();
+		} 
+		else 
+		{
+			turn(-1.0 * this->orientation.desired_angle , 0.0, M_PI/2);
+			checkTurningStatus();
+		}
+		if(!orientation.currently_turning)
+		{
+			speed.linear_x = 3.0;
+			if (fabs(distance_x) < 0.05)
+			{
+				speed.linear_x = 0.01;
+			}
+		}
+		return false;
+	}
+
+	bool move_y(double distance) {
+		double distance_y = distance - pose.py;
+		if (fabs(distance_y) < 0.001) {
+			stop();
+			return true;
+		}
+		if (distance_y < 0.0)
+		{
+			turn(-1.0 * M_PI/2.0 - this->orientation.desired_angle , 0.0, M_PI/2);
+			checkTurningStatus();
+		}
+		else
+		{
+			turn(M_PI/2.0 - this->orientation.desired_angle , 0.0, M_PI/2);
+			checkTurningStatus();	
+		}
+		if(!orientation.currently_turning)
+		{
+			speed.linear_x = 3.0;
+			if (fabs(distance_y) < 0.05)
+			{
+				speed.linear_x = 0.01;
+			}
+		}
+		return false;
+	}
+
+	bool begin_action()
+	{
+
+		if (action_queue.empty())
+		{
+			return true;
+		}
+		geometry_msgs::Point end_point = action_queue.front();
+		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
+		{
+			action_queue.pop();
+			stop();
+			return true;
+		}
+		if(move_x(end_point.x))
+		{
+			move_y(end_point.y);
+		}
+	}	
+
+	bool doubleComparator(double a, double b)
+	{
+	    return fabs(a - b) < 0.001;
+	}
 
 	//Pose of the unit
 	Pose pose;
 
 	//Velocity of the unit
 	Speed speed;
+
+	//Queue of the Actions
+	std::queue<geometry_msgs::Point> action_queue;
 
 	//NodeHandle for the node
 	//ros::NodeHandle n;
