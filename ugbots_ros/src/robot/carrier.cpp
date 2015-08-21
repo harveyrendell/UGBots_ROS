@@ -54,6 +54,9 @@ Carrier::Carrier(ros::NodeHandle &n)
 	point.y = 4.0;
 	point.x = 38.0;
 	action_queue.push(point);
+	point.y = -2.0;
+	point.x = -4.0;
+	action_queue.push(point);
 }
 
 void Carrier::bin_callback(ugbots_ros::bin_status msg)
@@ -94,12 +97,9 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 	//orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
 	//orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
 	//orientation.roty-orientation.rotz*orientation.rotz);
-	//ROS_INFO("/position/x/%f", this->pose.px);
-	//ROS_INFO("/position/y/%f", this->pose.py);
-	//ROS_INFO("/speed/x/%f", msg.twist.twist.linear.x);
-	//ROS_INFO("/speed/y/%f", msg.twist.twist.linear.y);
-	//ROS_INFO("/status/%s/./", enum_to_string(state));
-	ROS_INFO("x should be: %f", pose.px);
+	ROS_INFO("/position/x/%f", this->pose.px);
+	ROS_INFO("/position/y/%f", this->pose.py);
+	ROS_INFO("/status/%s/./", enum_to_string(state));
 
 	if(localBinStatus.bin_stat == "FULL")
 	{
@@ -127,180 +127,8 @@ void Carrier::laser_callback(sensor_msgs::LaserScan msg)
 	//This is the callback function to process laser scan messages
 	//you can access the range data from msg.ranges[i]. i = sample number	
 }
-/*void Carrier::turn(bool clockwise, double desired_angle, double temprad) {
-	double current_angular_z;
-
-	//desired angle of turn added to robots current angle facing
-	orientation.desired_angle = desired_angle + temprad;
-
-	//deduct one rotation if desired angle exceed full rotation
-	if (orientation.desired_angle > 2*M_PI) {
-		orientation.desired_angle = orientation.desired_angle - 2*M_PI;
-	}
-
-	//for when turn is set to be clockwise
-	if (clockwise) {
-		if (orientation.angle > 0) {
-			orientation.angle = -2*M_PI + orientation.angle;
-		}
-		speed.angular_z = -M_PI/2;
-		current_angular_z = -speed.angular_z;
-		orientation.angle = -orientation.angle;
-	} else {
-		if (orientation.angle < 0) {
-			orientation.angle = 2*M_PI + orientation.angle;
-		}
-		speed.angular_z = M_PI/2;
-		current_angular_z = speed.angular_z;
-	}
-
-	//turn until desired angle is reached, taking into account of the 2 clock time ahead
-	if (orientation.desired_angle - (current_angular_z/10) >= orientation.angle) {
-		
-		orientation.currently_turning = true;
-	//if desired angle is reached, robot stops turning and moves again 
-	} else {
-		speed.angular_z = 0.0;
-		orientation.currently_turning = false;
-		//stopped = false;
-		state = STOPPED;
-		zero_angle = orientation.desired_angle;
-	}
-}**/
-bool Carrier::moveX(double distance) {
-	double distance_x = distance - pose.px;
-	if (fabs(distance_x) < 0.001) {
-		ROS_INFO("STOP X: %f", distance_x);
-		stop();
-		return true;
-	}
-	ROS_INFO("moveX");
-	if (distance_x < 0.0)
-	{
-		turn(M_PI - this->orientation.desired_angle , 0.0, M_PI/2);
-		checkTurningStatus();
-	} 
-	else 
-	{
-		turn(-1.0 * this->orientation.desired_angle , 0.0, M_PI/2);
-		checkTurningStatus();
-	}
-	if(!orientation.currently_turning)
-	{
-		speed.linear_x = 3.0;
-		ROS_INFO("abs dist: %f", distance_x);
-		if (fabs(distance_x) < 0.05)
-		{
-			//ROS_INFO("distance_x is less than 0.1: %f", distance_x);
-			//ROS_INFO("Distance is: %f", distance);
-			speed.linear_x = 0.01;
-		}
-
-		//ROS_INFO("distance_x: %f", distance_x);
-	}
-	return false;
-}
-
-bool Carrier::moveY(double distance) {
-	double distance_y = distance - pose.py;
-	ROS_INFO("MOVE Y");
-	if (fabs(distance_y) < 0.001) {
-		ROS_INFO("STOP Y: %f", distance_y);
-		stop();
-		return true;
-	}
-	ROS_INFO("distance_y: %f", distance_y);
-	if (distance_y < 0.0)
-	{
-		ROS_INFO("DOWN");
-		turn(-1.0 * M_PI/2.0 - this->orientation.desired_angle , 0.0, M_PI/2);
-		checkTurningStatus();
-	}
-	else
-	{
-		ROS_INFO("UP");
-		turn(M_PI/2.0 - this->orientation.desired_angle , 0.0, M_PI/2);
-		checkTurningStatus();	
-	}
-	if(!orientation.currently_turning)
-	{
-		speed.linear_x = 3.0;
-		ROS_INFO("MOVE Y after turn");
-		if (fabs(distance_y) < 0.05)
-		{
-			ROS_INFO("distance_y is less than 0.1: %f", distance_y);
-			//ROS_INFO("Distance is: %f", distance);
-			speed.linear_x = 0.01;
-		}
-
-		//ROS_INFO("distance_x: %f", distance_x);
-		
-
-	}
-	return false;
-}
-
-bool Carrier::begin_action()
-{
-
-	if (action_queue.empty())
-	{
-		state = IDLE;
-		return true;
-	}
-	geometry_msgs::Point end_point = action_queue.front();
-	ROS_INFO("end point.x: %f   x: %f",end_point.x,pose.px);
-	ROS_INFO("end point.y: %f   y: %f",end_point.y,pose.py);
-	if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
-	{
-		ROS_INFO("IS IT FINISHED?");
-		action_queue.pop();
-		stop();
-		return true;
-	}
-	state = TRAVELLING;
-	if(moveX(end_point.x))
-	{
-		ROS_INFO("DO Y");
-		moveY(end_point.y);
-	}
 
 
-		//turn(false, M_PI/2, 0.0);
-		//moveY(end_point.y);
-	
-/*
-	moveX(end_point.x);
-	if (speed.linear_x == 0.0) 
-	{
-		//turn(double angle, double linear, double angular)
-		turn(false, M_PI/2, 0.0);
-		if (speed.angular_z == 0.0)
-		{
-			state = TRAVELLING;
-			speed.linear_x = 3.0;
-			moveY(end_point.y);
-			temprad = orientation.angle;
-		}	
-	}**/
-}
-void Carrier::checkTurningStatus()
-{
-	if(this->orientation.currently_turning == true)
-	{
-		ROS_INFO("DOES IT CHECK TURN?");
-		ROS_INFO("angle: %f", orientation.angle);
-		ROS_INFO("desired_angle: %f", orientation.desired_angle);
-		//+ (M_PI / (speed.angular_z * 3) )
-		if(doubleComparator(orientation.angle, orientation.desired_angle))
-		{
-			this->orientation.currently_turning = false;
-			this->speed.linear_x = 3.0;
-			this->speed.angular_z = 0.0; 
-		}
-	return;
-	}
-}
 
 
 
@@ -333,10 +161,7 @@ void Carrier::turnLeft(){}
 void Carrier::turnRight(){}
 void Carrier::collisionDetected(){}
 
-bool Carrier::doubleComparator(double a, double b)
-{
-    return fabs(a - b) < 0.001;
-}
+
 
 int main(int argc, char **argv)
 {	
