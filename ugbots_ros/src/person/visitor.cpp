@@ -46,9 +46,9 @@ Visitor::Visitor(ros::NodeHandle &n)
 	this->leftTurnInit = false;
 	this->moveToEnabled = true;
 
-	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
-	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/base_pose_ground_truth",1000, &Visitor::odom_callback, this);
-	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Visitor::laser_callback, this);
+	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Visitor::odom_callback, this);
+	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Visitor::laser_callback, this);
 
 	geometry_msgs::Point point;
 		point.x = 0.0; 
@@ -100,13 +100,13 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 	//checkStaticTurningStatus();
 
-	/*ROS_INFO("/position/x/%f",this->pose.px);
+	ROS_INFO("/position/x/%f",this->pose.px);
 	ROS_INFO("/position/y/%f",this->pose.py);
-	ROS_INFO("/status/%s/./",enum_to_string(this->state));*/	
-
+	ROS_INFO("/status/TEMP/./");
+	/*
 	//ROS_INFO("ANGLE: %f",this->orientation.angle);
 	//ROS_INFO("DESIRED ANGLE: %f", this->orientation.desired_angle);
-
+	*/
 }
 
 
