@@ -15,27 +15,34 @@ public:
 		picker_list = n.subscribe<ugbots_ros::robot_details>("/tell_core",1000, &Core::pl_callback, this);
 	}
 
+	//call back function for the idle picker identifier topic subscriber
 	void pl_callback(ugbots_ros::robot_details r) 
 	{
+		//Instantiate the new robot details object using information from the callback
 		RobotDetails robot;
 		robot.x = r.x;
 		robot.y = r.y;
 		robot.ns = r.ns;
+		//add to the list of idle picker bots
 		addIdlePickerBot(robot);
 
 		ROS_INFO("Number of idle picker bots: %d, %s", idlePickers.size(), robot.ns.c_str());
 	}
 
+	//call back function for the world layout topic subscriber
 	void wl_callback(ugbots_ros::Position p) 
 	{
+		//Instantiate the new point of the beacons position using info from callback
 		Point point;
 		point.x = p.x;
 		point.y = p.y;
+		//Add the beacon to organise into list of rows and beacons
 		addBeacon(point);
 
 		ROS_INFO("Number of Rows: %d", rowPositions.size());
 	}
 
+	//function managing the beacons and its relevent lists
 	void addBeacon(Point p)
 	{
 		//boolean to check if the list has the point
@@ -58,6 +65,7 @@ public:
 		}
 	}
 
+	//function adding a row to the row list
 	void addPointToRow(Point p)
 	{
 		//boolean to check if the x coordinate for the row exists
@@ -101,17 +109,22 @@ public:
 		}
  	}
 
+ 	//function adding robot details into the idle picker bots list
  	void addIdlePickerBot(RobotDetails rd) {
+ 		//boolean to keep track if bot is already in list
  		bool bot_exists = false;
 
+ 		//iterate through the list of idle picker bots
  		for (std::vector<RobotDetails>::iterator robot = idlePickers.begin(); robot != idlePickers.end(); ++robot) {
  			RobotDetails current = *robot;
+ 			//set boolean as true if already existing
  			if (rd.ns.compare(current.ns) == 0) {
  				bot_exists = true;
  				break;
  			}
  		}
 
+ 		//if unique, add to the list of idle picker bots
  		if (!bot_exists) {
  			idlePickers.push_back(rd);
  		}
@@ -122,25 +135,36 @@ public:
 		return beaconPositions;
 	}
 
+	//function to assign an unassigned row to the closest idle picker robot
 	void assignRowToClosest(ros::NodeHandle &n) {
+		//index for the list of rows
 		int rowNum = 0;
 
+		//iterate through list of rows
 		for (std::vector<Row>::iterator row = rowPositions.begin(); row != rowPositions.end(); ++row) {
 			Row current = *row;
+			//for only the rows that are unassigned
 			if (current.status == Row::UNASSIGNED) {
+				//set the target point as the start of the row
 				Point p = current.start_point;
 				ugbots_ros::Position station;
 				station.x = p.x;
 				station.y = p.y;
+				//get index for the closest robot
 				int i = getClosestRobot(p);
+				//when none exists, break out
 				if (i < 0) {
 					break;
 				}
+				//set up the publishing topic
 				std::string topic = idlePickers[i].ns + "/station";
 				work_distributer = n.advertise<ugbots_ros::Position>(topic, 1000, true);
 				ROS_INFO("station appointed to idle bot: %d, ns: %s", i, topic.c_str());
+				//erase the picker bot off the idle picker bot list
 				idlePickers.erase(idlePickers.begin() + i);
+				//publish the target point (station) to the picker bots topic
 				work_distributer.publish(station);
+				//set the row as assigned
 				rowPositions[rowNum].status = Row::ASSIGNED;
 				break;
 			}
@@ -148,19 +172,29 @@ public:
 		}
 	}
 
+	//function to retrieve the index number of the robot details of an idle picker bot relative to a point
 	int getClosestRobot(Point p) {
+		//list index
 		int i = 0;
+		//index of closest
 		int closest = -1;
-		double closestDistance = 100;
+		//distance of the current closest robot
+		double closestDistance = -1;
 
+		//iterate through list of idle picker bots
 		for (std::vector<RobotDetails>::iterator robot = idlePickers.begin(); robot != idlePickers.end(); ++robot) {
 			RobotDetails current = *robot;
+			//set up the current robots position point
 			Point robotsPoint;
 			robotsPoint.x = current.x;
 			robotsPoint.y = current.y;
+			//get the distance between the target point and current robots position point
 			double distanceForCurrentRobot = getDistance(p, robotsPoint);
-			if (closestDistance > distanceForCurrentRobot) {
+			//if the current distance is less than stated closest distance, or if closest distance has not been set up yet
+			if (closestDistance > distanceForCurrentRobot || closestDistance == -1) {
+				//set new index for the closest and replace stated closest distance
 				closest = i;
+				closestDistance = distanceForCurrentRobot;
 			}
 			i++;
 		}
@@ -168,6 +202,7 @@ public:
 		return closest;
 	}
 
+	//calculates the distance between two points
 	double getDistance(Point a, Point b) {
 		return sqrt(pow((a.x - b.x),2) + pow((a.y - b.y),2));
 	}
