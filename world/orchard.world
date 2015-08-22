@@ -1,6 +1,6 @@
 include "worldinstances.inc"
 include "./config/robotinstances.inc"
-include "./config/workerinstances.inc"
+include "./config/peopleinstances.inc"
 include "./config/animalinstances.inc"
 
 define floorplan model
