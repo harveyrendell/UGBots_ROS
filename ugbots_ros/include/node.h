@@ -93,10 +93,10 @@ public:
 		}
 		if(!orientation.currently_turning)
 		{
-			speed.linear_x = speed;
+			this->speed.linear_x = speed;
 			if (fabs(distance_x) < 0.05)
 			{
-				speed.linear_x = 0.01;
+				this->speed.linear_x = 0.01;
 			}
 		}
 		return false;
@@ -120,10 +120,10 @@ public:
 		}
 		if(!orientation.currently_turning)
 		{
-			speed.linear_x = speed;
+			this->speed.linear_x = speed;
 			if (fabs(distance_y) < 0.05)
 			{
-				speed.linear_x = 0.01;
+				this->speed.linear_x = 0.01;
 			}
 		}
 		return false;

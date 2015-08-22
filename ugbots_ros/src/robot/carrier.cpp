@@ -111,7 +111,7 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 
 		
 	calculateOrientation();
-	begin_action();
+	begin_action(3.0);
 	doAngleCheck();
 	checkTurningStatus();
 	publish();
