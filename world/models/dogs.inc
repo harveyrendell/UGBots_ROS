@@ -105,3 +105,4 @@ define dog position
   )
   anilaser(pose [ 0.050 0.000 0 90.000 ])
 )
+
