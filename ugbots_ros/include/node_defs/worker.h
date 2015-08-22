@@ -18,21 +18,19 @@ public:
 	void move();
 	void stop();
 	void stopTurn();
-	void turnLeft();
-	void turnRight();
-	void doAngleCheck();
+	//void doAngleCheck();
 	void collisionDetected();
-
-	void stopTurnStatic();
-	void spinOnTheSpot();
+	
+	//void stopTurnStatic();
+	//void spinOnTheSpot();
 	void checkTurningStatus();
-	void checkStaticTurningStatus();
-	void calculateOrientation();
+	//void checkStaticTurningStatus();
+	//void calculateOrientation();
 
 	enum State { IDLE, PATROLLING, RESPONDING, SAWDOG };
 	State state;
 	
-	char* enum_to_string(State t);
+	char const* enum_to_string(State t);
 
 	bool checkedThisRot;
 

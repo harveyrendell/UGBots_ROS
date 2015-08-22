@@ -23,4 +23,6 @@ public:
 
 	enum State { IDLE, LOITERING, HARASSING, STOPPED };
 	State state;
+	
+	char const* enum_to_string(State t);
 };
