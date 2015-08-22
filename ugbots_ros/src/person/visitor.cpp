@@ -49,6 +49,18 @@ Visitor::Visitor(ros::NodeHandle &n)
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Visitor::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Visitor::laser_callback, this);
 
+	geometry_msgs::Point point;
+		point.x = 0.0; 
+		point.y = -40.0;
+
+	action_queue.push(point);
+
+		point.x = 0.0;
+		point.y = 50.0;
+
+	action_queue.push(point);
+
+
 }
 
 void Visitor::odom_callback(nav_msgs::Odometry msg)
@@ -63,6 +75,8 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 	
 
 	calculateOrientation();
+
+	begin_action();
 
 	doAngleCheck();		
 
@@ -90,13 +104,14 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 {
+	/*
 	if(msg.ranges[90] < 3.0)
 	{
 		if(this->rightTurnInit == false)
 		{
 			if(this->orientation.currently_turning == false)
 			{
-				turn(-(M_PI/2.000000) , 3.0, -5.0);
+				turn(-(M_PI/2.000000) , 0.5, -5.0);
 				this->rightTurnInit = true;
 			}
 		}
@@ -105,11 +120,11 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 		{
 			if(this->orientation.currently_turning == false)
 			{
-				turn((M_PI/2.000000) , 2.0, 5.0);
+				turn((M_PI/2.000000) , 0.5, 5.0);
 				this->leftTurnInit = true;
 			}
 		}
-	}
+	}*/
 
 	//This is the callback function to process laser scan messages
 	//you can access the range data from msg.ranges[i]. i = sample number	
