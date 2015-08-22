@@ -89,7 +89,6 @@ public class ContentPanel extends JPanel {
 			public void actionPerformed(ActionEvent arg0) {
 				processes = new Processes(_self, _top.getVals());
 				_infoWrapper.removeAll();
-				_map.clear();
 				_top.disableAll();
 				_startButton.setVisible(false);
 				_finishButton.setVisible(true);
@@ -109,10 +108,16 @@ public class ContentPanel extends JPanel {
 				_finishButton.setVisible(false);
 				_startButton.setVisible(true);
 				_top.enableAll();
-
+				
+				_map.clear();
 				processes.killProcs();
 			}
 			
 		});
+	}
+
+	public void killProcs() {
+		processes.killProcs();
+		
 	}
 }
