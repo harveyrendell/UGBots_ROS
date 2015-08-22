@@ -177,5 +177,6 @@ public class Processes {
 			
 		};
 		killAll.execute();
+		_topic.destroy();
 	}
 }
