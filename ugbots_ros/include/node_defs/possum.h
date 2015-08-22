@@ -15,8 +15,7 @@ public:
 	Possum(ros::NodeHandle &n);
 	enum State { IDLE, ROAMING, FLEEING, MOVINGACROSS };
 	State state;
-	enum Position { FENCE, VINE };
-	Position position;
+	int row;
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
 	void timerCallback(const ros::TimerEvent& e);

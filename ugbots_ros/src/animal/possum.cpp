@@ -25,8 +25,6 @@ Possum::Possum()
 	this->orientation.desired_angle = M_PI;
 	this->orientation.currently_turning = false;
 
-	state = IDLE;
-	position = FENCE;
 }
 
 Possum::Possum(ros::NodeHandle &n)
@@ -35,8 +33,8 @@ Possum::Possum(ros::NodeHandle &n)
 
 	//setting base attribute defaults
 	this->pose.theta = M_PI/2.0;
-	this->pose.px = 10;
-	this->pose.py = 20;
+	this->pose.px = -12.25;
+	this->pose.py = 33.5;
 	this->speed.linear_x = 0.0;
 	this->speed.max_linear_x = 3.0;
 	this->speed.angular_z = 0.0;
@@ -44,10 +42,17 @@ Possum::Possum(ros::NodeHandle &n)
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Possum::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Possum::laser_callback, this);
-	this->sub_list.sub_timer = n.createTimer(ros::Duration(5), &Possum::timerCallback, this);
+	//this->sub_list.sub_timer = n.createTimer(ros::Duration(5), &Possum::timerCallback, this);
 
-	state = IDLE;
-	position = FENCE;
+	geometry_msgs::Point point;
+
+	point.x = this->pose.px;
+	point.y = this->pose.py - (this->speed.linear_x/10.0);
+	for (int i = 0; i<7; i++){
+		point.x = point.x + 3.5;
+		action_queue.push(point);
+	}
+
 }
 
 void Possum::odom_callback(nav_msgs::Odometry msg)
@@ -80,23 +85,10 @@ void Possum::odom_callback(nav_msgs::Odometry msg)
 
 void Possum::laser_callback(sensor_msgs::LaserScan msg)
 {
-	if (state != MOVINGACROSS){
-		ROS_INFO("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-		if (this->orientation.currently_turning == false){
-			if ((msg.ranges[90] <= 2) && (msg.ranges[179] <= 2)){
-				ROS_INFO("TURN RIGHT");
-				turn((-M_PI/ 2.000000), 0.0,-5.0);
-			}else if ((msg.ranges[90] <= 2) && (msg.ranges[0] <= 2)){
-				ROS_INFO("TURN LEFT");
-				turn((M_PI / 2.000000), 0.0, 5.0);
-			}
-		}
-		checkTurningStatus();
-		publish();
-	}
+	
 }
 
-void Possum::timerCallback(const ros::TimerEvent& e){
+/**void Possum::timerCallback(const ros::TimerEvent& e){
 	if ((this->orientation.currently_turning == false) && (state != MOVINGACROSS)){
 		ROS_INFO("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");
 		state = generateStatus();
@@ -135,7 +127,7 @@ void Possum::timerCallback(const ros::TimerEvent& e){
 			}
 		}
 	}
-}
+}**/
 
 void Possum::move(){
 
