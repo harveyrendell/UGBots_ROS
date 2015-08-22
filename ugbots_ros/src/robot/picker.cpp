@@ -20,7 +20,7 @@ Picker::Picker()
 	state = IDLE;
 	station_x = 0;
 	station_y = -33;
-
+	sent = false;
 }
 
 Picker::Picker(ros::NodeHandle &n)
@@ -31,17 +31,21 @@ Picker::Picker(ros::NodeHandle &n)
 	pose.theta = M_PI/2.0;
 	pose.px = 10;
 	pose.py = 20;
-	speed.linear_x = 1.0;
+	speed.linear_x = 0.0;
 	speed.max_linear_x = 3.0;
 	speed.angular_z = 0.0;
 	state = IDLE;
 	station_x = 0;
 	station_y = -33;
+	sent = false;
+	robotDetails.ns = n.getNamespace();
 
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Picker::odom_callback, this);
 	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
+	sub_ground = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000,&Picker::ground_callback, this);
 	carrier_alert = n.advertise<ugbots_ros::bin_status>("/alert",1000);
+	core_alert = n.advertise<ugbots_ros::robot_details>("/tell_core",1000);
 }
 
 /*void Picker::logic() {
@@ -170,9 +174,9 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	//This is the call back function to process odometry messages coming from Stage. 	
 	pose.px = -10 + msg.pose.pose.position.x;
 	pose.py = -40 + msg.pose.pose.position.y;
-	ROS_INFO("/position/x/%f", pose.px);
-	ROS_INFO("/position/y/%f", pose.py);
-	ROS_INFO("/status/%s/./", enum_to_string(state));
+	//ROS_INFO("/position/x/%f", pose.px);
+	//ROS_INFO("/position/y/%f", pose.py);
+	//ROS_INFO("/status/%s/./", enum_to_string(state));
 	orientation.rotx = msg.pose.pose.orientation.x;
 	orientation.roty = msg.pose.pose.orientation.y;
 	orientation.rotz = msg.pose.pose.orientation.z;
@@ -180,7 +184,7 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
 	orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
 	orientation.roty-orientation.rotz*orientation.rotz);
-	ROS_INFO("Current angle is: %f", orientation.angle);
+	//ROS_INFO("Current angle is: %f", orientation.angle);
 
 	//bin location, currently attached to the centre of robot
 	binStatus.bin_x = pose.px;
@@ -188,12 +192,13 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 
 	//relative actions for different states
 	if (state == IDLE) {
-		state = TRAVELLING;
+
+		//state = TRAVELLING;
 		tempx = pose.px;
 		tempy = pose.py;
 		temprad = orientation.angle;
-		goToWork();
-		state = TRAVELLING;
+		//goToWork();
+		//state = TRAVELLING;
 	} else if (state == TRAVELLING) {
 		goToWork();
 	} else if (state == PICKING) {
@@ -205,7 +210,7 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	}
 
 	//publish topic about current bin status
-	carrier_alert.publish(binStatus);
+	//carrier_alert.publish(binStatus);
 }
 
 
@@ -214,6 +219,16 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 	//This is the callback function to process laser scan messages
 	//you can access the range data from msg.ranges[i]. i = sample number
 	
+}
+
+void Picker::ground_callback(nav_msgs::Odometry msg)
+{
+	if (state == IDLE && !sent) {
+		robotDetails.x = msg.pose.pose.position.x;
+		robotDetails.y = msg.pose.pose.position.y;
+		core_alert.publish(robotDetails);
+		sent = true;
+	}
 }
 
 //hard coded function for robot to get to work station

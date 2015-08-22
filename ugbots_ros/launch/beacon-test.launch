@@ -28,4 +28,24 @@
 		<node pkg="ugbots_ros" name="robotnode" type="CORE"/>
 	</group>
 
+	<group ns="robot_7">
+		<node pkg="ugbots_ros" name="robotnode" type="PICKER"/>
+	</group>
+
+	<group ns="robot_8">
+		<node pkg="ugbots_ros" name="robotnode" type="PICKER"/>
+	</group>
+
+	<group ns="robot_9">
+		<node pkg="ugbots_ros" name="robotnode" type="PICKER"/>
+	</group>
+
+	<group ns="robot_10">
+		<node pkg="ugbots_ros" name="robotnode" type="PICKER"/>
+	</group>
+
+	<group ns="robot_11">
+		<node pkg="ugbots_ros" name="robotnode" type="PICKER"/>
+	</group>
+
 </launch>

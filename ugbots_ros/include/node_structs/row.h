@@ -2,7 +2,8 @@
 #include <string>
 
 struct Row {
-	enum Status {UNASSIGNED, ASSIGNED}
+public:
+	enum Status { UNASSIGNED, ASSIGNED };
 
 	Point end_point;
 	Point start_point;
