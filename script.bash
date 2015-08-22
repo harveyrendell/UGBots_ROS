@@ -17,11 +17,11 @@ rm world/config/peopleinstances.inc
 rm world/config/animalinstances.inc
 
 echo  \<launch\> > ugbots_ros/launch/world.launch
-echo include \"robots.inc\" > world/config/robotinstances.inc
-echo include \"workers.inc\" > world/config/peopleinstances.inc
-echo include \"dogs.inc\" > world/config/animalinstances.inc
-echo include \"possums.inc\" >> world/config/animalinstances.inc
-echo include \"visitors.inc\" >> world/config/peopleinstances.inc
+echo include \"models\/robots.inc\" > world/config/robotinstances.inc
+echo include \"models\/workers.inc\" > world/config/peopleinstances.inc
+echo include \"models\/dogs.inc\" > world/config/animalinstances.inc
+echo include \"models\/possums.inc\" >> world/config/animalinstances.inc
+echo include \"models\/visitors.inc\" >> world/config/peopleinstances.inc
 
 i=0
 j=0
