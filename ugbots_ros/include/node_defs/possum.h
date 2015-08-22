@@ -16,6 +16,8 @@ public:
 	enum State { IDLE, ROAMING, FLEEING, MOVINGACROSS };
 	State state;
 	int row;
+	enum Direction {NORTH, EAST, SOUTH, WEST};
+	Direction direction;
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
 	void timerCallback(const ros::TimerEvent& e);

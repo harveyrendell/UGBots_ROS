@@ -46,6 +46,11 @@ Possum::Possum(ros::NodeHandle &n)
 
 	geometry_msgs::Point point;
 
+	state = IDLE;
+
+	row = 1; //starting at vine 1
+	direction = EAST;
+
 	point.x = this->pose.px;
 	point.y = this->pose.py - (this->speed.linear_x/10.0);
 	for (int i = 0; i<7; i++){
@@ -76,7 +81,9 @@ void Possum::odom_callback(nav_msgs::Odometry msg)
 	ROS_INFO("%f, %f", action_queue.front().x , action_queue.front().y);
 
 	calculateOrientation();
-	begin_action(3.0);
+	if(state == MOVINGACROSS){
+		begin_action(3.0);
+	}
 	doAngleCheck();
 	checkTurningStatus();
 	publish();
@@ -85,7 +92,17 @@ void Possum::odom_callback(nav_msgs::Odometry msg)
 
 void Possum::laser_callback(sensor_msgs::LaserScan msg)
 {
-	
+	if (state == IDLE){
+		bool can_move = true;
+		for (int i = 0; i<150; i++){
+			if (msg.ranges[i] < 3){ //node detected
+				can_move = false;
+			}
+		}
+		if (can_move == true){
+			state = MOVINGACROSS;
+		}
+	}
 }
 
 /**void Possum::timerCallback(const ros::TimerEvent& e){
@@ -133,8 +150,35 @@ void Possum::move(){
 
 }
 void Possum::stop(){
+	state = IDLE;
 	this->speed.linear_x = 0.0;
 	this->speed.angular_z = 0.0;
+	if (direction == EAST){
+		row = row +1;
+	} else if (direction == WEST){
+		row = row -1;
+	}
+	if (row == 8){
+		turnBack();
+		direction = WEST;
+		geometry_msgs::Point point;
+		point.x = this->pose.px;
+		point.y = this->pose.py - (this->speed.linear_x/10.0);
+		for (int i = 0; i<7; i++){
+			point.x = point.x - 3.5;
+			action_queue.push(point);
+		}	
+	} else if (row == 1) {
+		turnBack();
+		direction = EAST;
+		geometry_msgs::Point point;
+		point.x = this->pose.px;
+		point.y = this->pose.py - (this->speed.linear_x/10.0);
+		for (int i = 0; i<7; i++){
+			point.x = point.x + 3.5;
+			action_queue.push(point);
+		}
+	}
 }
 void Possum::stopTurn(){
 	this->orientation.currently_turning = false;
@@ -169,20 +213,6 @@ void Possum::turnBack(){
 	this->speed.linear_x = 0.0;
 	this->speed.angular_z = 5.0;
 }
-
-/*void Possum::checkTurningStatus()
-{
-	if(this->orientation.currently_turning == true)
-	{
-		//if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) == this->orientation.desired_angle)
-		if(this->orientation.angle  == this->orientation.desired_angle)
-		{
-			ROS_INFO("STOP TURN");
-			stopTurn(); // stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
-		}
-		return;
-	}
-}**/
 
 char* Possum::enum_to_string(State t){
     switch(t){
