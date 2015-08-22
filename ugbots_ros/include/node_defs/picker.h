@@ -5,6 +5,7 @@
 #include <sensor_msgs/LaserScan.h>
 #include <ugbots_ros/bin_status.h>
 #include <ugbots_ros/robot_details.h>
+#include <ugbots_ros/Position.h>
 
 #include <sstream>
 #include <stdlib.h>
@@ -25,6 +26,7 @@ public:
 	ros::Publisher carrier_alert;
 	ros::Publisher core_alert;
 	ros::Subscriber sub_ground;
+	ros::Subscriber station_sub;
 	ugbots_ros::bin_status binStatus;
 	ugbots_ros::robot_details robotDetails;
 
@@ -33,6 +35,7 @@ public:
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
 	void ground_callback(nav_msgs::Odometry msg);
+	void station_callback(ugbots_ros::Position pos);
 	void turn(bool clockwise, double desired_angle, double temprad);
 	void move(double distance, double px, double py);
 	void moveX(double distance, double px);

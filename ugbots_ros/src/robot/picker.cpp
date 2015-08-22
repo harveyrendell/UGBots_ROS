@@ -38,12 +38,15 @@ Picker::Picker(ros::NodeHandle &n)
 	station_x = 0;
 	station_y = -33;
 	sent = false;
-	robotDetails.ns = n.getNamespace();
+	std::string ns = n.getNamespace();
+	ns.erase(ns.begin());
+	robotDetails.ns = ns;
 
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Picker::odom_callback, this);
 	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
 	sub_ground = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000,&Picker::ground_callback, this);
+	station_sub = n.subscribe<ugbots_ros::Position>("station",1000,&Picker::station_callback, this);
 	carrier_alert = n.advertise<ugbots_ros::bin_status>("/alert",1000);
 	core_alert = n.advertise<ugbots_ros::robot_details>("/tell_core",1000);
 }
@@ -229,6 +232,11 @@ void Picker::ground_callback(nav_msgs::Odometry msg)
 		core_alert.publish(robotDetails);
 		sent = true;
 	}
+}
+
+void Picker::station_callback(ugbots_ros::Position pos)
+{
+	ROS_INFO("Robot given coordinates x: %f, y: %f", pos.x, pos.y);
 }
 
 //hard coded function for robot to get to work station

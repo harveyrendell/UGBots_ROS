@@ -4,6 +4,7 @@
 #include <ugbots_ros/robot_details.h>
 #include <node_structs/row.h>
 #include <node_structs/robot_details.h>
+#include <math.h> 
 
 class Core
 {
@@ -22,7 +23,7 @@ public:
 		robot.ns = r.ns;
 		addIdlePickerBot(robot);
 
-		ROS_INFO("Number of idle picker bots: %d", idlePickers.size());
+		ROS_INFO("Number of idle picker bots: %d, %s", idlePickers.size(), robot.ns.c_str());
 	}
 
 	void wl_callback(ugbots_ros::Position p) 
@@ -121,12 +122,59 @@ public:
 		return beaconPositions;
 	}
 
-	void assignRowToClosest() {
-		
+	void assignRowToClosest(ros::NodeHandle &n) {
+		int rowNum = 0;
+
+		for (std::vector<Row>::iterator row = rowPositions.begin(); row != rowPositions.end(); ++row) {
+			Row current = *row;
+			if (current.status == Row::UNASSIGNED) {
+				Point p = current.start_point;
+				ugbots_ros::Position station;
+				station.x = p.x;
+				station.y = p.y;
+				int i = getClosestRobot(p);
+				if (i < 0) {
+					break;
+				}
+				std::string topic = idlePickers[i].ns + "/station";
+				work_distributer = n.advertise<ugbots_ros::Position>(topic, 1000, true);
+				ROS_INFO("station appointed to idle bot: %d, ns: %s", i, topic.c_str());
+				idlePickers.erase(idlePickers.begin() + i);
+				work_distributer.publish(station);
+				rowPositions[rowNum].status = Row::ASSIGNED;
+				break;
+			}
+			rowNum++;
+		}
+	}
+
+	int getClosestRobot(Point p) {
+		int i = 0;
+		int closest = -1;
+		double closestDistance = 100;
+
+		for (std::vector<RobotDetails>::iterator robot = idlePickers.begin(); robot != idlePickers.end(); ++robot) {
+			RobotDetails current = *robot;
+			Point robotsPoint;
+			robotsPoint.x = current.x;
+			robotsPoint.y = current.y;
+			double distanceForCurrentRobot = getDistance(p, robotsPoint);
+			if (closestDistance > distanceForCurrentRobot) {
+				closest = i;
+			}
+			i++;
+		}
+
+		return closest;
+	}
+
+	double getDistance(Point a, Point b) {
+		return sqrt(pow((a.x - b.x),2) + pow((a.y - b.y),2));
 	}
 
 	ros::Subscriber world_layout;
 	ros::Subscriber picker_list;
+	ros::Publisher work_distributer;
 
 private:
 	std::vector<Point> beaconPositions;
@@ -143,13 +191,18 @@ int main(int argc, char **argv)
 
 	Core c(n);
 
-	ros::Rate loop_rate(10);
+	ros::Rate loop_rate(1);
 
 	int count = 0;
 	while (ros::ok())
 	{
 
 		ros::spinOnce();
+
+		if (count > 5) {
+			c.assignRowToClosest(n);
+		}
+
 		loop_rate.sleep();
 		++count;
 	}
