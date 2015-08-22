@@ -3,18 +3,54 @@
 <node pkg="ugbots_ros" name="robotnode" type="PICKER"/>
 </group>
 <group ns="robot_1">
-<node pkg="ugbots_ros" name="robotnode" type="CARRIER"/>
+<node pkg="ugbots_ros" name="robotnode" type="PICKER"/>
 </group>
 <group ns="robot_2">
-<node pkg="ugbots_ros" name="workernode" type="WORKER"/>
+<node pkg="ugbots_ros" name="robotnode" type="PICKER"/>
 </group>
 <group ns="robot_3">
-<node pkg="ugbots_ros" name="visitornode" type="WORKER"/>
+<node pkg="ugbots_ros" name="robotnode" type="CARRIER"/>
 </group>
 <group ns="robot_4">
-<node pkg="ugbots_ros" name="dognode" type="DOG"/>
+<node pkg="ugbots_ros" name="robotnode" type="CARRIER"/>
 </group>
 <group ns="robot_5">
+<node pkg="ugbots_ros" name="robotnode" type="CARRIER"/>
+</group>
+<group ns="robot_6">
+<node pkg="ugbots_ros" name="workernode" type="WORKER"/>
+</group>
+<group ns="robot_7">
+<node pkg="ugbots_ros" name="workernode" type="WORKER"/>
+</group>
+<group ns="robot_8">
+<node pkg="ugbots_ros" name="workernode" type="WORKER"/>
+</group>
+<group ns="robot_9">
+<node pkg="ugbots_ros" name="visitornode" type="VISITOR"/>
+</group>
+<group ns="robot_10">
+<node pkg="ugbots_ros" name="visitornode" type="VISITOR"/>
+</group>
+<group ns="robot_11">
+<node pkg="ugbots_ros" name="visitornode" type="VISITOR"/>
+</group>
+<group ns="robot_12">
+<node pkg="ugbots_ros" name="dognode" type="DOG"/>
+</group>
+<group ns="robot_13">
+<node pkg="ugbots_ros" name="dognode" type="DOG"/>
+</group>
+<group ns="robot_14">
+<node pkg="ugbots_ros" name="dognode" type="DOG"/>
+</group>
+<group ns="robot_15">
+<node pkg="ugbots_ros" name="possumnode" type="POSSUM"/>
+</group>
+<group ns="robot_16">
+<node pkg="ugbots_ros" name="possumnode" type="POSSUM"/>
+</group>
+<group ns="robot_17">
 <node pkg="ugbots_ros" name="possumnode" type="POSSUM"/>
 </group>
 </launch>
