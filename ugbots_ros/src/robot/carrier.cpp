@@ -41,9 +41,9 @@ Carrier::Carrier(ros::NodeHandle &n)
 	y_completed = false;
 	x_started = false;
 
-	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_1/cmd_vel",1000);
-	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_1/base_pose_ground_truth",1000, &Carrier::odom_callback, this);
-	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_1/base_scan",1000,&Carrier::laser_callback, this);
+	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Carrier::odom_callback, this);
+	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Carrier::laser_callback, this);
 	carrier_alert = n.subscribe<ugbots_ros::bin_status>("/alert",1000,&Carrier::bin_callback,this);
 	carrier_alert_pub = n.advertise<ugbots_ros::bin_status>("/alert",1000);
 

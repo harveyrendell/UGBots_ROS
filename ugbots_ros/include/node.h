@@ -75,7 +75,7 @@ public:
 	}
 
 
-	bool move_x(double distance) {
+	bool move_x(double distance, double speed) {
 		double distance_x = distance - pose.px;
 		if (fabs(distance_x) < 0.001) {
 			stop();
@@ -93,7 +93,7 @@ public:
 		}
 		if(!orientation.currently_turning)
 		{
-			speed.linear_x = 3.0;
+			speed.linear_x = speed;
 			if (fabs(distance_x) < 0.05)
 			{
 				speed.linear_x = 0.01;
@@ -102,7 +102,7 @@ public:
 		return false;
 	}
 
-	bool move_y(double distance) {
+	bool move_y(double distance, double speed) {
 		double distance_y = distance - pose.py;
 		if (fabs(distance_y) < 0.001) {
 			stop();
@@ -120,7 +120,7 @@ public:
 		}
 		if(!orientation.currently_turning)
 		{
-			speed.linear_x = 3.0;
+			speed.linear_x = speed;
 			if (fabs(distance_y) < 0.05)
 			{
 				speed.linear_x = 0.01;
@@ -129,7 +129,7 @@ public:
 		return false;
 	}
 
-	bool begin_action()
+	bool begin_action(double speed)
 	{
 
 		if (action_queue.empty())
@@ -143,9 +143,9 @@ public:
 			stop();
 			return true;
 		}
-		if(move_x(end_point.x))
+		if(move_x(end_point.x, speed))
 		{
-			move_y(end_point.y);
+			move_y(end_point.y, speed);
 		}
 	}	
 
