@@ -27,10 +27,10 @@ public:
 	void turnLeft();
 	void turnRight();
 	void turnBack();
+	void checkTurningStatus();
 	void walk();
 	void run();
 	void collisionDetected();
-	//void checkTurningStatus();
 	State generateStatus();
 	char* enum_to_string(State t);
 };

@@ -46,7 +46,7 @@ Possum::Possum(ros::NodeHandle &n)
 
 	geometry_msgs::Point point;
 
-	state = IDLE;
+	this->state = IDLE;
 
 	row = 1; //starting at vine 1
 	direction = EAST;
@@ -73,7 +73,7 @@ void Possum::odom_callback(nav_msgs::Odometry msg)
 
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
-	ROS_INFO("/status/%s/./", enum_to_string(state));
+	ROS_INFO("/status/%s/./", enum_to_string(this->state));
 	ROS_INFO("linear speed: %f", this->speed.linear_x);
 	//ROS_INFO("angular speed: %f", this->speed.angular_z);
 	//ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
@@ -81,18 +81,20 @@ void Possum::odom_callback(nav_msgs::Odometry msg)
 	ROS_INFO("%f, %f", action_queue.front().x , action_queue.front().y);
 
 	calculateOrientation();
-	if(state == MOVINGACROSS){
-		begin_action(3.0);
-	}
 	doAngleCheck();
 	checkTurningStatus();
+	if(this->state == MOVINGACROSS){
+		begin_action(3.0);
+	}
+
 	publish();
 
 }
 
 void Possum::laser_callback(sensor_msgs::LaserScan msg)
 {
-	if (state == IDLE){
+	if 	((this->state == IDLE) && (this->orientation.currently_turning == false)){
+		ROS_INFO("/status/%s/./", enum_to_string(this->state));
 		bool can_move = true;
 		for (int i = 0; i<150; i++){
 			if (msg.ranges[i] < 3){ //node detected
@@ -100,7 +102,7 @@ void Possum::laser_callback(sensor_msgs::LaserScan msg)
 			}
 		}
 		if (can_move == true){
-			state = MOVINGACROSS;
+			this->state = MOVINGACROSS;
 		}
 	}
 }
@@ -150,16 +152,12 @@ void Possum::move(){
 
 }
 void Possum::stop(){
-	state = IDLE;
-	this->speed.linear_x = 0.0;
-	this->speed.angular_z = 0.0;
 	if (direction == EAST){
 		row = row +1;
 	} else if (direction == WEST){
 		row = row -1;
 	}
 	if (row == 8){
-		turnBack();
 		direction = WEST;
 		geometry_msgs::Point point;
 		point.x = this->pose.px;
@@ -169,7 +167,6 @@ void Possum::stop(){
 			action_queue.push(point);
 		}	
 	} else if (row == 1) {
-		turnBack();
 		direction = EAST;
 		geometry_msgs::Point point;
 		point.x = this->pose.px;
@@ -178,7 +175,10 @@ void Possum::stop(){
 			point.x = point.x + 3.5;
 			action_queue.push(point);
 		}
-	}
+	} 
+	state = IDLE;
+	this->speed.linear_x = 0.0;
+	this->speed.angular_z = 0.0;
 }
 void Possum::stopTurn(){
 	this->orientation.currently_turning = false;
@@ -212,6 +212,21 @@ void Possum::turnBack(){
 	this->orientation.desired_angle = this->orientation.desired_angle + (M_PI);
 	this->speed.linear_x = 0.0;
 	this->speed.angular_z = 5.0;
+}
+
+void Possum::checkTurningStatus() //override checkTurningStatus so that linear_x = 0 after turn.
+{
+	if(this->orientation.currently_turning == true)
+	{	
+		if(doubleComparator(this->orientation.angle, this->orientation.desired_angle))
+		{
+			state = IDLE;
+			this->orientation.currently_turning = false;
+			this->speed.linear_x = 0.0;
+			this->speed.angular_z = 0.0; 
+		}
+	return;
+	}
 }
 
 char* Possum::enum_to_string(State t){
