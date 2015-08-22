@@ -151,7 +151,7 @@ void Possum::checkTurningStatus()
 {
 	if(this->orientation.currently_turning == true)
 	{
-		if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) >= this->orientation.desired_angle)
+		if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) == this->orientation.desired_angle)
 		{
 			ROS_INFO("STOP TURN");
 			stopTurn(); // stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
