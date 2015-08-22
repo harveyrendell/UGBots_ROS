@@ -57,7 +57,7 @@ Visitor::Visitor(ros::NodeHandle &n)
 	action_queue.push(point);
 
 		point.x = 0.0;
-		point.y = 50.0;
+		point.y = 38.0;
 
 	action_queue.push(point);
 
@@ -73,7 +73,6 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 	this->orientation.roty = msg.pose.pose.orientation.y;
 	this->orientation.rotz = msg.pose.pose.orientation.z;
 	this->orientation.rotw = msg.pose.pose.orientation.w;
-	
 
 	calculateOrientation();
 
@@ -86,14 +85,17 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 	checkTurningStatus();
 
+
 	publish();
+
+
 
 	//ROS_INFO("LINEAR SPEED: %f", this->speed.linear_x);
 	//ROS_INFO("ANGULAR SPEED: %f", this->speed.angular_z);
 
 
-	ROS_INFO("ANGLE: %f",this->orientation.angle);
-	ROS_INFO("DESIRED ANGLE: %f", this->orientation.desired_angle);
+	//ROS_INFO("ANGLE: %f",this->orientation.angle);
+	//ROS_INFO("DESIRED ANGLE: %f", this->orientation.desired_angle);
 
 
 	//checkStaticTurningStatus();
@@ -110,29 +112,35 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 {
-	
-	if(msg.ranges[90] < 3.0)
+	if(msg.ranges[90] < 2.0 && msg.ranges[0] < 8.0)
 	{
-		this->moveToEnabled = false;
 		if(this->rightTurnInit == false)
 		{
 			if(this->orientation.currently_turning == false)
 			{
+				ROS_INFO("RIGHT TURN!");
+				this->moveToEnabled = false;
 				turn(-(M_PI/2.000000) , 0.5, -5.0);
 				this->rightTurnInit = true;
 			}
 		}
+	}
 
+	if(msg.ranges[90] < 3.0 && this->rightTurnInit == true)
+	{
 		if(this->leftTurnInit == false)
 		{
 			if(this->orientation.currently_turning == false)
 			{
+				ROS_INFO("LEFT TURN!");
+				this->moveToEnabled = false;
 				turn((M_PI/2.000000) , 0.5, 5.0);
 				this->leftTurnInit = true;
 			}
 		}
 	}
 
+	checkTurningStatus();
 	//This is the callback function to process laser scan messages
 	//you can access the range data from msg.ranges[i]. i = sample number	
 }
@@ -145,7 +153,7 @@ void Visitor::checkTurningStatus()
 		
 	if(this->orientation.currently_turning == true)
 	{
-		if(doubleComparator((this->orientation.angle + (M_PI / (speed.angular_z * 2))), (this->orientation.desired_angle)))
+		if(doubleComparator(this->orientation.angle , this->orientation.desired_angle))
 		{
 			this->orientation.currently_turning = false;
 			this->speed.linear_x = 2.0;
@@ -153,9 +161,29 @@ void Visitor::checkTurningStatus()
 
 			if(this->leftTurnInit == true && this->rightTurnInit == true)
 			{
+				ROS_INFO("STOP TURN!");
 				this->leftTurnInit = false;
 				this->rightTurnInit = false;
 
+				std::queue<geometry_msgs::Point> temp_queue;
+
+				geometry_msgs::Point pointtemp;
+				pointtemp.x = this->pose.px; 
+				pointtemp.y = this->pose.py + 5.0;
+
+				temp_queue.push(pointtemp);
+
+				while(!action_queue.empty())
+				{
+					temp_queue.push(action_queue.front());
+					action_queue.pop();
+				}
+
+				while(!temp_queue.empty())
+				{
+					action_queue.push(temp_queue.front());
+					temp_queue.pop();
+				}
 
 				this->moveToEnabled = true;
 			}
