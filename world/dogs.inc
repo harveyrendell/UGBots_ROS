@@ -11,7 +11,7 @@ define anilaser ranger
   
 )
 
-define animal position
+define dog position
 (
   size [0.25 0.5 0.5]
   drive "diff"
@@ -95,6 +95,6 @@ define animal position
 	z [0 0.15]
   )
 
-  anilaser(pose [ 0.050 0.000 0 90.000 ])
+  anilaser(pose [ 0.050 0.000 0 0.000 ])
 )
 
