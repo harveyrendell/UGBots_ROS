@@ -44,9 +44,10 @@ Visitor::Visitor(ros::NodeHandle &n)
 
 	this->rightTurnInit = false;
 	this->leftTurnInit = false;
+	this->moveToEnabled = true;
 
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000);
-	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &Visitor::odom_callback, this);
+	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_0/base_pose_ground_truth",1000, &Visitor::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&Visitor::laser_callback, this);
 
 	geometry_msgs::Point point;
@@ -66,8 +67,8 @@ Visitor::Visitor(ros::NodeHandle &n)
 void Visitor::odom_callback(nav_msgs::Odometry msg)
 {
 	//This is the call back function to process odometry messages coming from Stage. 	
-	this->pose.px = -40 + msg.pose.pose.position.x;
-	this->pose.py = -44 + msg.pose.pose.position.y;
+	this->pose.px = msg.pose.pose.position.x;
+	this->pose.py = msg.pose.pose.position.y;
 	this->orientation.rotx = msg.pose.pose.orientation.x;
 	this->orientation.roty = msg.pose.pose.orientation.y;
 	this->orientation.rotz = msg.pose.pose.orientation.z;
@@ -76,11 +77,16 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 	calculateOrientation();
 
-	begin_action();
+	if(this->moveToEnabled == true)
+	{
+		begin_action(2.0);
+	}
 
 	doAngleCheck();		
 
 	checkTurningStatus();
+
+	publish();
 
 	//ROS_INFO("LINEAR SPEED: %f", this->speed.linear_x);
 	//ROS_INFO("ANGULAR SPEED: %f", this->speed.angular_z);
@@ -104,9 +110,10 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 {
-	/*
+	
 	if(msg.ranges[90] < 3.0)
 	{
+		this->moveToEnabled = false;
 		if(this->rightTurnInit == false)
 		{
 			if(this->orientation.currently_turning == false)
@@ -124,7 +131,7 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 				this->leftTurnInit = true;
 			}
 		}
-	}*/
+	}
 
 	//This is the callback function to process laser scan messages
 	//you can access the range data from msg.ranges[i]. i = sample number	
@@ -138,7 +145,7 @@ void Visitor::checkTurningStatus()
 		
 	if(this->orientation.currently_turning == true)
 	{
-		if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) == this->orientation.desired_angle)
+		if(doubleComparator((this->orientation.angle + (M_PI / (speed.angular_z * 2))), (this->orientation.desired_angle)))
 		{
 			this->orientation.currently_turning = false;
 			this->speed.linear_x = 2.0;
@@ -148,6 +155,9 @@ void Visitor::checkTurningStatus()
 			{
 				this->leftTurnInit = false;
 				this->rightTurnInit = false;
+
+
+				this->moveToEnabled = true;
 			}
 		}
 	}
@@ -182,7 +192,7 @@ int count = 0;
 while (ros::ok())
 {
 	
-	node.publish();
+	//node.publish();
 
 	ros::spinOnce();
 

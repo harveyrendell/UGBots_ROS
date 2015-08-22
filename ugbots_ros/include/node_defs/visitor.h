@@ -27,6 +27,7 @@ public:
 
 	bool rightTurnInit;
 	bool leftTurnInit;
-	
+	bool moveToEnabled;
+
 	char const* enum_to_string(State t);
 };
