@@ -93,9 +93,10 @@ public:
 		if(!orientation.currently_turning)
 		{
 			this->speed.linear_x = speed;
-			if (fabs(distance_x) < 0.05)
+			if (fabs(distance_x) < 0.5)
 			{
-				this->speed.linear_x = 0.01;
+				ROS_INFO("slow down x");
+				this->speed.linear_x = fabs(distance_x);
 			}
 		}
 		return false;
@@ -120,9 +121,10 @@ public:
 		if(!orientation.currently_turning)
 		{
 			this->speed.linear_x = speed;
-			if (fabs(distance_y) < 0.05)
+			if (fabs(distance_y) < 0.5)
 			{
-				this->speed.linear_x = 0.01;
+				ROS_INFO("slow down x");
+				this->speed.linear_x = fabs(distance_y);
 			}
 		}
 		return false;
@@ -138,6 +140,7 @@ public:
 		geometry_msgs::Point end_point = action_queue.front();
 		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 		{
+			ROS_INFO("POP!! POP!! POP!!");
 			action_queue.pop();
 			stop();
 			return true;

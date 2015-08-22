@@ -42,7 +42,7 @@ Possum::Possum(ros::NodeHandle &n)
 	this->speed.angular_z = 0.0;
 
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Possum::odom_callback, this);
+	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Possum::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Possum::laser_callback, this);
 	this->sub_list.sub_timer = n.createTimer(ros::Duration(5), &Possum::timerCallback, this);
 
@@ -53,55 +53,86 @@ Possum::Possum(ros::NodeHandle &n)
 void Possum::odom_callback(nav_msgs::Odometry msg)
 {
 	//This is the call back function to process odometry messages coming from Stage. 	
-	this->pose.px = 24 + msg.pose.pose.position.x;
-	this->pose.py = -48 + msg.pose.pose.position.y;
+	this->pose.px = msg.pose.pose.position.x;
+	this->pose.py = msg.pose.pose.position.y;
 
 	this->orientation.rotx = msg.pose.pose.orientation.x;
 	this->orientation.roty = msg.pose.pose.orientation.y;
 	this->orientation.rotz = msg.pose.pose.orientation.z;
 	this->orientation.rotw = msg.pose.pose.orientation.w;
 
-	//ROS_INFO("/position/x/%f", this->pose.px);
-	//ROS_INFO("/position/y/%f", this->pose.py);
+	ROS_INFO("/position/x/%f", this->pose.px);
+	ROS_INFO("/position/y/%f", this->pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
 	ROS_INFO("linear speed: %f", this->speed.linear_x);
-	ROS_INFO("angular speed: %f", this->speed.angular_z);
-	ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
-	ROS_INFO("orientation_angle: %f", this->orientation.angle);
-
+	//ROS_INFO("angular speed: %f", this->speed.angular_z);
+	//ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
+	//ROS_INFO("orientation_angle: %f", this->orientation.angle);
+	ROS_INFO("%f, %f", action_queue.front().x , action_queue.front().y);
 
 	calculateOrientation();
+	begin_action(3.0);
 	doAngleCheck();
 	checkTurningStatus();
+	publish();
 
 }
 
 void Possum::laser_callback(sensor_msgs::LaserScan msg)
 {
-	if (this->orientation.currently_turning == false){
-		if ((msg.ranges[90] <= 2) && (msg.ranges[179] <= 2)){
-			ROS_INFO("TURN RIGHT");
-			turn((-M_PI/ 2.000000), 0.0,-5.0);
-		}else if ((msg.ranges[90] <= 2) && (msg.ranges[0] <= 2)){
-			ROS_INFO("TURN LEFT");
-			turn((M_PI / 2.000000), 0.0, 5.0);
-
+	if (state != MOVINGACROSS){
+		ROS_INFO("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+		if (this->orientation.currently_turning == false){
+			if ((msg.ranges[90] <= 2) && (msg.ranges[179] <= 2)){
+				ROS_INFO("TURN RIGHT");
+				turn((-M_PI/ 2.000000), 0.0,-5.0);
+			}else if ((msg.ranges[90] <= 2) && (msg.ranges[0] <= 2)){
+				ROS_INFO("TURN LEFT");
+				turn((M_PI / 2.000000), 0.0, 5.0);
+			}
 		}
+		checkTurningStatus();
+		publish();
 	}
 }
 
 void Possum::timerCallback(const ros::TimerEvent& e){
-	ROS_INFO("Callback 1 triggered");
-	if (this->orientation.currently_turning == false){
+	if ((this->orientation.currently_turning == false) && (state != MOVINGACROSS)){
+		ROS_INFO("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");
 		state = generateStatus();
 		if (state == IDLE){
 			stop();
 		}else if (state == ROAMING){
-			run();
+			walk();
 		}else if (state == FLEEING){
 			run();
 		}else{
-			//check if possum is near vines
+			geometry_msgs::Point point;
+			if ((this->pose.px >= -3.0) && (this->pose.px <= 6.0)){
+				if (this->pose.py > 0.0){
+					//if possum is at top side of orchard
+					point.x = this->pose.px;
+					point.y = 38.0;
+					action_queue.push(point);
+				} else {
+					//if possum is at bottom side of orchard
+					point.x = this->pose.px;
+					point.y = -38.0;
+					action_queue.push(point);
+				}
+			} else if ((this->pose.py >= -37.5) && (this->pose.py <= 38.0)){
+				if (this->pose.px > 0.0) {
+					//if possum is at right side of orchard
+					point.x = 8.0;
+					point.y = this->pose.py - (this->speed.linear_x/10.0);
+					action_queue.push(point);
+				} else {
+					//if possum is at left side of orchard
+					point.x = -4.0;
+					point.y = this->pose.py;
+					action_queue.push(point);
+				}
+			}
 		}
 	}
 }
@@ -147,18 +178,19 @@ void Possum::turnBack(){
 	this->speed.angular_z = 5.0;
 }
 
-void Possum::checkTurningStatus()
+/*void Possum::checkTurningStatus()
 {
 	if(this->orientation.currently_turning == true)
 	{
-		if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) == this->orientation.desired_angle)
+		//if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) == this->orientation.desired_angle)
+		if(this->orientation.angle  == this->orientation.desired_angle)
 		{
 			ROS_INFO("STOP TURN");
 			stopTurn(); // stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
 		}
 		return;
 	}
-}
+}**/
 
 char* Possum::enum_to_string(State t){
     switch(t){
@@ -179,21 +211,32 @@ Possum::State Possum::generateStatus(){
 	int randNum;
 	srand (time(NULL));
 /* generate secret number between 1 and 3: */
-	randNum = rand() % 4 + 1;
+	randNum = rand() % 5 + 1;
 	if (randNum == 1){
 		return IDLE;
 	}else if (randNum == 2){
 		return ROAMING;
 	}else if (randNum == 3){
 		return FLEEING;
-	}else{
-		ROS_INFO("ENTERED MOVINGACROSS");
+	}else if (randNum == 4){
 		ROS_INFO("ENTERED MOVINGACROSS");
 		//check if possum is near vines before passing on MOVINGACROSS.5
 		if ((this->pose.px >= -3) && (this->pose.px <= 6)){
 			return MOVINGACROSS;
 		} else if ((this->pose.py >= -37.5) && (this->pose.py <= 38)){
 			return MOVINGACROSS;
+		} else {
+			return FLEEING;
+		}
+	} else {
+		ROS_INFO("ENTERED MOVINGACROSS");
+		//check if possum is near vines before passing on MOVINGACROSS.5
+		if ((this->pose.px >= -3) && (this->pose.px <= 6)){
+			return MOVINGACROSS;
+		} else if ((this->pose.py >= -37.5) && (this->pose.py <= 38)){
+			return MOVINGACROSS;
+		} else {
+			return FLEEING;
 		}
 	}
 }
@@ -220,7 +263,7 @@ int count = 0;
 
 while (ros::ok())
 {
-	node.publish();
+	//node.publish();
 	
 	ros::spinOnce();
 

@@ -29,7 +29,7 @@ public:
 	void walk();
 	void run();
 	void collisionDetected();
-	void checkTurningStatus();
+	//void checkTurningStatus();
 	State generateStatus();
 	char* enum_to_string(State t);
 };
