@@ -18,6 +18,7 @@ define cat position
   
   #body
   block(
+    color "white"
 	points 4
 	point[0] [0 0.2]
 	point[1] [1 0.2]
@@ -28,6 +29,7 @@ define cat position
 
   #head
   block(
+    color "white"
 	points 4
 	point[0] [0.1 0.65]
 	point[1] [0.9 0.65]
@@ -37,6 +39,7 @@ define cat position
   )
   #snout
   block(
+    color "grey"
 	points 4
 	point[0] [0.28 0.9]
 	point[1] [0.72 0.9]
@@ -46,6 +49,7 @@ define cat position
   )
   #ears
   block(
+    color "grey"
 	points 4
 	point[0] [0.35 0.65]
 	point[1] [0.45 0.65]
@@ -54,6 +58,7 @@ define cat position
 	z [0.35 0.4]
   )
   block(
+    color "grey"
 	points 4
 	point[0] [0.55 0.65]
 	point[1] [0.65 0.65]
@@ -63,6 +68,7 @@ define cat position
   ) 
   #legs
    block(
+    color "grey"
 	points 4
 	point[0] [0 0.2]
 	point[1] [0.2 0.2]
@@ -71,6 +77,7 @@ define cat position
 	z [0 0.1]
   )
    block(
+    color "grey"
 	points 4
 	point[0] [0.8 0.2]
 	point[1] [1 0.2]
@@ -79,6 +86,7 @@ define cat position
 	z [0 0.1]
   )
    block(
+    color "grey"
 	points 4
 	point[0] [0 0.55]
 	point[1] [0.2 0.55]
@@ -87,6 +95,7 @@ define cat position
 	z [0 0.1]
   )
    block(
+    color "grey"
 	points 4
 	point[0] [0.8 0.55]
 	point[1] [1 0.55]
@@ -96,6 +105,7 @@ define cat position
   )
   #tail
   block(
+    color "white"
 	points 4
 	point[0] [0.4 0]
 	point[1] [0.6 0]
@@ -104,6 +114,7 @@ define cat position
 	z [0.25 0.3]
   )
   block(
+    color "grey"
 	points 4
 	point[0] [0.4 0]
 	point[1] [0.6 0]
