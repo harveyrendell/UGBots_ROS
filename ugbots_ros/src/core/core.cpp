@@ -15,7 +15,7 @@ public:
 		full_bin_list = n.subscribe<ugbots_ros::Position>("/full_bins",1000, &Core::fbl_callback, this);
 		picker_list = n.subscribe<ugbots_ros::robot_details>("/idle_pickers",1000, &Core::pl_callback, this);
 		carrier_list = n.subscribe<ugbots_ros::robot_details>("/idle_carriers",1000, &Core::cl_callback, this);
-		rows_list = n.advertise<ugbots_ros::Position>("/row_loc",1000);
+		rows_list = n.advertise<ugbots_ros::Position>("/row_loc",1000,true);
 	}
 
 	//call back function for the world layout topic subscriber
@@ -339,7 +339,7 @@ public:
 			ugbots_ros::Position p;
 			p.x = current.x_pos;
 			p.y = current.start_point.y;
-
+			ROS_INFO("publishing x: %f, y: %f", p.x, p.y);
 			rows_list.publish(p);
 		}
 	}
@@ -375,7 +375,7 @@ int main(int argc, char **argv)
 
 		ros::spinOnce();
 
-		if (count == 2) {
+		if (count == 4) {
 			c.publishRows();
 		}
 
