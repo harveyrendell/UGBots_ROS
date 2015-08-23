@@ -21,8 +21,18 @@ public:
 		sub_list.node_stage_pub.publish(node_cmdvel);
 	}
 
+	/*void turn(double angle, double linear, double angular)
+	{
+<<<<<<< HEAD
+		this->orientation.currently_turning = true;
+		this->orientation.desired_angle = this->orientation.desired_angle + angle;
+		this->speed.linear_x = linear;
+		this->speed.angular_z = angular;
+	}*/
+
 	void turn(double angle, double linear, double angular)
 	{
+
 		this->orientation.currently_turning = true;
 		this->orientation.desired_angle = this->orientation.desired_angle + angle;
 		double angle_difference = fabs(this->orientation.desired_angle - this->orientation.angle);
@@ -31,6 +41,9 @@ public:
 			angular = M_PI/300;
 		}
 		doAngleCheck();
+
+		ROS_INFO("angluar speed: %f", angular);
+
 		if((this->orientation.desired_angle - this->orientation.angle) > 0)
 		{
 			if (angular > 0)

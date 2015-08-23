@@ -28,7 +28,7 @@ rows (pose [ 12.25 -35 -1.002 0 ])
 boundary (pose [ -50 25 0 90 ])
 boundary (pose [ 50 25 0 90 ])
 boundary (pose [ -50 -25 0 90 ])
-boundary (pose [ 50 -25 0 90 ])
+boundary (pose [ 50 -20 0 90 ])
 
 boundary (pose [ -25 50 0 0 ])
 boundary (pose [ 25 50 0 0 ])

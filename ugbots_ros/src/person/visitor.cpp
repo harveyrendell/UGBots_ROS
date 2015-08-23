@@ -25,33 +25,275 @@ Visitor::Visitor(ros::NodeHandle &n)
 	//this->n = n;
 
 	//setting base attribute defaults
-	pose.theta = M_PI/2.0;
-	pose.px = 10;
-	pose.py = 20;
-	speed.linear_x = 0.0;
-	speed.max_linear_x = 3.0;
-	speed.angular_z = 0.0;
-	state = IDLE;
+	this->pose.theta = M_PI/2.0;
+	this->pose.px = -40;
+	this->pose.py = -44;
+	this->speed.linear_x = 2.0;
+	this->speed.max_linear_x = 3.0;
+	this->speed.angular_z = 0.0;
+	this->state = IDLE;
 
-	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Visitor::odom_callback, this);
-	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Visitor::laser_callback, this);
+	this->orientation.previous_right_distance = 0;
+	this->orientation.previous_left_distance = 0;
+	this->orientation.previous_front_distance = 0;
+	this->orientation.angle = 0;
+	this->orientation.desired_angle = 0;
+
+	this->orientation.currently_turning = false;
+	this->orientation.currently_turning_static = false;
+
+	this->rightTurnInit = false;
+	this->leftTurnInit = false;
+	this->moveToEnabled = true;
+	this->queueDuplicateCheckAngle = 0.0;
+	this->queueDuplicate = true;
+
+	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Visitor::odom_callback, this);
+	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Visitor::laser_callback, this);
+
+	init_route();
+
 }
 
 void Visitor::odom_callback(nav_msgs::Odometry msg)
 {
 	//This is the call back function to process odometry messages coming from Stage. 	
-	this->pose.px = 5 + msg.pose.pose.position.x;
-	this->pose.py = 10 + msg.pose.pose.position.y;
-	ROS_INFO("Current x position is: %f", this->pose.px);
-	ROS_INFO("Current y position is: %f", this->pose.py);
+	this->pose.px = msg.pose.pose.position.x;
+	this->pose.py = msg.pose.pose.position.y;
+	this->orientation.rotx = msg.pose.pose.orientation.x;
+	this->orientation.roty = msg.pose.pose.orientation.y;
+	this->orientation.rotz = msg.pose.pose.orientation.z;
+	this->orientation.rotw = msg.pose.pose.orientation.w;
+
+	calculateOrientation();
+
+	if(this->moveToEnabled == true)
+	{
+		begin_action_shortest_path(2.0);
+	}
+
+	doAngleCheck();		
+
+	checkTurningStatus();
+
+	publish();
+
+
+
+	//ROS_INFO("LINEAR SPEED: %f", this->speed.linear_x);
+	//ROS_INFO("ANGULAR SPEED: %f", this->speed.angular_z);
+
+
+	//ROS_INFO("ANGLE: %f",this->orientation.angle);
+	//ROS_INFO("DESIRED ANGLE: %f", this->orientation.desired_angle);
+
+
+	//checkStaticTurningStatus();
+
+	ROS_INFO("/position/x/%f",action_queue.front().x);
+	ROS_INFO("/position/y/%f",action_queue.front().y);
+	ROS_INFO("/status/TEMP/./");
+	/*
+	//ROS_INFO("ANGLE: %f",this->orientation.angle);
+	//ROS_INFO("DESIRED ANGLE: %f", this->orientation.desired_angle);
+	*/
 }
 
 
 void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 {
-	//This is the callback function to process laser scan messages
-	//you can access the range data from msg.ranges[i]. i = sample number	
+	
+	if(fabs(this->queueDuplicateCheckAngle - this->orientation.angle) >= (M_PI/2.000000))
+	{
+		this->queueDuplicate = true;
+		this->queueDuplicateCheckAngle = 0;
+	}
+	
+
+	if(msg.ranges[90] < 2.0)
+	{
+		if(this->queueDuplicate == true)
+		{
+			this->queueDuplicateCheckAngle = this->orientation.angle;
+
+			std::queue<geometry_msgs::Point> temp_queue;
+
+			geometry_msgs::Point pointtemp;
+
+			
+			pointtemp.x = this->pose.px + 2 * cos(this->orientation.angle - (M_PI/2.0));
+			pointtemp.y = this->pose.py + 2 * sin(this->orientation.angle - (M_PI/2.0));
+			temp_queue.push(pointtemp);
+
+			pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
+			pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle);
+			temp_queue.push(pointtemp);
+
+			pointtemp.x = pointtemp.x + 2 * cos(this->orientation.angle + (M_PI/2.0));
+			pointtemp.y = pointtemp.y + 2 * sin(this->orientation.angle + (M_PI/2.0));
+			temp_queue.push(pointtemp);
+
+			/*
+				pointtemp.x = this->pose.px; 
+				pointtemp.y = this->pose.py + 1.1;
+
+				temp_queue.push(pointtemp);
+
+				pointtemp.x = this->pose.px - 4.0; 
+				pointtemp.y = this->pose.py + 1.1;
+
+				temp_queue.push(pointtemp);
+
+				pointtemp.x = this->pose.px - 4.0; 
+				pointtemp.y = this->pose.py;
+
+				temp_queue.push(pointtemp);
+			**/
+
+			while(!action_queue.empty())
+			{
+				temp_queue.push(action_queue.front());
+				action_queue.pop();
+			}
+
+			while(!temp_queue.empty())
+			{
+				action_queue.push(temp_queue.front());
+				temp_queue.pop();
+			}
+
+			this->queueDuplicate = false;
+		}
+	}
+}
+
+	/*if(msg.ranges[90] < 2.0 && msg.ranges[0] < 8.0)
+	{
+		if(this->rightTurnInit == false)
+		{
+			if(this->orientation.currently_turning == false)
+			{
+				ROS_INFO("RIGHT TURN!");
+				this->moveToEnabled = false;
+				turn(-(M_PI/2.000000) , 0.5, -5.0);
+				this->rightTurnInit = true;
+			}
+		}
+	}
+
+	if(msg.ranges[90] < 3.0 && this->rightTurnInit == true)
+	{
+		if(this->leftTurnInit == false)
+		{
+			if(this->orientation.currently_turning == false)
+			{
+				ROS_INFO("LEFT TURN!");
+				this->moveToEnabled = false;
+				turn((M_PI/2.000000) , 0.5, 5.0);
+				this->leftTurnInit = true;
+			}
+		}
+	}*/
+
+void Visitor::checkTurningStatus()
+{
+		//Implement individually.
+		//Change 2-3 to which ever suits your node
+		//parse in ur desired linear speed to stopTurn()
+		
+	if(this->orientation.currently_turning == true)
+	{
+		if(doubleComparator(this->orientation.angle , this->orientation.desired_angle))
+		{
+			this->orientation.currently_turning = false;
+			this->speed.linear_x = 2.0;
+			this->speed.angular_z = 0.0;
+		}
+	}
+}
+
+			/*if(this->leftTurnInit == true && this->rightTurnInit == true)
+			{
+				ROS_INFO("STOP TURN!");
+				this->leftTurnInit = false;
+				this->rightTurnInit = false;
+
+				std::queue<geometry_msgs::Point> temp_queue;
+
+				geometry_msgs::Point pointtemp;
+				pointtemp.x = this->pose.px; 
+				pointtemp.y = this->pose.py + 5.0;
+
+				temp_queue.push(pointtemp);
+
+				while(!action_queue.empty())
+				{
+					temp_queue.push(action_queue.front());
+					action_queue.pop();
+				}
+
+				while(!temp_queue.empty())
+				{
+					action_queue.push(temp_queue.front());
+					temp_queue.pop();
+				}
+
+				this->moveToEnabled = true;
+			}
+		}
+	}
+		
+}*/
+
+void Visitor::init_route()
+{
+	geometry_msgs::Point point;
+		point.x = 10.5; 
+		point.y = -39.0;
+
+	action_queue.push(point);
+	/*
+		point.x = 10.5;
+		point.y = 39.0;
+
+	action_queue.push(point);
+
+		point.x = 3.5;
+		point.y = 39.0;
+
+	action_queue.push(point);
+
+		point.x = 3.5;
+		point.y = -39.0;
+
+	action_queue.push(point);
+
+		point.x = -3.5;
+		point.y = -39.0;
+
+	action_queue.push(point);
+
+		point.x = -3.5;
+		point.y = 39.0;
+
+	action_queue.push(point);
+
+		point.x = -10.5;
+		point.y = 39.0;
+
+	action_queue.push(point);
+
+		point.x = -10.5;
+		point.y = -39.0;
+
+	action_queue.push(point);
+
+		point.x = 52.0;
+		point.y = -48.5;
+
+	action_queue.push(point);
+	*/
 }
 
 void Visitor::move(){}
@@ -81,8 +323,9 @@ int count = 0;
 
 while (ros::ok())
 {
-	node.publish();
 	
+	//node.publish();
+
 	ros::spinOnce();
 
 	loop_rate.sleep();
