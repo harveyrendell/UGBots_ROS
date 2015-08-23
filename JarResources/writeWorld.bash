@@ -93,33 +93,24 @@ i=$(($i+1))
 
 done
 
+visitorx=50
+visitory=-47.5
+
 while [ $v -lt $visitor ];
 do
 
-rand=$(( (RANDOM % 97) - 46 )) 
-
-if (($rand>=-12 && $rand<=12));
-then
-    rand3=$(( (RANDOM % 15) - 49 )) 
-    rand4=$(( (RANDOM % 15) + 35 ))
-    if [ $(( (RANDOM % 2) + 1 )) -lt "2" ];
-    then
-        rand2=$rand3
-    else
-        rand2=$rand4
-    fi
-else
-    rand2=$(( (RANDOM % 99) - 48 )) 
-fi
+rand=$visitorx
+rand2=$visitory
 
 echo \<group ns=\"robot_$i\"\> >> ugbots_ros/launch/world.launch #### WORKER-> VISITOR
 echo \<node pkg=\"ugbots_ros\" name=\"visitornode\" type=\"VISITOR\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
 #echo visitor\(pose [ 3.5 $((1+$(($v * 2)))) 0 0 ] name \"V$v\" color \"pink\" \) >> world/config/peopleinstances.inc
-echo visitor\(pose [ $rand $rand2 0 0 ] name \"V$v\" color \"pink\" \) >> world/config/peopleinstances.inc
+echo visitor\(pose [ $rand $rand2 0 0 ] origin [ 0 0 0 270] name \"V$v\" color \"pink\" \) >> world/config/peopleinstances.inc
 v=$(($v+1))
 i=$(($i+1))
+visitorx=$(($vistorx+5))
 
 done
 
