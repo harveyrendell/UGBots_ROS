@@ -23,31 +23,37 @@ public:
 
 	void turn(double angle, double linear, double angular)
 	{
-		this->orientation.currently_turning = true;
+		
 		this->orientation.desired_angle = this->orientation.desired_angle + angle;
 		double angle_difference = fabs(this->orientation.desired_angle - this->orientation.angle);
+		this->speed.angular_z = angular;
 		if(angle_difference < M_PI/20)
 		{
-			angular = M_PI/300;
+			this->speed.angular_z = angular = M_PI/300;
 		}
 		doAngleCheck();
-		if((this->orientation.desired_angle - this->orientation.angle) > 0)
+
+		checkTurningStatus();
+		if(((this->orientation.desired_angle - this->orientation.angle) > 0) && !this->orientation.currently_turning)
 		{
-			if (angular < 0)
-			{
-				angular = -1.0 * angular;
-			}
-		}
-		else
-		{
+			ROS_INFO("clockwise");
 			if (angular > 0)
 			{
-				angular = -1.0 * angular;
+				this->speed.angular_z = angular = -1.0 * angular;
+			}
+		}
+		else if(((this->orientation.desired_angle - this->orientation.angle) < 0) && !this->orientation.currently_turning)
+		{
+			ROS_INFO("anti-clockwise");
+			if (angular < 0)
+			{
+				this->speed.angular_z = angular = -1.0 * angular;
 			}
 		}
 
 		this->speed.linear_x = linear;
-		this->speed.angular_z = angular;
+		
+		this->orientation.currently_turning = true;
 	}
 	bool begin_action_shortest_path(double speed)
 	{
@@ -231,4 +237,6 @@ public:
 
 	//Orientation of the unit
 	Orientation orientation;
+
+
 };
