@@ -46,14 +46,14 @@ public:
 
 		if((this->orientation.desired_angle - this->orientation.angle) > 0)
 		{
-			if (angular > 0)
+			if (angular < 0)
 			{
 				angular = -1.0 * angular;
 			}
 		}
 		else
 		{
-			if (angular < 0)
+			if (angular > 0)
 			{
 				angular = -1.0 * angular;
 			}
