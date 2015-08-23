@@ -110,7 +110,7 @@ void Cat::laser_callback(sensor_msgs::LaserScan msg)
 {
 	if(this->orientation.currently_turning == false){
 		for(int i=0; i<30; i++){
-			if(msg.ranges[i] < 2.0){
+			if(msg.ranges[i] < 2.5){
 				//ROS_INFO("LASER DETECTED");
 				turnBack();
 				break;
@@ -166,12 +166,24 @@ void Cat::stopAfterPop(){
 	} else {
 		if (this->position == NORTH){
 			this->position = WEST;
+			point.x = -47.0;
+			point.y = -47.0;
+			action_queue.push(point);
 		}else if(this->position == WEST){
 			this->position = SOUTH;
+			point.x = 47.0;
+			point.y = -47.0;
+			action_queue.push(point);
 		}else if(this->position == SOUTH){
 			this->position = EAST;
+			point.x = 47.0;
+			point.y = 47.0;
+			action_queue.push(point);
 		}else{
 			this->position = NORTH;
+			point.x = -47.0;
+			point.y = 47.0;
+			action_queue.push(point);
 		}
 	}
 }
@@ -208,10 +220,6 @@ void Cat::turnRight(){
 }
 //Turn back
 void Cat::turnBack(){
-	//this->orientation.currently_turning = true;
-	//this->orientation.desired_angle = this->orientation.desired_angle + (M_PI);
-	//this->speed.linear_x = 0.0;
-	//this->speed.angular_z = 5.0;
 	turn(M_PI, 0.0, 5.0);
 
 	//change direction of cat
@@ -227,6 +235,7 @@ void Cat::turnBack(){
 		action_queue.pop();
 	}
 	ROS_INFO("EXIT WHILE LOOP");
+
 	geometry_msgs::Point point;
 	if (this->direction == CLOCKWISE){
 		if (this->position == NORTH){
@@ -264,7 +273,6 @@ void Cat::turnBack(){
 			point.y = 47.0;
 			action_queue.push(point);
 		}
-		
 	}
 
 }
@@ -315,44 +323,7 @@ bool Cat::begin_action(double speed){
 
 	if (action_queue.empty())
 	{
-		geometry_msgs::Point point;
-		if (this->direction == CLOCKWISE){
-			if (this->position == NORTH){
-				point.x = 47.0;
-				point.y = -47.0;
-				action_queue.push(point);
-			}else if(this->position == EAST){
-				point.x = -47.0;
-				point.y = -47.0;
-				action_queue.push(point);
-			}else if(this->position == SOUTH){
-				point.x = -47.0;
-				point.y = 47.0;
-				action_queue.push(point);
-			}else{
-				point.x = 47.0;
-				point.y = 47.0;
-				action_queue.push(point);
-			}
-		} else {
-			if (this->position == NORTH){
-				point.x = -47.0;
-				point.y = -47.0;
-				action_queue.push(point);
-			}else if(this->position == WEST){
-				point.x = 47.0;
-				point.y = -47.0;
-				action_queue.push(point);
-			}else if(this->position == SOUTH){
-				point.x = 47.0;
-				point.y = 47.0;
-				action_queue.push(point);
-			}else{
-				point.x = -47.0;
-				point.y = 47.0;
-				action_queue.push(point);
-			}	
-		}		//set_status(1);
+		//set_status(1);
 		return true;
 	}
 	geometry_msgs::Point end_point = action_queue.front();
