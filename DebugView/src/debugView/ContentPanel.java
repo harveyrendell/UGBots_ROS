@@ -23,11 +23,12 @@ public class ContentPanel extends JPanel {
 	private ROSinit _top = new ROSinit();
 	private JButton _startButton = new JButton("Start");
 	private JButton _finishButton = new JButton("Finish");
+	private JButton _rosmake = new JButton("Compile");
+	private JButton _runTests = new JButton("Run Tests");
 	private JScrollPane _debug = new JScrollPane();
 	private JPanel _infoWrapper = new JPanel();
 	private HashMap<String, infoPanel> _map = new HashMap<String, infoPanel>();
-	private ContentPanel _self = this;
-	private Processes processes;
+	private Processes processes= new Processes(this, _top.getVals());
 	
 	public ContentPanel() {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -41,6 +42,8 @@ public class ContentPanel extends JPanel {
 		
 		JPanel panel = new JPanel();
 		panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		panel.add(_runTests);
+		panel.add(_rosmake);
 		panel.add(_startButton);
 		panel.add(_finishButton);
 		panel.add(new JSeparator());
@@ -87,9 +90,8 @@ public class ContentPanel extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				processes = new Processes(_self, _top.getVals());
+				processes.update(_top.getVals());
 				_infoWrapper.removeAll();
-				_map.clear();
 				_top.disableAll();
 				_startButton.setVisible(false);
 				_finishButton.setVisible(true);
@@ -109,10 +111,33 @@ public class ContentPanel extends JPanel {
 				_finishButton.setVisible(false);
 				_startButton.setVisible(true);
 				_top.enableAll();
-
+				
+				_map.clear();
 				processes.killProcs();
 			}
-			
+		});
+		
+		_runTests.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				processes.runTests();
+			}
+		});
+		
+		_rosmake.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				processes.rosmake();
+			}
 		});
 	}
+
+	public void killProcs() {
+		if (processes != null){
+			processes.killProcs();
+		}
+	}
+	
 }

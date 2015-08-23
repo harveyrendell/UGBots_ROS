@@ -28,8 +28,6 @@ public:
 	void laser_callback(sensor_msgs::LaserScan msg);
 	void turn(bool clockwise, double desired_angle, double temprad);
 	void move(double distance, double px, double py);
-	void moveX(double distance, double px);
-	void moveY(double distance, double py);
 	void move();
 	void stop();
 	void turnLeft();
@@ -41,6 +39,7 @@ public:
 
 	enum State { IDLE, TRAVELLING, PICKING, WAITING, AVOIDING, STOPPED };
 	State state;
-
 	char const* enum_to_string(State t);
+	
+	int binPercent;
 };
