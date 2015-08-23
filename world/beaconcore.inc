@@ -12,7 +12,7 @@ define core ranger
 
 define point position
 (
-  size [1 1 0]
+  size [1 1 -1]
   drive "diff"
   core(pose [ 0.00 0.000 0 0.000 ])
 )
