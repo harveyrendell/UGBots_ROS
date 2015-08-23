@@ -104,7 +104,7 @@ echo \<node pkg=\"ugbots_ros\" name=\"workernode\" type=\"WORKER\"\/\> >> ugbots
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
 #echo worker\(pose [ 0 $((1+$(($w * 2)))) 0 0 ] name \"W$w\" color \"black\" \) >> world/config/peopleinstances.inc
-echo worker\(pose [ $rand $rand2 0 0 ] origin [ 0 0 0 270 ] name \"W$w\" color \"black\" \) >> world/config/peopleinstances.inc
+echo worker\(pose [ $rand $rand2 0 180 ] name \"W$w\" color \"black\" \) >> world/config/peopleinstances.inc
 w=$(($w+1))
 number=$(($number+1))
 workery=$(($rand2+3))
