@@ -16,14 +16,23 @@ public:
 	{
 		//messages to stage
 		node_cmdvel.linear.x = speed.linear_x;
+		node_cmdvel.linear.y = 3.0;
 		node_cmdvel.angular.z = speed.angular_z;
 		//publish the message
 		sub_list.node_stage_pub.publish(node_cmdvel);
 	}
 
+	/*void turn(double angle, double linear, double angular)
+	{
+		this->orientation.currently_turning = true;
+		this->orientation.desired_angle = this->orientation.desired_angle + angle;
+		this->speed.linear_x = linear;
+		this->speed.angular_z = angular;
+	}*/
+
 	void turn(double angle, double linear, double angular)
 	{
-		
+		this->orientation.currently_turning = true;
 		this->orientation.desired_angle = this->orientation.desired_angle + angle;
 		double angle_difference = fabs(this->orientation.desired_angle - this->orientation.angle);
 		this->speed.angular_z = angular;
@@ -32,8 +41,6 @@ public:
 			this->speed.angular_z = angular = M_PI/300;
 		}
 		doAngleCheck();
-
-		checkTurningStatus();
 		if(((this->orientation.desired_angle - this->orientation.angle) > 0) && !this->orientation.currently_turning)
 		{
 			ROS_INFO("clockwise");
@@ -96,12 +103,12 @@ public:
 			this->orientation.desired_angle = this->orientation.desired_angle + 2.000000 * M_PI;
 		}
 		//if the desired angle is > 2pi, changed the desired angle to pi/2 
-		while(this->orientation.desired_angle > (2.000000 * M_PI))
+		while(this->orientation.desired_angle >= (2.000000 * M_PI))
 		{
 			this->orientation.desired_angle = this->orientation.desired_angle - 2.000000 * M_PI;
 		}
 		//if the current angle is 2pi or more, translate the angle to 0< x <2pi 
-		while(this->orientation.angle > 2.000000 * M_PI)
+		while(this->orientation.angle >= 2.000000 * M_PI)
 		{
 			this->orientation.angle = this->orientation.angle - 2.000000 * M_PI;	
 		}
@@ -114,6 +121,7 @@ public:
 		{	
 			if(doubleComparator(orientation.angle, orientation.desired_angle))
 			{
+				ROS_INFO("CHECKTURNING STATUS IF STATEMENT ENTERED");
 				this->orientation.currently_turning = false;
 				this->speed.linear_x = 3.0;
 				this->speed.angular_z = 0.0; 
@@ -148,9 +156,10 @@ public:
 		if(!orientation.currently_turning)
 		{
 			this->speed.linear_x = speed;
-			if (fabs(distance_x) < 0.05)
+			if (fabs(distance_x) < 0.5)
 			{
-				this->speed.linear_x = 0.01;
+				ROS_INFO("slow down x");
+				this->speed.linear_x = fabs(distance_x);
 			}
 		}
 		return false;
@@ -175,9 +184,10 @@ public:
 		if(!orientation.currently_turning)
 		{
 			this->speed.linear_x = speed;
-			if (fabs(distance_y) < 0.05)
+			if (fabs(distance_y) < 0.5)
 			{
-				this->speed.linear_x = 0.01;
+				ROS_INFO("slow down x");
+				this->speed.linear_x = fabs(distance_y);
 			}
 		}
 		return false;
