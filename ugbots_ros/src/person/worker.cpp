@@ -93,9 +93,9 @@ void Worker::odom_callback(nav_msgs::Odometry msg)
 	}
 	
 
-	ROS_INFO("/position/x/%f",this->pose.px);
-	ROS_INFO("/position/y/%f",this->pose.py);
-	ROS_INFO("/status/%s/./",enum_to_string(this->state));		
+	//ROS_INFO("/position/x/%f",this->pose.px);
+	//ROS_INFO("/position/y/%f",this->pose.py);
+	//ROS_INFO("/status/%s/./",enum_to_string(this->state));		
 	
 	//ROS_INFO("Desired Angle: %f",this->orientation.desired_angle);
 	//ROS_INFO("Angle: %f",this->orientation.angle);

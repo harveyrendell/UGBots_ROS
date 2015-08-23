@@ -101,7 +101,6 @@ public:
 		}
 	}
 
-	//
 	void checkTurningStatus()
 	{
 		if(this->orientation.currently_turning == true)
