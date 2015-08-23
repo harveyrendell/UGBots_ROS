@@ -1,5 +1,6 @@
 #!/bin/bash
-
+source ~/.bashrc
+roscd
 
 picker=$1
 carrier=$2
