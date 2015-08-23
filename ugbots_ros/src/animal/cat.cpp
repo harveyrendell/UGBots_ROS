@@ -83,7 +83,7 @@ void Cat::odom_callback(nav_msgs::Odometry msg)
 	}
 
 	calculateOrientation();
-	begin_action(3.0);
+	begin_action(this->speed.linear_x);
 	doAngleCheck();
 	checkTurningStatus();
 	publish();
@@ -166,7 +166,7 @@ Cat::State Cat::generateStatus(){
 	int randNum;
 	srand (time(NULL));
 /* generate secret number between 1 and 3: */
-	randNum = rand() % 3 + 1;
+	randNum = rand() % 4 + 1;
 	if (randNum == 1){
 		return IDLE;
 	}else if (randNum == 2){
