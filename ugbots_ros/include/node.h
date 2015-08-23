@@ -90,12 +90,12 @@ public:
 			this->orientation.desired_angle = this->orientation.desired_angle + 2.000000 * M_PI;
 		}
 		//if the desired angle is > 2pi, changed the desired angle to pi/2 
-		while(this->orientation.desired_angle > (2.000000 * M_PI))
+		while(this->orientation.desired_angle >= (2.000000 * M_PI))
 		{
 			this->orientation.desired_angle = this->orientation.desired_angle - 2.000000 * M_PI;
 		}
 		//if the current angle is 2pi or more, translate the angle to 0< x <2pi 
-		while(this->orientation.angle > 2.000000 * M_PI)
+		while(this->orientation.angle >= 2.000000 * M_PI)
 		{
 			this->orientation.angle = this->orientation.angle - 2.000000 * M_PI;	
 		}
@@ -108,7 +108,6 @@ public:
 		{	
 			if(doubleComparator(orientation.angle, orientation.desired_angle))
 			{
-				ROS_INFO("CHECKTURNING STATUS IF STATEMENT ENTERED");
 				this->orientation.currently_turning = false;
 				this->speed.linear_x = 3.0;
 				this->speed.angular_z = 0.0; 

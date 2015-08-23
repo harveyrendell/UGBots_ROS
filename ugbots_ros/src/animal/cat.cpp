@@ -17,9 +17,7 @@ Cat::Cat()
 	this->speed.linear_x = 0.0;
 	this->speed.max_linear_x = 3.0;
 	this->speed.angular_z = 0.0;
-	
 
-	state = IDLE;
 }
 
 Cat::Cat(ros::NodeHandle &n)
@@ -33,28 +31,33 @@ Cat::Cat(ros::NodeHandle &n)
 	this->speed.linear_x = 0.0;
 	this->speed.max_linear_x = 3.0;
 	this->speed.angular_z = 0.0;
+	this->orientation.currently_turning = false;
 
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Cat::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Cat::laser_callback, this);
 	this->sub_list.sub_timer = n.createTimer(ros::Duration(5), &Cat::timerCallback, this);
 
-	state = IDLE;
-
+	this->state = IDLE;
+	this->direction = CLOCKWISE;
+	this->position = NORTH;
 
 	geometry_msgs::Point point;
-	point.x = 48.0;
-	point.y = 48.0;
+	point.x = 47.0;
+	point.y = 47.0;
 	action_queue.push(point);
-	point.x = 48.0;
-	point.y = -48.0;
+	/**point.x = 47.0;
+	point.y = -47.0;
 	action_queue.push(point);
-	point.x = -48.0;
-	point.y = -48.0;
+	point.x = -47.0;
+	point.y = -47.0;
 	action_queue.push(point);
-	point.x = -48.0;
-	point.y = 48.0;
+	point.x = -47.0;
+	point.y = 47.0;
 	action_queue.push(point);
+	point.x = 47.0;
+	point.y = 47.0;
+	action_queue.push(point);**/
 }
 
 void Cat::odom_callback(nav_msgs::Odometry msg)
@@ -68,22 +71,35 @@ void Cat::odom_callback(nav_msgs::Odometry msg)
 	this->orientation.rotz = msg.pose.pose.orientation.z;
 	this->orientation.rotw = msg.pose.pose.orientation.w;
 
+	ROS_INFO("/status/%s/./", enum_to_string(this->state));
+	if (direction == CLOCKWISE){
+		ROS_INFO("direction: CLOCKWISE");
+	} else {
+		ROS_INFO("direction: ANTICLOCKWISE");
+	}
+	if (this->position == NORTH){
+		ROS_INFO("position: NORTH");
+	} else if(this->position == EAST){
+		ROS_INFO("position: EAST");
+	} else if(this->position == SOUTH){
+		ROS_INFO("position: SOUTH");
+	} else {
+		ROS_INFO("position: WEST");
+	}
+
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
-	ROS_INFO("/status/%s/./", enum_to_string(state));
+	//ROS_INFO("/status/%s/./", enum_to_string(this->state));
 	ROS_INFO("linear speed: %f", this->speed.linear_x);
-	ROS_INFO("angular speed: %f", this->speed.angular_z);
+	//ROS_INFO("angular speed: %f", this->speed.angular_z);
 	ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
 	ROS_INFO("orientation_angle: %f", this->orientation.angle);
 	ROS_INFO("%f, %f", action_queue.front().x , action_queue.front().y);
-	if (this->orientation.currently_turning == true){
-		ROS_INFO("TRUE");
-	}else {
-		ROS_INFO("FALSE");
-	}
 
 	calculateOrientation();
-	begin_action(this->speed.linear_x);
+	if(this->orientation.currently_turning == false){
+		begin_action(this->speed.linear_x);
+	}
 	doAngleCheck();
 	checkTurningStatus();
 	publish();
@@ -92,15 +108,23 @@ void Cat::odom_callback(nav_msgs::Odometry msg)
 
 void Cat::laser_callback(sensor_msgs::LaserScan msg)
 {
-	
+	if(this->orientation.currently_turning == false){
+		for(int i=0; i<30; i++){
+			if(msg.ranges[i] < 2.0){
+				//ROS_INFO("LASER DETECTED");
+				turnBack();
+				break;
+			}
+		}
+	}
 }
 
 void Cat::timerCallback(const ros::TimerEvent& e){
 	if (this->orientation.currently_turning == false){
 		state = generateStatus();
-		if (state == IDLE){
+		if (this->state == IDLE){
 			stop();
-		}else if (state == ROAMING){
+		}else if (this->state == ROAMING){
 			walk();
 		}else{
 			run();
@@ -111,6 +135,47 @@ void Cat::timerCallback(const ros::TimerEvent& e){
 void Cat::move(){
 
 }
+void Cat::stopAfterPop(){
+	this->speed.linear_x = 0.0;
+	this->speed.angular_z = 0.0;
+	this->orientation.currently_turning = false;
+	geometry_msgs::Point point;
+	if (this->direction == CLOCKWISE){
+		if (this->position == NORTH){
+			this->position = EAST;
+			point.x = 47.0;
+			point.y = -47.0;
+			action_queue.push(point);
+		}else if(this->position == EAST){
+			this->position = SOUTH;
+			point.x = -47.0;
+			point.y = -47.0;
+			action_queue.push(point);
+		}else if(this->position == SOUTH){
+			this->position = WEST;
+			point.x = -47.0;
+			point.y = 47.0;
+			action_queue.push(point);
+		}else{
+			this->position = NORTH;
+			point.x = 47.0;
+			point.y = 47.0;
+			action_queue.push(point);
+		}
+
+	} else {
+		if (this->position == NORTH){
+			this->position = WEST;
+		}else if(this->position == WEST){
+			this->position = SOUTH;
+		}else if(this->position == SOUTH){
+			this->position = EAST;
+		}else{
+			this->position = NORTH;
+		}
+	}
+}
+
 void Cat::stop(){
 	this->speed.linear_x = 0.0;
 	this->speed.angular_z = 0.0;
@@ -143,10 +208,79 @@ void Cat::turnRight(){
 }
 //Turn back
 void Cat::turnBack(){
-	this->orientation.currently_turning = true;
-	this->orientation.desired_angle = this->orientation.desired_angle + (M_PI);
-	this->speed.linear_x = 0.0;
-	this->speed.angular_z = 5.0;
+	//this->orientation.currently_turning = true;
+	//this->orientation.desired_angle = this->orientation.desired_angle + (M_PI);
+	//this->speed.linear_x = 0.0;
+	//this->speed.angular_z = 5.0;
+	turn(M_PI, 0.0, 5.0);
+
+	//change direction of cat
+	if (this->direction == CLOCKWISE){
+		this->direction = ANTICLOCKWISE;
+	} else {
+		this->direction = CLOCKWISE;
+	}
+
+	//empty action queue
+	while (action_queue.empty() == false){
+		ROS_INFO("POP COORDINATE");
+		action_queue.pop();
+	}
+	ROS_INFO("EXIT WHILE LOOP");
+	geometry_msgs::Point point;
+	if (this->direction == CLOCKWISE){
+		if (this->position == NORTH){
+			point.x = 47.0;
+			point.y = 47.0;
+			action_queue.push(point);
+		}else if(this->position == EAST){
+			point.x = 47.0;
+			point.y = -47.0;
+			action_queue.push(point);
+		}else if(this->position == SOUTH){
+			point.x = -47.0;
+			point.y = -47.0;
+			action_queue.push(point);
+		}else{
+			point.x = -47.0;
+			point.y = 47.0;
+			action_queue.push(point);
+		}
+	} else {
+		if (this->position == NORTH){
+			point.x = -47.0;
+			point.y = 47.0;
+			action_queue.push(point);
+		}else if(this->position == WEST){
+			point.x = -47.0;
+			point.y = -47.0;
+			action_queue.push(point);
+		}else if(this->position == SOUTH){
+			point.x = 47.0;
+			point.y = -47.0;
+			action_queue.push(point);
+		}else{
+			point.x = 47.0;
+			point.y = 47.0;
+			action_queue.push(point);
+		}
+		
+	}
+
+}
+
+//override checkTurningStatus()
+void Cat::checkTurningStatus(){
+	if(this->orientation.currently_turning == true)
+	{	
+		if(doubleComparator(orientation.angle, orientation.desired_angle))
+		{
+			this->orientation.currently_turning = false;
+			this->speed.linear_x = 0.0;
+			this->speed.angular_z = 0.0; 
+		}
+	return;
+	}
 }
 
 char* Cat::enum_to_string(State t){
@@ -175,6 +309,70 @@ Cat::State Cat::generateStatus(){
 		return RUNNING;
 	}
 }
+
+//override method to modify logic when action queue is empty
+bool Cat::begin_action(double speed){
+
+	if (action_queue.empty())
+	{
+		geometry_msgs::Point point;
+		if (this->direction == CLOCKWISE){
+			if (this->position == NORTH){
+				point.x = 47.0;
+				point.y = -47.0;
+				action_queue.push(point);
+			}else if(this->position == EAST){
+				point.x = -47.0;
+				point.y = -47.0;
+				action_queue.push(point);
+			}else if(this->position == SOUTH){
+				point.x = -47.0;
+				point.y = 47.0;
+				action_queue.push(point);
+			}else{
+				point.x = 47.0;
+				point.y = 47.0;
+				action_queue.push(point);
+			}
+		} else {
+			if (this->position == NORTH){
+				point.x = -47.0;
+				point.y = -47.0;
+				action_queue.push(point);
+			}else if(this->position == WEST){
+				point.x = 47.0;
+				point.y = -47.0;
+				action_queue.push(point);
+			}else if(this->position == SOUTH){
+				point.x = 47.0;
+				point.y = 47.0;
+				action_queue.push(point);
+			}else{
+				point.x = -47.0;
+				point.y = 47.0;
+				action_queue.push(point);
+			}	
+		}		//set_status(1);
+		return true;
+	}
+	geometry_msgs::Point end_point = action_queue.front();
+	if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
+	{
+		action_queue.pop();
+		stopAfterPop();
+		return true;
+	}
+
+	if(move_x(end_point.x, speed))
+	{
+		if(move_y(end_point.y, speed))
+		{
+			//set_status(2);
+		}
+
+	}
+}	
+
 
 void Cat::collisionDetected(){} 
 
