@@ -31,7 +31,6 @@ public:
 			angular = M_PI/300;
 		}
 		doAngleCheck();
-		ROS_INFO("angluar speed: %f", angular);
 		if((this->orientation.desired_angle - this->orientation.angle) > 0)
 		{
 			if (angular < 0)
@@ -51,35 +50,33 @@ public:
 		this->speed.angular_z = angular;
 	}
 	bool begin_action_shortest_path(double speed)
+	{
+		if(action_queue.empty())
 		{
-			if(action_queue.empty())
+			//set_status(1);
+			return true;
+		}
+		geometry_msgs::Point end_point = action_queue.front();
+		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
+		{
+			action_queue.pop();
+			stop();
+			return true;
+		}
+		double distance = sqrt(pow(end_point.x - pose.px, 2) + pow(end_point.y - pose.py, 2));
+		double angle = atan2((end_point.y - pose.py),(end_point.x - pose.px));
+
+		turn(angle - this->orientation.desired_angle , 0.0, M_PI/2);
+		checkTurningStatus();
+		if(!orientation.currently_turning)
+		{
+			this->speed.linear_x = speed;
+			if (fabs(distance) < 0.5)
 			{
-				//set_status(1);
-				return true;
-			}
-			geometry_msgs::Point end_point = action_queue.front();
-			if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
-			{
-				action_queue.pop();
-				stop();
-				return true;
-			}
-			double distance = sqrt(pow(end_point.x - pose.px, 2) + pow(end_point.y - pose.py, 2));
-			double angle = atan((end_point.y - pose.py)/(end_point.x - pose.px));
-			ROS_INFO("DESIRED ANGLE:%f", angle);
-			ROS_INFO("distance left: %f", distance);
-			turn(angle - this->orientation.desired_angle , 0.0, M_PI/2);
-			checkTurningStatus();
-			if(!orientation.currently_turning)
-			{
-				this->speed.linear_x = speed;
-				if (fabs(distance) < 0.5)
-				{
-					ROS_INFO("SLOW DOWN BOYS");
-					this->speed.linear_x = distance;
-				}
+				this->speed.linear_x = distance;
 			}
 		}
+	}
 	void doAngleCheck()
 	{		
 		//if -ve rads, change to +ve rads
@@ -111,7 +108,6 @@ public:
 		{	
 			if(doubleComparator(orientation.angle, orientation.desired_angle))
 			{
-				ROS_INFO("NOT CURRENTLY TURNING");
 				this->orientation.currently_turning = false;
 				this->speed.linear_x = 3.0;
 				this->speed.angular_z = 0.0; 
