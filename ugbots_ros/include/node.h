@@ -33,14 +33,14 @@ public:
 		doAngleCheck();
 		if((this->orientation.desired_angle - this->orientation.angle) > 0)
 		{
-			if (angular < 0)
+			if (angular > 0)
 			{
 				angular = -1.0 * angular;
 			}
 		}
 		else
 		{
-			if (angular > 0)
+			if (angular < 0)
 			{
 				angular = -1.0 * angular;
 			}
@@ -108,6 +108,7 @@ public:
 		{	
 			if(doubleComparator(orientation.angle, orientation.desired_angle))
 			{
+				ROS_INFO("CHECKTURNING STATUS IF STATEMENT ENTERED");
 				this->orientation.currently_turning = false;
 				this->speed.linear_x = 3.0;
 				this->speed.angular_z = 0.0; 

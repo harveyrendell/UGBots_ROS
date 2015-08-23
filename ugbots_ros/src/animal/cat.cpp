@@ -17,13 +17,14 @@ Cat::Cat()
 	this->speed.linear_x = 0.0;
 	this->speed.max_linear_x = 3.0;
 	this->speed.angular_z = 0.0;
-
+	/**
 	this->orientation.previous_right_distance = 0;
 	this->orientation.previous_left_distance = 0;
 	this->orientation.previous_front_distance = 0;
 	this->orientation.angle = 0;
 	this->orientation.desired_angle = M_PI;
 	this->orientation.currently_turning = false;
+	**/
 
 	state = IDLE;
 }
@@ -46,6 +47,15 @@ Cat::Cat(ros::NodeHandle &n)
 	this->sub_list.sub_timer = n.createTimer(ros::Duration(5), &Cat::timerCallback, this);
 
 	state = IDLE;
+
+
+	/**
+	point.x = this->pose.px;
+	point.y = this->pose.py - (this->speed.linear_x/10.0);
+	for (int i = 0; i<7; i++){
+		point.x = point.x + 3.5;
+		action_queue.push(point);
+	}**/
 }
 
 void Cat::odom_callback(nav_msgs::Odometry msg)
@@ -63,9 +73,9 @@ void Cat::odom_callback(nav_msgs::Odometry msg)
 	ROS_INFO("/position/y/%f", this->pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
 	ROS_INFO("linear speed: %f", this->speed.linear_x);
-	//ROS_INFO("angular speed: %f", this->speed.angular_z);
-	//ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
-	//ROS_INFO("orientation_angle: %f", this->orientation.angle);
+	ROS_INFO("angular speed: %f", this->speed.angular_z);
+	ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
+	ROS_INFO("orientation_angle: %f", this->orientation.angle);
 	ROS_INFO("%f, %f", action_queue.front().x , action_queue.front().y);
 
 	calculateOrientation();
@@ -81,10 +91,10 @@ void Cat::laser_callback(sensor_msgs::LaserScan msg)
 	if (this->orientation.currently_turning == false){
 		if ((msg.ranges[90] <= 2) && (msg.ranges[179] <= 2)){
 			ROS_INFO("TURN RIGHT");
-			turn((-M_PI/ 2.000000), 0.0,-5.0);
+			turnRight();
 		}else if ((msg.ranges[90] <= 2) && (msg.ranges[0] <= 2)){
 			ROS_INFO("TURN LEFT");
-			turn((M_PI / 2.000000), 0.0, 5.0);
+			turnLeft();
 		}
 	}
 	checkTurningStatus();

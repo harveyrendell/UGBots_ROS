@@ -52,7 +52,7 @@ Dog::Dog(ros::NodeHandle &n)
 	this->orientation.currently_turning = false;
 
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Dog::odom_callback, this);
+	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Dog::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000, &Dog::laser_callback, this);
 	this->sub_list.sub_timer = n.createTimer(ros::Duration(5), &Dog::timerCallback, this);
 
@@ -80,6 +80,9 @@ void Dog::odom_callback(nav_msgs::Odometry msg)
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
+	ROS_INFO("angular speed: %f", this->speed.angular_z);
+	ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
+	ROS_INFO("orientation_angle: %f", this->orientation.angle);
 
 
 	calculateOrientation();
@@ -98,20 +101,17 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 	if (this->orientation.currently_turning == false){
 		ROS_INFO("11111");
 		for(int a = 0 ; a < 180; a++){
-			if ((msg.ranges[a] < 5.8) && (a > 85) && (a < 95)) {
-				ROS_INFO("22222");
-				detection = true;
-				turnBack();
+			if ((msg.ranges[a] < 5) && (a > 85) && (a < 95)) {
+				ROS_INFO("BACK");
+				turn((M_PI), 0.0, 5.0);
 				break;
-			} else if ((msg.ranges[a] < 5.8) && (a <= 85)) {
-				ROS_INFO("33333");
-				detection = true;
-				turnLeft();
+			} else if ((msg.ranges[a] < 5) && (a <= 85)) {
+				ROS_INFO("TURN LEFT");
+				turn((M_PI / 2.000000), 0.0, 5.0);
 				break;
-			} else if ((msg.ranges[a] < 5.8) && (a >= 95)){
-				ROS_INFO("44444");
-				detection = true;
-				turnRight();
+			} else if ((msg.ranges[a] < 5) && (a >= 95)){
+				ROS_INFO("TURN RIGHT");
+				turn((-M_PI/ 2.000000), 0.0,-5.0);
 				break;
 			}
 		}
@@ -120,15 +120,17 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 
 void Dog::timerCallback(const ros::TimerEvent& e){
 	ROS_INFO("Callback 1 triggered");
-	state = generateStatus();
-	if (state == IDLE){
-		stop();
-	}else if (state == WALKING){
-		walk();
-	}else if (state == RUNNING){
-		run();
-	}else{
-		stop();
+	if (this->orientation.currently_turning == false){
+		state = generateStatus();
+		if (state == IDLE){
+			stop();
+		}else if (state == WALKING){
+			walk();
+		}else if (state == RUNNING){
+			run();
+		}else{
+			stop();
+		}
 	}
 }
 
