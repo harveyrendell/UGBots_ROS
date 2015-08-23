@@ -51,6 +51,8 @@ Visitor::Visitor(ros::NodeHandle &n)
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Visitor::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Visitor::laser_callback, this);
+	
+	this->sub_row = n.subscribe<ugbots_ros::Position>("/row_loc",1000,&Visitor::core_callback, this);
 
 	init_route();
 
@@ -134,23 +136,6 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 			pointtemp.y = pointtemp.y + 2 * sin(this->orientation.angle + (M_PI/2.0));
 			temp_queue.push(pointtemp);
 
-			/*
-				pointtemp.x = this->pose.px; 
-				pointtemp.y = this->pose.py + 1.1;
-
-				temp_queue.push(pointtemp);
-
-				pointtemp.x = this->pose.px - 4.0; 
-				pointtemp.y = this->pose.py + 1.1;
-
-				temp_queue.push(pointtemp);
-
-				pointtemp.x = this->pose.px - 4.0; 
-				pointtemp.y = this->pose.py;
-
-				temp_queue.push(pointtemp);
-			**/
-
 			while(!action_queue.empty())
 			{
 				temp_queue.push(action_queue.front());
@@ -166,6 +151,11 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 			this->queueDuplicate = false;
 		}
 	}
+}
+
+void Visitor::core_callback(ugbots_ros::Position msg)
+{
+	
 }
 
 	/*if(msg.ranges[90] < 2.0 && msg.ranges[0] < 8.0)
