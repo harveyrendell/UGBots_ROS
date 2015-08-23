@@ -179,6 +179,7 @@ void Visitor::checkTurningStatus()
 	}
 }
 
+//for testing
 void Visitor::init_route()
 {
 	geometry_msgs::Point point;
@@ -286,6 +287,10 @@ void Visitor::doRouteSetup()
 		action_queue.push(end_low);
 	}
 
+	action_queue.push();
+
+	action_queue.push();
+	
 }
 
 void Visitor::move(){}
