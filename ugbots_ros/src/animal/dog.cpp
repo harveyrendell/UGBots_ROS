@@ -29,7 +29,7 @@ Dog::Dog()
 	facingRight = true;
 	facingLeft = false;
 
-	state = ROAMING;	
+	state = RUNNING;	
 }
 
 Dog::Dog(ros::NodeHandle &n)
@@ -52,14 +52,17 @@ Dog::Dog(ros::NodeHandle &n)
 	this->orientation.currently_turning = false;
 
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Dog::odom_callback, this);
+	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Dog::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000, &Dog::laser_callback, this);
+	this->sub_list.sub_timer = n.createTimer(ros::Duration(5), &Dog::timerCallback, this);
+
+	//ros::Timer timer = n.createTimer(ros::Duration(10), timerCallback);
 
 	endOfPath = false;
 	facingRight = true;
 	facingLeft = false;
 
-	state = ROAMING;
+	state = RUNNING;
 
 }
 
@@ -73,52 +76,19 @@ void Dog::odom_callback(nav_msgs::Odometry msg)
 	this->orientation.roty = msg.pose.pose.orientation.y;
 	this->orientation.rotz = msg.pose.pose.orientation.z;
 	this->orientation.rotw = msg.pose.pose.orientation.w;
-	this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
 
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
+	ROS_INFO("angular speed: %f", this->speed.angular_z);
+	ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
+	ROS_INFO("orientation_angle: %f", this->orientation.angle);
 
 
 	calculateOrientation();
-
 	doAngleCheck();
-
-	//ROS_INFO("Lets check the angle : %f", this->orientation.angle);
-
-	if ((msg.pose.pose.position.x + 1.1 >= 32) && (facingRight == true)){
-		
-		endOfPath = true;
-
-		this->speed.linear_x = 0.0;
-		this->speed.angular_z = 3.0;
-		this->orientation.currently_turning = true;
-
-		if((this->orientation.angle + (M_PI / (this->speed.angular_z * 3))) >= this->orientation.desired_angle){
-			this->speed.angular_z = 0.0;// stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
-			facingRight = false;
-			facingLeft = true;
-			endOfPath = false;
-			this->orientation.currently_turning = false;
-		}
-	}
-
-	if ((msg.pose.pose.position.x - 1.0 <= 0) && (facingLeft == true)) {
-
-		endOfPath = true;
-
-		this->speed.linear_x = 0.0;
-		this->speed.angular_z = 3.0;
-		this->orientation.currently_turning = true;
-
-		if((this->orientation.angle + (M_PI / (this->speed.angular_z * 3))) >= (M_PI * 2)){
-			this->speed.angular_z = 0.0;// stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
-			facingLeft = false;
-			facingRight = true;
-			endOfPath = false;
-			this->orientation.currently_turning = false;
-		}
-	}
+	checkTurningStatus();
+	publish();
 
 }
 
@@ -128,29 +98,40 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 	//This is the callback function to process laser scan messages
 	//you can access the range data from msg.ranges[i]. i = sample number
 	bool detection = false;
-	for(int a = 0 ; a < 180; a++){
-		if (msg.ranges[a] < 5.8) {
-			detection = true;
-			continue;
-		} 
-	}
-
-	if (detection == true){
-		this->speed.linear_x = 0.0;
-		this->speed.angular_z = 0.0;
-		state = AGGRESSIVE;
-
-	} else {
-		state = ROAMING;
-		if (endOfPath == false){
-			this->speed.linear_x = 4.0;
-			if (this->orientation.currently_turning == true){
-				this->speed.angular_z = 3.0;
+	if (this->orientation.currently_turning == false){
+		ROS_INFO("11111");
+		for(int a = 0 ; a < 180; a++){
+			if ((msg.ranges[a] < 5) && (a > 85) && (a < 95)) {
+				ROS_INFO("BACK");
+				turn((M_PI), 0.0, 5.0);
+				break;
+			} else if ((msg.ranges[a] < 5) && (a <= 85)) {
+				ROS_INFO("TURN LEFT");
+				turn((M_PI / 2.000000), 0.0, 5.0);
+				break;
+			} else if ((msg.ranges[a] < 5) && (a >= 95)){
+				ROS_INFO("TURN RIGHT");
+				turn((-M_PI/ 2.000000), 0.0,-5.0);
+				break;
 			}
 		}
 	}
+}
 
-	
+void Dog::timerCallback(const ros::TimerEvent& e){
+	ROS_INFO("Callback 1 triggered");
+	if (this->orientation.currently_turning == false){
+		state = generateStatus();
+		if (state == IDLE){
+			stop();
+		}else if (state == WALKING){
+			walk();
+		}else if (state == RUNNING){
+			run();
+		}else{
+			stop();
+		}
+	}
 }
 
 void Dog::move(){}
@@ -165,9 +146,18 @@ void Dog::stop(){
 //Update the next desired angle
 void Dog::stopTurn(){
 	this->orientation.currently_turning = false;
-	this->speed.linear_x = 1.0;
+	this->speed.linear_x = 4.0;
 	this->speed.angular_z = 0.0;
-	this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2.000000);
+}
+
+void Dog::walk(){
+	this->speed.linear_x = 1.5;
+	this->speed.angular_z = 0.0;
+}
+
+void Dog::run(){
+	this->speed.linear_x = 4.0;
+	this->speed.angular_z = 0.0;
 }
 
 //Turn left
@@ -186,28 +176,12 @@ void Dog::turnRight(){
 	this->speed.angular_z = -5.0;
 }
 
-void Dog::calculateOrientation()
-{	
-	this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
-}
-
-//Angle translation for easier interpretation
-void Dog::doAngleCheck(){		
-	//if -ve rads, change to +ve rads
-	if(this->orientation.angle < 0)
-	{
-		this->orientation.angle = this->orientation.angle + 2.000000 * M_PI;
-	}
-	//if the desired angle is > 2pi, changed the desired angle to pi/2 
-	if(this->orientation.desired_angle > (2.000000 * M_PI))
-	{
-		this->orientation.desired_angle = M_PI / 2.000000;
-	}
-	//if the current angle is 2pi or more, translate the angle to 0< x <2pi 
-	if(this->orientation.angle > 2.000000 * M_PI)
-	{
-		this->orientation.angle = this->orientation.angle - 2.000000 * M_PI;	
-	}
+//Turn back
+void Dog::turnBack(){
+	this->orientation.currently_turning = true;
+	this->orientation.desired_angle = this->orientation.desired_angle + (M_PI);
+	this->speed.linear_x = 0.1;
+	this->speed.angular_z = 5.0;
 }
 
 void Dog::collisionDetected(){}
@@ -216,16 +190,30 @@ char const* Dog::enum_to_string(State t){
     switch(t){
         case AGGRESSIVE:
             return "AGGRESSIVE";
-        case ROAMING:
-            return "ROAMING";
+        case WALKING:
+            return "WALKING";
+        case RUNNING:
+            return "RUNNING";
         case IDLE:
-            return "IDLE";
-        case FLEEING:
-            return "FLEEING";   
+            return "IDLE";   
         default:
             return "INVALID ENUM";
     }
  }
+
+Dog::State Dog::generateStatus(){
+	int randNum;
+	srand (time(NULL));
+/* generate secret number between 1 and 3: */
+	randNum = rand() % 3 + 1;
+	if (randNum == 1){
+		return IDLE;
+	}else if (randNum == 2){
+		return WALKING;
+	}else{
+		return RUNNING;
+	}
+}
 
 int main(int argc, char **argv)
 {	
@@ -236,6 +224,9 @@ ros::init(argc, argv, "DOG");
 ros::NodeHandle n;
 
 Dog dg(n);
+
+//ros::Timer timer = n.createTimer(ros::Duration(10), &Dog::timerCallback);
+
 
 /*//advertise() function will tell ROS that you want to publish on a given topic_
 //to stage
@@ -260,13 +251,6 @@ geometry_msgs::Twist RobotNode_cmdvel;
 
 while (ros::ok())
 {
-
-	//messages to stage
-	RobotNode_cmdvel.linear.x = dg.speed.linear_x;
-	RobotNode_cmdvel.angular.z = dg.speed.angular_z;
-        
-	//publish the message
-	dg.sub_list.node_stage_pub.publish(RobotNode_cmdvel);
 
 	ros::spinOnce();
 
