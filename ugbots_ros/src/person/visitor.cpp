@@ -123,8 +123,8 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 			geometry_msgs::Point pointtemp;
 
 			
-			pointtemp.x = this->pose.px + sqrt(8) * cos(this->orientation.angle - (M_PI/2.0));
-			pointtemp.y = this->pose.py + sqrt(8) * sin(this->orientation.angle - (M_PI/2.0));
+			pointtemp.x = this->pose.px + sqrt(8) * cos(this->orientation.angle - (M_PI/4.0));
+			pointtemp.y = this->pose.py + sqrt(8) * sin(this->orientation.angle - (M_PI/4.0));
 			temp_queue.push(pointtemp);
 
 			pointtemp.x = pointtemp.x + sqrt(8) * cos(this->orientation.angle + (M_PI/4.0));
