@@ -42,7 +42,7 @@ public:
 		}
 		doAngleCheck();
 
-		ROS_INFO("angluar speed: %f", angular);
+		//ROS_INFO("angluar speed: %f", angular);
 
 		if((this->orientation.desired_angle - this->orientation.angle) > 0)
 		{
@@ -121,7 +121,7 @@ public:
 		{	
 			if(doubleComparator(orientation.angle, orientation.desired_angle))
 			{
-				ROS_INFO("CHECKTURNING STATUS IF STATEMENT ENTERED");
+				//ROS_INFO("CHECKTURNING STATUS IF STATEMENT ENTERED");
 				this->orientation.currently_turning = false;
 				this->speed.linear_x = 3.0;
 				this->speed.angular_z = 0.0; 
@@ -158,7 +158,7 @@ public:
 			this->speed.linear_x = speed;
 			if (fabs(distance_x) < 0.5)
 			{
-				ROS_INFO("slow down x");
+				//ROS_INFO("slow down x");
 				this->speed.linear_x = fabs(distance_x);
 			}
 		}
@@ -186,7 +186,7 @@ public:
 			this->speed.linear_x = speed;
 			if (fabs(distance_y) < 0.5)
 			{
-				ROS_INFO("slow down x");
+				//ROS_INFO("slow down x");
 				this->speed.linear_x = fabs(distance_y);
 			}
 		}
@@ -235,6 +235,9 @@ public:
 
 	//Queue of the Actions
 	std::queue<geometry_msgs::Point> action_queue;
+
+	//Beacon points
+	std::list<geometry_msgs::Point> beacon_points;
 
 	//NodeHandle for the node
 	//ros::NodeHandle n;
