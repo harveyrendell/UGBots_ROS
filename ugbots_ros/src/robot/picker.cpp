@@ -5,6 +5,7 @@
 #include <sensor_msgs/LaserScan.h>
 
 #include <sstream>
+#include <cstdlib>
 #include <stdlib.h>
 #include <node_defs/picker.h>
 
@@ -20,7 +21,7 @@ Picker::Picker()
 	state = IDLE;
 	station_x = 0;
 	station_y = -33;
-
+	binPercent = 0;
 }
 
 Picker::Picker(ros::NodeHandle &n)
@@ -119,25 +120,38 @@ void Picker::goToWork() {
 		if (speed.angular_z == 0.0){
 			speed.linear_x = 1.0;
 			moveY(abs(station_y-tempy),tempy);
-			if (pose.py > -35.0){
-				state = PICKING;
-				tempx = pose.px;
-				tempy = pose.py;
-				temprad = orientation.angle;
-			}
+			state = PICKING;
+			tempx = pose.px;
+			tempy = pose.py;
+			temprad = orientation.angle;
 		}
 	}**/
 }
 
 //function putting robot into picking mode
 void Picker::pickKiwi() {
-	/*speed.linear_x = 0.5;
-	binStatus.bin_stat = "FILLING";
-	moveY(70.0,tempy);
-	if (speed.linear_x == 0.0) {
-		state = WAITING;
+	speed.linear_x = 0.5;
+	
+	
+	if(binPercent<100){
+		int randomInt = rand() % 13;
+		if (randomInt == 0) { 
+			binPercent = binPercent + 1;
+		}
+		ROS_INFO("/bin/%d", binPercent);
+		ROS_INFO("/message/the bin is %d percent full", binPercent);
+		binStatus.bin_stat = "FILLING";
+		move_y(70.0,tempy);
+	}	
+
+
+	else if (binPercent == 100){
+		binPercent = 100;
+		ROS_INFO("/bin/%d", binPercent);
+		ROS_INFO("/message/the bin is %d percent full", binPercent);
 		binStatus.bin_stat = "FULL";
-	}**/
+		state = WAITING;
+	}
 }
 
 char const* Picker::enum_to_string(State t) {
