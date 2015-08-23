@@ -18,18 +18,6 @@ Dog::Dog()
 	this->speed.max_linear_x = 4.0;
 	this->speed.angular_z = 0.0;
 
-	this->orientation.previous_right_distance = 0;
-	this->orientation.previous_left_distance = 0;
-	this->orientation.previous_front_distance = 0;
-	this->orientation.angle = 0;
-	this->orientation.desired_angle = M_PI;
-	this->orientation.currently_turning = false;
-
-	endOfPath = false;
-	facingRight = true;
-	facingLeft = false;
-
-	state = RUNNING;	
 }
 
 Dog::Dog(ros::NodeHandle &n)
@@ -40,15 +28,9 @@ Dog::Dog(ros::NodeHandle &n)
 	this->pose.theta = M_PI/2.0;
 	this->pose.px = 10;
 	this->pose.py = 20;
-	this->speed.linear_x = 4.0;
-	this->speed.max_linear_x = 4.0;
+	this->speed.linear_x = 0.0;
+	this->speed.max_linear_x = 6.0;
 	this->speed.angular_z = 0.0;
-
-	this->orientation.previous_right_distance = 0;
-	this->orientation.previous_left_distance = 0;
-	this->orientation.previous_front_distance = 0;
-	this->orientation.angle = 0;
-	this->orientation.desired_angle = M_PI;
 	this->orientation.currently_turning = false;
 
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
@@ -58,19 +40,15 @@ Dog::Dog(ros::NodeHandle &n)
 
 	//ros::Timer timer = n.createTimer(ros::Duration(10), timerCallback);
 
-	endOfPath = false;
-	facingRight = true;
-	facingLeft = false;
-
-	state = RUNNING;
+	this->state = IDLE;
 
 }
 
 void Dog::odom_callback(nav_msgs::Odometry msg)
 {
 	//This is the call back function to process odometry messages coming from Stage. 	
-	this->pose.px = -16 + msg.pose.pose.position.x;
-	this->pose.py = 42.5 + msg.pose.pose.position.y;
+	this->pose.px = msg.pose.pose.position.x;
+	this->pose.py = msg.pose.pose.position.y;
 
 	this->orientation.rotx = msg.pose.pose.orientation.x;
 	this->orientation.roty = msg.pose.pose.orientation.y;
@@ -80,7 +58,7 @@ void Dog::odom_callback(nav_msgs::Odometry msg)
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
-	ROS_INFO("angular speed: %f", this->speed.angular_z);
+	ROS_INFO("linear speed: %f", this->speed.linear_x);
 	ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
 	ROS_INFO("orientation_angle: %f", this->orientation.angle);
 
@@ -101,17 +79,17 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 	if (this->orientation.currently_turning == false){
 		ROS_INFO("11111");
 		for(int a = 0 ; a < 180; a++){
-			if ((msg.ranges[a] < 5) && (a > 85) && (a < 95)) {
+			if ((msg.ranges[a] < 4) && (a > 80) && (a < 100)) {
 				ROS_INFO("BACK");
-				turn((M_PI), 0.0, 5.0);
+				turnBack();
 				break;
-			} else if ((msg.ranges[a] < 5) && (a <= 85)) {
+			} else if ((msg.ranges[a] < 4) && (a <= 80)) {
 				ROS_INFO("TURN LEFT");
-				turn((M_PI / 2.000000), 0.0, 5.0);
+				turnLeft();
 				break;
-			} else if ((msg.ranges[a] < 5) && (a >= 95)){
+			} else if ((msg.ranges[a] < 4) && (a >= 100)){
 				ROS_INFO("TURN RIGHT");
-				turn((-M_PI/ 2.000000), 0.0,-5.0);
+				turnRight();
 				break;
 			}
 		}
@@ -119,18 +97,22 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 }
 
 void Dog::timerCallback(const ros::TimerEvent& e){
-	ROS_INFO("Callback 1 triggered");
 	if (this->orientation.currently_turning == false){
-		state = generateStatus();
-		if (state == IDLE){
-			stop();
-		}else if (state == WALKING){
-			walk();
-		}else if (state == RUNNING){
-			run();
-		}else{
-			stop();
-		}
+		setStatus();
+	}
+}
+
+void Dog::setStatus(){
+	state = generateStatus();
+	if (state == IDLE){
+		stop();
+	}else if (state == WALKING){
+		walk();
+	}else if (state == RUNNING){
+		run();
+	}else{
+		//turn dogs orientation angle randomly
+		turnRandomly();
 	}
 }
 
@@ -144,10 +126,20 @@ void Dog::stop(){
 
 //Stops the node turning. Linear velocity will be set to default (1.0)
 //Update the next desired angle
-void Dog::stopTurn(){
+void Dog::stopTurn(){ //UNUSED METHOD
 	this->orientation.currently_turning = false;
 	this->speed.linear_x = 4.0;
 	this->speed.angular_z = 0.0;
+}
+
+void Dog::turnRandomly(){
+	int randNum;
+	srand (time(NULL));
+	randNum = rand() % 6 + 1; //generate a random number between 1 and 6
+	this->orientation.currently_turning = true;
+	this->orientation.desired_angle = this->orientation.desired_angle + (randNum);
+	this->speed.linear_x = 0.1;
+	this->speed.angular_z = 1.0;
 }
 
 void Dog::walk(){
@@ -156,7 +148,7 @@ void Dog::walk(){
 }
 
 void Dog::run(){
-	this->speed.linear_x = 4.0;
+	this->speed.linear_x = 6.0;
 	this->speed.angular_z = 0.0;
 }
 
@@ -184,18 +176,33 @@ void Dog::turnBack(){
 	this->speed.angular_z = 5.0;
 }
 
+//override checkTurningStatus so that dogs velc
+void Dog::checkTurningStatus()
+{
+	if(this->orientation.currently_turning == true)
+	{	
+		if(doubleComparator(orientation.angle, orientation.desired_angle))
+		{
+			this->orientation.currently_turning = false;
+			//reset dog's status after turning
+			setStatus();
+		}
+	return;
+	}
+}
+
 void Dog::collisionDetected(){}
 
 char const* Dog::enum_to_string(State t){
     switch(t){
-        case AGGRESSIVE:
-            return "AGGRESSIVE";
         case WALKING:
             return "WALKING";
         case RUNNING:
             return "RUNNING";
         case IDLE:
-            return "IDLE";   
+            return "IDLE";
+        case RANDOMTURN:
+            return "RANDOMTURN";   
         default:
             return "INVALID ENUM";
     }
@@ -204,12 +211,14 @@ char const* Dog::enum_to_string(State t){
 Dog::State Dog::generateStatus(){
 	int randNum;
 	srand (time(NULL));
-/* generate secret number between 1 and 3: */
-	randNum = rand() % 3 + 1;
+/* generate secret number between 1 and 5: */
+	randNum = rand() % 5 + 1;
 	if (randNum == 1){
 		return IDLE;
 	}else if (randNum == 2){
 		return WALKING;
+	}else if (randNum == 3){
+		return RANDOMTURN;
 	}else{
 		return RUNNING;
 	}
@@ -224,21 +233,6 @@ ros::init(argc, argv, "DOG");
 ros::NodeHandle n;
 
 Dog dg(n);
-
-//ros::Timer timer = n.createTimer(ros::Duration(10), &Dog::timerCallback);
-
-
-/*//advertise() function will tell ROS that you want to publish on a given topic_
-//to stage
-//ros::Publisher RobotNode_stage_pub = n.advertise<geometry_msgs::Twist>("robot_0/cmd_vel",1000); 
-//use the one below when using launch, use the one above when testing individual robot
-ros::Publisher RobotNode_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000); 
-
-//subscribe to listen to messages coming from stage
-//robo.setSubs(n);
-ros::Subscriber StageOdo_sub = n.subscribe<nav_msgs::Odometry>("robot_0/odom",1000, &R0::StageOdom_callback, &robo);
-ros::Subscriber StageLaser_sub = n.subscribe<sensor_msgs::LaserScan>("robot_0/base_scan",1000,&R0::StageLaser_callback, &robo);*/
-
 
 ros::Rate loop_rate(10);
 
