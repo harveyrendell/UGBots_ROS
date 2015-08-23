@@ -81,7 +81,7 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 	publish();
 
-
+	ROS_INFO("LIST SIZE %d", this->beacon_points.size());
 
 	//ROS_INFO("LINEAR SPEED: %f", this->speed.linear_x);
 	//ROS_INFO("ANGULAR SPEED: %f", this->speed.angular_z);
@@ -95,7 +95,7 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 	//ROS_INFO("/position/x/%f",action_queue.front().x);
 	//ROS_INFO("/position/y/%f",action_queue.front().y);
-	ROS_INFO("/status/TEMP/./");
+	//ROS_INFO("/status/TEMP/./");
 	/*
 	//ROS_INFO("ANGLE: %f",this->orientation.angle);
 	//ROS_INFO("DESIRED ANGLE: %f", this->orientation.desired_angle);
@@ -155,8 +155,12 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 
 void Visitor::core_callback(ugbots_ros::Position msg)
 {
-	ROS_INFO("/position/x/%f",msg.x);
-	ROS_INFO("/position/y/%f",msg.y);
+	geometry_msgs::Point pointtemp;
+	pointtemp.x = msg.x; 
+	pointtemp.y = msg.y;
+
+	this->beacon_points.push_back(pointtemp);
+	//ROS_INFO("/position/x/%f, /position/y/%f",msg.x,msg.y);
 }
 
 	/*if(msg.ranges[90] < 2.0 && msg.ranges[0] < 8.0)

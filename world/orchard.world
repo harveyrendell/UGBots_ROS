@@ -1,3 +1,4 @@
+include "beaconcore.inc"
 include "worldinstances.inc"
 include "./config/robotinstances.inc"
 include "./config/peopleinstances.inc"
