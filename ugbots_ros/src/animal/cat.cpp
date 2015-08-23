@@ -11,12 +11,21 @@
 Cat::Cat()
 {
 	//setting base attribute defaults
-	pose.theta = M_PI/2.0;
-	pose.px = 10;
-	pose.py = 20;
-	speed.linear_x = 0.0;
-	speed.max_linear_x = 3.0;
-	speed.angular_z = 0.0;
+	this->pose.theta = M_PI/2.0;
+	this->pose.px = 10;
+	this->pose.py = 20;
+	this->speed.linear_x = 0.0;
+	this->speed.max_linear_x = 3.0;
+	this->speed.angular_z = 0.0;
+	/**
+	this->orientation.previous_right_distance = 0;
+	this->orientation.previous_left_distance = 0;
+	this->orientation.previous_front_distance = 0;
+	this->orientation.angle = 0;
+	this->orientation.desired_angle = M_PI;
+	this->orientation.currently_turning = false;
+	**/
+
 	state = IDLE;
 }
 
@@ -25,40 +34,155 @@ Cat::Cat(ros::NodeHandle &n)
 	//this->n = n;
 
 	//setting base attribute defaults
-	pose.theta = M_PI/2.0;
-	pose.px = 10;
-	pose.py = 20;
-	speed.linear_x = 0.0;
-	speed.max_linear_x = 3.0;
-	speed.angular_z = 0.0;
+	this->pose.theta = M_PI/2.0;
+	this->pose.px = 10;
+	this->pose.py = 20;
+	this->speed.linear_x = 0.0;
+	this->speed.max_linear_x = 3.0;
+	this->speed.angular_z = 0.0;
+
+	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Cat::odom_callback, this);
+	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Cat::laser_callback, this);
+	this->sub_list.sub_timer = n.createTimer(ros::Duration(5), &Cat::timerCallback, this);
+
 	state = IDLE;
 
-	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Cat::odom_callback, this);
-	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Cat::laser_callback, this);
+
+	/**
+	point.x = this->pose.px;
+	point.y = this->pose.py - (this->speed.linear_x/10.0);
+	for (int i = 0; i<7; i++){
+		point.x = point.x + 3.5;
+		action_queue.push(point);
+	}**/
 }
 
 void Cat::odom_callback(nav_msgs::Odometry msg)
 {
 	//This is the call back function to process odometry messages coming from Stage. 	
-	pose.px = 5 + msg.pose.pose.position.x;
-	pose.py = 10 + msg.pose.pose.position.y;
-	ROS_INFO("Current x position is: %f", pose.px);
-	ROS_INFO("Current y position is: %f", pose.py);
+	this->pose.px = msg.pose.pose.position.x;
+	this->pose.py = msg.pose.pose.position.y;
+
+	this->orientation.rotx = msg.pose.pose.orientation.x;
+	this->orientation.roty = msg.pose.pose.orientation.y;
+	this->orientation.rotz = msg.pose.pose.orientation.z;
+	this->orientation.rotw = msg.pose.pose.orientation.w;
+
+	ROS_INFO("/position/x/%f", this->pose.px);
+	ROS_INFO("/position/y/%f", this->pose.py);
+	ROS_INFO("/status/%s/./", enum_to_string(state));
+	ROS_INFO("linear speed: %f", this->speed.linear_x);
+	ROS_INFO("angular speed: %f", this->speed.angular_z);
+	ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
+	ROS_INFO("orientation_angle: %f", this->orientation.angle);
+	ROS_INFO("%f, %f", action_queue.front().x , action_queue.front().y);
+
+	calculateOrientation();
+	begin_action(3.0);
+	doAngleCheck();
+	checkTurningStatus();
+	publish();
+
 }
 
 void Cat::laser_callback(sensor_msgs::LaserScan msg)
 {
-	//This is the callback function to process laser scan messages
-	//you can access the range data from msg.ranges[i]. i = sample number	
+	if (this->orientation.currently_turning == false){
+		if ((msg.ranges[90] <= 2) && (msg.ranges[179] <= 2)){
+			ROS_INFO("TURN RIGHT");
+			turnRight();
+		}else if ((msg.ranges[90] <= 2) && (msg.ranges[0] <= 2)){
+			ROS_INFO("TURN LEFT");
+			turnLeft();
+		}
+	}
+	checkTurningStatus();
+	publish();
 }
 
-void Cat::move(){}
-void Cat::stop(){}
-void Cat::turnLeft(){}
-void Cat::turnRight(){}
-void Cat::collisionDetected(){}
-char const* Cat::enum_to_string(State t){ return ""; }
+void Cat::timerCallback(const ros::TimerEvent& e){
+	if (this->orientation.currently_turning == false){
+		state = generateStatus();
+		if (state == IDLE){
+			stop();
+		}else if (state == ROAMING){
+			walk();
+		}else{
+			run();
+		}
+	}
+}
+
+void Cat::move(){
+
+}
+void Cat::stop(){
+	this->speed.linear_x = 0.0;
+	this->speed.angular_z = 0.0;
+}
+void Cat::stopTurn(){
+	this->orientation.currently_turning = false;
+	this->speed.linear_x = 4.0;
+	this->speed.angular_z = 0.0;
+}
+void Cat::walk(){
+	this->speed.linear_x = 1.5;
+	this->speed.angular_z = 0.0;
+}
+
+void Cat::run(){
+	this->speed.linear_x = 6.0;
+	this->speed.angular_z = 0.0;
+}
+void Cat::turnLeft(){
+	this->orientation.currently_turning = true;
+	this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2);
+	this->speed.linear_x = 0.0;
+	this->speed.angular_z = 5.0;
+}
+void Cat::turnRight(){
+	this->orientation.currently_turning = true;
+	this->orientation.desired_angle = this->orientation.desired_angle - (M_PI / 2);
+	this->speed.linear_x = 0.0;
+	this->speed.angular_z = -5.0;
+}
+//Turn back
+void Cat::turnBack(){
+	this->orientation.currently_turning = true;
+	this->orientation.desired_angle = this->orientation.desired_angle + (M_PI);
+	this->speed.linear_x = 0.0;
+	this->speed.angular_z = 5.0;
+}
+
+char* Cat::enum_to_string(State t){
+    switch(t){
+        case IDLE:
+            return "IDLE";
+        case ROAMING:
+            return "ROAMING";
+        case RUNNING:
+            return "RUNNING";  
+        default:
+            return "INVALID ENUM";
+    }
+ }
+
+Cat::State Cat::generateStatus(){
+	int randNum;
+	srand (time(NULL));
+/* generate secret number between 1 and 3: */
+	randNum = rand() % 3 + 1;
+	if (randNum == 1){
+		return IDLE;
+	}else if (randNum == 2){
+		return ROAMING;
+	} else {
+		return RUNNING;
+	}
+}
+
+void Cat::collisionDetected(){} 
 
 int main(int argc, char **argv)
 {	
@@ -80,7 +204,7 @@ int count = 0;
 
 while (ros::ok())
 {
-	node.publish();
+	//node.publish();
 	
 	ros::spinOnce();
 

@@ -82,6 +82,6 @@ define visitor position
 	point[3] [1 0.55]
 	z [0.7 1.4]
   )
-  visitorlaser(pose [ 0.050 0.000 0 90.000 ])
+  visitorlaser(pose [ 0.050 0.000 -1 0.000 ])
 )
 
