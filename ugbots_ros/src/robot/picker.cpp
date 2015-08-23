@@ -141,7 +141,9 @@ void Picker::pickKiwi() {
 		ROS_INFO("/bin/%d", binPercent);
 		ROS_INFO("/message/the bin is %d percent full", binPercent);
 		binStatus.bin_stat = "FILLING";
+
 		move_y(70.0,tempy);
+
 	}	
 
 
@@ -151,7 +153,7 @@ void Picker::pickKiwi() {
 		ROS_INFO("/message/the bin is %d percent full", binPercent);
 		binStatus.bin_stat = "FULL";
 		state = WAITING;
-	}
+	}	
 }
 
 char const* Picker::enum_to_string(State t) {
