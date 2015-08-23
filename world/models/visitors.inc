@@ -18,6 +18,7 @@ define visitor position
 
   #body
   block(
+    color "pink"
   	points 4
 	point[0] [0.1 0.3]
 	point[1] [0.9 0.3]
@@ -28,6 +29,7 @@ define visitor position
 
   #neck
   block(
+    color "white"
 	points 4
 	point[0] [0.4 0.4]
 	point[1] [0.6 0.4]
@@ -38,6 +40,7 @@ define visitor position
 
   #head
   block(
+    color "white"
 	points 4
 	point[0] [0.3 0.35]
 	point[1] [0.7 0.35]
@@ -48,6 +51,7 @@ define visitor position
 
   #legs
   block(
+    color "black"
 	points 4
 	point[0] [0.25 0.4]
 	point[1] [0.45 0.4]
@@ -57,6 +61,7 @@ define visitor position
   )
 
   block(
+    color "black"
 	points 4
 	point[0] [0.55 0.4]
 	point[1] [0.75 0.4]
@@ -67,6 +72,7 @@ define visitor position
 
   #arms
   block(
+    color "pink"
 	points 4
 	point[0] [0 0.45]
 	point[1] [0.1 0.45]
@@ -75,6 +81,7 @@ define visitor position
 	z [0.7 1.4]
   )
   block(
+    color "pink"
 	points 4
 	point[0] [1 0.45]
 	point[1] [0.9 0.45]
