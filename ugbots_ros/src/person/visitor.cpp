@@ -105,7 +105,7 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 {
 	
-	if(fabs(this->queueDuplicateCheckAngle - this->orientation.angle) >= (M_PI/2.000000))
+	if(fabs(this->queueDuplicateCheckAngle - this->orientation.angle) >= (M_PI/4.000000))
 	{
 		this->queueDuplicate = true;
 		this->queueDuplicateCheckAngle = 0;
@@ -123,17 +123,15 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 			geometry_msgs::Point pointtemp;
 
 			
-			pointtemp.x = this->pose.px + 2 * cos(this->orientation.angle - (M_PI/2.0));
-			pointtemp.y = this->pose.py + 2 * sin(this->orientation.angle - (M_PI/2.0));
+			pointtemp.x = this->pose.px + sqrt(8) * cos(this->orientation.angle - (M_PI/2.0));
+			pointtemp.y = this->pose.py + sqrt(8) * sin(this->orientation.angle - (M_PI/2.0));
 			temp_queue.push(pointtemp);
 
-			pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
-			pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle);
+			pointtemp.x = pointtemp.x + sqrt(8) * cos(this->orientation.angle + (M_PI/4.0));
+			pointtemp.y = pointtemp.y + sqrt(8) * sin(this->orientation.angle + (M_PI/4.0));
 			temp_queue.push(pointtemp);
 
-			pointtemp.x = pointtemp.x + 2 * cos(this->orientation.angle + (M_PI/2.0));
-			pointtemp.y = pointtemp.y + 2 * sin(this->orientation.angle + (M_PI/2.0));
-			temp_queue.push(pointtemp);
+			ROS_INFO("/message/FIRST POINT X: %f, Y: %f", pointtemp.x, pointtemp.y);
 
 			while(!action_queue.empty())
 			{
@@ -286,10 +284,6 @@ void Visitor::doRouteSetup()
 		action_queue.push(end_high);
 		action_queue.push(end_low);
 	}
-
-	action_queue.push();
-
-	action_queue.push();
 	
 }
 
