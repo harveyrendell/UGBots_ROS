@@ -24,6 +24,7 @@ public:
 	void collisionDetected();
 	void checkTurningStatus();
 	void init_route();
+	void doRouteSetup();
 
 	enum State { IDLE, LOITERING, HARASSING, STOPPED };
 	State state;
@@ -34,6 +35,10 @@ public:
 	double queueDuplicate;
 	double queueDuplicateCheckAngle;
 	ros::Subscriber sub_row;
+	
+	//Beacon points
+	std::list<geometry_msgs::Point> beacon_points;
+
 
 	char const* enum_to_string(State t);
 };

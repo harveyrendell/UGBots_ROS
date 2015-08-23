@@ -7,6 +7,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include <node_defs/visitor.h>
+#include <iterator>
 
 Visitor::Visitor()
 {
@@ -44,7 +45,6 @@ Visitor::Visitor(ros::NodeHandle &n)
 
 	this->rightTurnInit = false;
 	this->leftTurnInit = false;
-	this->moveToEnabled = true;
 	this->queueDuplicateCheckAngle = 0.0;
 	this->queueDuplicate = true;
 
@@ -54,7 +54,7 @@ Visitor::Visitor(ros::NodeHandle &n)
 	
 	this->sub_row = n.subscribe<ugbots_ros::Position>("/row_loc",1000,&Visitor::core_callback, this);
 
-	init_route();
+	//init_route();
 
 }
 
@@ -70,18 +70,17 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 	calculateOrientation();
 
-	if(this->moveToEnabled == true)
-	{
-		begin_action_shortest_path(2.0);
-	}
+	begin_action_shortest_path(2.0);
 
 	doAngleCheck();		
 
 	checkTurningStatus();
 
+	doRouteSetup();
+
 	publish();
 
-	ROS_INFO("LIST SIZE %d", this->beacon_points.size());
+	//ROS_INFO("X_CORD %f", this->action_queue.front().x);
 
 	//ROS_INFO("LINEAR SPEED: %f", this->speed.linear_x);
 	//ROS_INFO("ANGULAR SPEED: %f", this->speed.angular_z);
@@ -163,34 +162,6 @@ void Visitor::core_callback(ugbots_ros::Position msg)
 	//ROS_INFO("/position/x/%f, /position/y/%f",msg.x,msg.y);
 }
 
-	/*if(msg.ranges[90] < 2.0 && msg.ranges[0] < 8.0)
-	{
-		if(this->rightTurnInit == false)
-		{
-			if(this->orientation.currently_turning == false)
-			{
-				ROS_INFO("RIGHT TURN!");
-				this->moveToEnabled = false;
-				turn(-(M_PI/2.000000) , 0.5, -5.0);
-				this->rightTurnInit = true;
-			}
-		}
-	}
-
-	if(msg.ranges[90] < 3.0 && this->rightTurnInit == true)
-	{
-		if(this->leftTurnInit == false)
-		{
-			if(this->orientation.currently_turning == false)
-			{
-				ROS_INFO("LEFT TURN!");
-				this->moveToEnabled = false;
-				turn((M_PI/2.000000) , 0.5, 5.0);
-				this->leftTurnInit = true;
-			}
-		}
-	}*/
-
 void Visitor::checkTurningStatus()
 {
 		//Implement individually.
@@ -208,39 +179,7 @@ void Visitor::checkTurningStatus()
 	}
 }
 
-			/*if(this->leftTurnInit == true && this->rightTurnInit == true)
-			{
-				ROS_INFO("STOP TURN!");
-				this->leftTurnInit = false;
-				this->rightTurnInit = false;
-
-				std::queue<geometry_msgs::Point> temp_queue;
-
-				geometry_msgs::Point pointtemp;
-				pointtemp.x = this->pose.px; 
-				pointtemp.y = this->pose.py + 5.0;
-
-				temp_queue.push(pointtemp);
-
-				while(!action_queue.empty())
-				{
-					temp_queue.push(action_queue.front());
-					action_queue.pop();
-				}
-
-				while(!temp_queue.empty())
-				{
-					action_queue.push(temp_queue.front());
-					temp_queue.pop();
-				}
-
-				this->moveToEnabled = true;
-			}
-		}
-	}
-		
-}*/
-
+//for testing
 void Visitor::init_route()
 {
 	geometry_msgs::Point point;
@@ -288,6 +227,70 @@ void Visitor::init_route()
 		point.y = -48.5;
 
 	action_queue.push(point);
+}
+
+void Visitor::doRouteSetup()
+{
+	//decisions are easily configurable but for the final version
+	//decided that the visitor will go to the first and the last row
+	//before returning
+	if(beacon_points.size() == 7 && action_queue.size() == 0)
+	{
+		geometry_msgs::Point begin_low;
+		geometry_msgs::Point begin_high;
+		geometry_msgs::Point end_high;
+		geometry_msgs::Point end_low;
+
+		double lowest_x = 0.0;
+		double highest_x = 0.0;
+
+		std::list<geometry_msgs::Point>::iterator iter;
+
+		for(iter = beacon_points.begin(); iter != beacon_points.end(); iter++)
+		{
+			geometry_msgs::Point temp;
+			temp = *iter;
+
+			ROS_INFO("TEMP_X:%f, TEMP_Y:%f", temp.x, temp.y);
+
+			if(temp.x < lowest_x || doubleComparator(temp.x, lowest_x))
+			{
+				lowest_x = temp.x;
+
+				if(temp.y < 0)
+				{
+					end_low.y = temp.y;
+					end_low.x = temp.x;
+				}
+			}
+			else if (temp.x > highest_x || doubleComparator(temp.x, highest_x))
+			{
+				highest_x = temp.x;
+
+				if(temp.y < 0)
+				{
+					begin_low.y = temp.y;
+					begin_low.x = temp.x;
+				}
+			}
+		}
+
+		begin_high.x = begin_low.x;
+		begin_high.y = begin_low.y * -1.0;
+
+		end_high.x = end_low.x;
+		end_high.y = end_low.y * -1.0;
+
+		action_queue.push(begin_low);
+		action_queue.push(begin_high);
+		action_queue.push(end_high);
+		action_queue.push(end_low);
+	}
+
+	action_queue.push();
+
+	action_queue.push();
+	
 }
 
 void Visitor::move(){}
