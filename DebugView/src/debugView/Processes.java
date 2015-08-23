@@ -20,11 +20,16 @@ public class Processes {
 	private Process _world;
 	private Process _launch;
 	private Process _topic;
+
 	
 	public Processes(ContentPanel panel, int[] vals){
 		_panel = panel;
 		_vals = vals;
 		
+	}
+	
+	public void update(int[] vals){
+		_vals = vals;
 	}
 
 	
@@ -177,6 +182,35 @@ public class Processes {
 			
 		};
 		killAll.execute();
-		_topic.destroy();
+		if(_topic != null){
+			_topic.destroy();
+		}
+	}
+	
+	public void runTests(){
+		SwingWorker<Void, Void> runTests = new SwingWorker<Void,Void>(){
+			
+			@Override
+			protected Void doInBackground() throws Exception {
+				Process testBuilder = new ProcessBuilder("/bin/bash", "JarResources/runtests.bash").start();
+				return null;
+			}
+			
+		};
+		runTests.execute();
+		
+	}
+
+	public void rosmake() {
+		SwingWorker<Void, Void> rosmake = new SwingWorker<Void,Void>(){
+
+			@Override
+			protected Void doInBackground() throws Exception {
+				Process makeBuilder = new ProcessBuilder("/bin/bash", "JarResources/runmake.bash").start();
+				return null;
+			}
+		};
+		rosmake.execute();
+		
 	}
 }
