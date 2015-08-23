@@ -70,7 +70,7 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 	if(this->moveToEnabled == true)
 	{
-		begin_action(2.0);
+		begin_action_shortest_path(2.0);
 	}
 
 	doAngleCheck();		
@@ -253,7 +253,7 @@ void Visitor::init_route()
 		point.y = -39.0;
 
 	action_queue.push(point);
-	/*
+	
 		point.x = 10.5;
 		point.y = 39.0;
 
@@ -293,7 +293,6 @@ void Visitor::init_route()
 		point.y = -48.5;
 
 	action_queue.push(point);
-	*/
 }
 
 void Visitor::move(){}
