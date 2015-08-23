@@ -15,6 +15,7 @@ public:
 		full_bin_list = n.subscribe<ugbots_ros::Position>("/full_bins",1000, &Core::fbl_callback, this);
 		picker_list = n.subscribe<ugbots_ros::robot_details>("/idle_pickers",1000, &Core::pl_callback, this);
 		carrier_list = n.subscribe<ugbots_ros::robot_details>("/idle_carriers",1000, &Core::cl_callback, this);
+		rows_list = n.advertise<ugbots_ros::Position>("/row_loc",1000);
 	}
 
 	//call back function for the world layout topic subscriber
@@ -332,11 +333,23 @@ public:
 		return sqrt(pow((a.x - b.x),2) + pow((a.y - b.y),2));
 	}
 
+	void publishRows() {
+		for (std::vector<Row>::iterator row = rowPositions.begin(); row != rowPositions.end(); ++row) {
+			Row current = *row;
+			ugbots_ros::Position p;
+			p.x = current.x_pos;
+			p.y = current.start_point.y;
+
+			rows_list.publish(p);
+		}
+	}
+
 	ros::Subscriber world_layout;
 	ros::Subscriber full_bin_list;
 	ros::Subscriber picker_list;
 	ros::Subscriber carrier_list;
 	ros::Publisher work_distributer;
+	ros::Publisher rows_list;
 
 private:
 	std::vector<Point> beaconPositions;
@@ -361,6 +374,10 @@ int main(int argc, char **argv)
 	{
 
 		ros::spinOnce();
+
+		if (count == 2) {
+			c.publishRows();
+		}
 
 		if (count > 5) {
 			c.assignRowToClosest(n);
