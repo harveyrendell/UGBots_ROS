@@ -10,7 +10,8 @@ public:
 	virtual void move() = 0;
 	virtual void stop() = 0;
 	virtual void collisionDetected() = 0;
-	
+	//virtual void set_status(int i);
+
 	void publish()
 	{
 		//messages to stage
@@ -22,6 +23,7 @@ public:
 
 	/*void turn(double angle, double linear, double angular)
 	{
+<<<<<<< HEAD
 		this->orientation.currently_turning = true;
 		this->orientation.desired_angle = this->orientation.desired_angle + angle;
 		this->speed.linear_x = linear;
@@ -30,6 +32,7 @@ public:
 
 	void turn(double angle, double linear, double angular)
 	{
+
 		this->orientation.currently_turning = true;
 		this->orientation.desired_angle = this->orientation.desired_angle + angle;
 		double angle_difference = fabs(this->orientation.desired_angle - this->orientation.angle);
@@ -38,7 +41,9 @@ public:
 			angular = M_PI/300;
 		}
 		doAngleCheck();
+
 		ROS_INFO("angluar speed: %f", angular);
+
 		if((this->orientation.desired_angle - this->orientation.angle) > 0)
 		{
 			if (angular < 0)
@@ -57,7 +62,34 @@ public:
 		this->speed.linear_x = linear;
 		this->speed.angular_z = angular;
 	}
+	bool begin_action_shortest_path(double speed)
+	{
+		if(action_queue.empty())
+		{
+			//set_status(1);
+			return true;
+		}
+		geometry_msgs::Point end_point = action_queue.front();
+		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
+		{
+			action_queue.pop();
+			stop();
+			return true;
+		}
+		double distance = sqrt(pow(end_point.x - pose.px, 2) + pow(end_point.y - pose.py, 2));
+		double angle = atan2((end_point.y - pose.py),(end_point.x - pose.px));
 
+		turn(angle - this->orientation.desired_angle , 0.0, M_PI/2);
+		checkTurningStatus();
+		if(!orientation.currently_turning)
+		{
+			this->speed.linear_x = speed;
+			if (fabs(distance) < 0.5)
+			{
+				this->speed.linear_x = distance;
+			}
+		}
+	}
 	void doAngleCheck()
 	{		
 		//if -ve rads, change to +ve rads
@@ -158,11 +190,13 @@ public:
 		return false;
 	}
 
+	
 	bool begin_action(double speed)
 	{
 
 		if (action_queue.empty())
 		{
+			//set_status(1);
 			return true;
 		}
 		geometry_msgs::Point end_point = action_queue.front();
@@ -172,16 +206,23 @@ public:
 			stop();
 			return true;
 		}
+
 		if(move_x(end_point.x, speed))
 		{
-			move_y(end_point.y, speed);
+			if(move_y(end_point.y, speed))
+			{
+				//set_status(2);
+			}
+
 		}
 	}	
 
 	bool doubleComparator(double a, double b)
 	{
-	    return fabs(a - b) < 0.001;
+	    return fabs(a - b) < M_PI/3000;
 	}
+
+
 
 	//Pose of the unit
 	Pose pose;
