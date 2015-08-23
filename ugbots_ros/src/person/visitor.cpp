@@ -93,8 +93,8 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 	//checkStaticTurningStatus();
 
-	ROS_INFO("/position/x/%f",action_queue.front().x);
-	ROS_INFO("/position/y/%f",action_queue.front().y);
+	//ROS_INFO("/position/x/%f",action_queue.front().x);
+	//ROS_INFO("/position/y/%f",action_queue.front().y);
 	ROS_INFO("/status/TEMP/./");
 	/*
 	//ROS_INFO("ANGLE: %f",this->orientation.angle);
@@ -155,7 +155,8 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 
 void Visitor::core_callback(ugbots_ros::Position msg)
 {
-	
+	ROS_INFO("/position/x/%f",msg.x);
+	ROS_INFO("/position/y/%f",msg.y);
 }
 
 	/*if(msg.ranges[90] < 2.0 && msg.ranges[0] < 8.0)
