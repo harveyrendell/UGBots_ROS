@@ -48,7 +48,8 @@ Picker::Picker(ros::NodeHandle &n)
 	sub_ground = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000,&Picker::ground_callback, this);
 	station_sub = n.subscribe<ugbots_ros::Position>("station",1000,&Picker::station_callback, this);
 	carrier_alert = n.advertise<ugbots_ros::bin_status>("/alert",1000);
-	core_alert = n.advertise<ugbots_ros::robot_details>("/tell_core",1000);
+	core_alert = n.advertise<ugbots_ros::robot_details>("/idle_pickers",1000);
+	bin_alert = n.advertise<ugbots_ros::Position>("/full_bins",1000);
 }
 
 /*void Picker::logic() {
@@ -227,9 +228,13 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 void Picker::ground_callback(nav_msgs::Odometry msg)
 {
 	if (state == IDLE && !sent) {
+		ugbots_ros::Position p;
+		p.x = msg.pose.pose.position.x;
+		p.y = msg.pose.pose.position.y;
 		robotDetails.x = msg.pose.pose.position.x;
 		robotDetails.y = msg.pose.pose.position.y;
 		core_alert.publish(robotDetails);
+		bin_alert.publish(p);
 		sent = true;
 	}
 }

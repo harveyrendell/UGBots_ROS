@@ -48,4 +48,13 @@
 		<node pkg="ugbots_ros" name="robotnode" type="PICKER"/>
 	</group>
 
+	<group ns="robot_12">
+		<node pkg="ugbots_ros" name="robotnode" type="CARRIER"/>
+	</group>
+
+	<group ns="robot_13">
+		<node pkg="ugbots_ros" name="robotnode" type="CARRIER"/>
+	</group>
+
+
 </launch>

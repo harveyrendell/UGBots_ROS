@@ -49,11 +49,19 @@ Carrier::Carrier(ros::NodeHandle &n)
 	tempy = -48.0;
 	temprad = 0.0;
 
+	sent = false;
+	std::string ns = n.getNamespace();
+	ns.erase(ns.begin());
+	robotDetails.ns = ns;
+
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Carrier::odom_callback, this);
 	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Carrier::laser_callback, this);
+	sub_ground = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000,&Carrier::ground_callback, this);
+	bin_sub = n.subscribe<ugbots_ros::Position>("bin",1000,&Carrier::bin_loc_callback, this);
 	carrier_alert = n.subscribe<ugbots_ros::bin_status>("/alert",1000,&Carrier::bin_callback,this);
 	carrier_alert_pub = n.advertise<ugbots_ros::bin_status>("/alert",1000);
+	core_alert = n.advertise<ugbots_ros::robot_details>("/idle_carriers",1000);
 }
 
 void Carrier::bin_callback(ugbots_ros::bin_status msg)
@@ -94,9 +102,9 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 	orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
 	orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
 	orientation.roty-orientation.rotz*orientation.rotz);
-	ROS_INFO("/position/x/%f", this->pose.px);
-	ROS_INFO("/position/y/%f", this->pose.py);
-	ROS_INFO("/status/%s/./", enum_to_string(state));
+	//ROS_INFO("/position/x/%f", this->pose.px);
+	//ROS_INFO("/position/y/%f", this->pose.py);
+	//ROS_INFO("/status/%s/./", enum_to_string(state));
 
 
 	if(localBinStatus.bin_stat == "FULL")
@@ -115,6 +123,22 @@ void Carrier::laser_callback(sensor_msgs::LaserScan msg)
 	//This is the callback function to process laser scan messages
 	//you can access the range data from msg.ranges[i]. i = sample number	
 }
+
+void Carrier::ground_callback(nav_msgs::Odometry msg)
+{
+	if (state == IDLE && !sent) {
+		robotDetails.x = msg.pose.pose.position.x;
+		robotDetails.y = msg.pose.pose.position.y;
+		core_alert.publish(robotDetails);
+		sent = true;
+	}
+}
+
+void Carrier::bin_loc_callback(ugbots_ros::Position pos)
+{
+	ROS_INFO("Robot given coordinates x: %f, y: %f", pos.x, pos.y);
+}
+
 void Carrier::turn(bool clockwise, double desired_angle, double temprad) {
 	double current_angular_z;
 

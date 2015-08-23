@@ -25,6 +25,7 @@ public:
 
 	ros::Publisher carrier_alert;
 	ros::Publisher core_alert;
+	ros::Publisher bin_alert;
 	ros::Subscriber sub_ground;
 	ros::Subscriber station_sub;
 	ugbots_ros::bin_status binStatus;
@@ -32,6 +33,7 @@ public:
 
 	Picker();
 	Picker(ros::NodeHandle &n);
+
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
 	void ground_callback(nav_msgs::Odometry msg);

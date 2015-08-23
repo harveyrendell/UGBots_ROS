@@ -63,4 +63,6 @@ beacon(pose [ -35 -35 0 0 ] name "core" color "black")
 beacon(pose [ -40 -40 0 0 ] name "core" color "black")
 beacon(pose [ -25 -25 0 0 ] name "core" color "black")
 beacon(pose [ -20 -20 0 0 ] name "core" color "black")
+beacon(pose [ -20 20 0 0 ] name "core" color "white")
+beacon(pose [ -25 25 0 0 ] name "core" color "white")
 
