@@ -45,22 +45,14 @@ Visitor::Visitor(ros::NodeHandle &n)
 	this->rightTurnInit = false;
 	this->leftTurnInit = false;
 	this->moveToEnabled = true;
+	this->queueDuplicateCheckAngle = 0.0;
+	this->queueDuplicate = true;
 
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Visitor::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Visitor::laser_callback, this);
 
-	geometry_msgs::Point point;
-		point.x = 0.0; 
-		point.y = -40.0;
-
-	action_queue.push(point);
-
-		point.x = 0.0;
-		point.y = 38.0;
-
-	action_queue.push(point);
-
+	init_route();
 
 }
 
@@ -85,7 +77,6 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 	checkTurningStatus();
 
-
 	publish();
 
 
@@ -100,8 +91,8 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 	//checkStaticTurningStatus();
 
-	ROS_INFO("/position/x/%f",this->pose.px);
-	ROS_INFO("/position/y/%f",this->pose.py);
+	ROS_INFO("/position/x/%f",action_queue.front().x);
+	ROS_INFO("/position/y/%f",action_queue.front().y);
 	ROS_INFO("/status/TEMP/./");
 	/*
 	//ROS_INFO("ANGLE: %f",this->orientation.angle);
@@ -112,7 +103,72 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 {
-	if(msg.ranges[90] < 2.0 && msg.ranges[0] < 8.0)
+	
+	if(fabs(this->queueDuplicateCheckAngle - this->orientation.angle) >= (M_PI/2.000000))
+	{
+		this->queueDuplicate = true;
+		this->queueDuplicateCheckAngle = 0;
+	}
+	
+
+	if(msg.ranges[90] < 2.0)
+	{
+		if(this->queueDuplicate == true)
+		{
+			this->queueDuplicateCheckAngle = this->orientation.angle;
+
+			std::queue<geometry_msgs::Point> temp_queue;
+
+			geometry_msgs::Point pointtemp;
+
+			
+			pointtemp.x = this->pose.px + 2 * cos(this->orientation.angle - (M_PI/2.0));
+			pointtemp.y = this->pose.py + 2 * sin(this->orientation.angle - (M_PI/2.0));
+			temp_queue.push(pointtemp);
+
+			pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
+			pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle);
+			temp_queue.push(pointtemp);
+
+			pointtemp.x = pointtemp.x + 2 * cos(this->orientation.angle + (M_PI/2.0));
+			pointtemp.y = pointtemp.y + 2 * sin(this->orientation.angle + (M_PI/2.0));
+			temp_queue.push(pointtemp);
+
+			/*
+				pointtemp.x = this->pose.px; 
+				pointtemp.y = this->pose.py + 1.1;
+
+				temp_queue.push(pointtemp);
+
+				pointtemp.x = this->pose.px - 4.0; 
+				pointtemp.y = this->pose.py + 1.1;
+
+				temp_queue.push(pointtemp);
+
+				pointtemp.x = this->pose.px - 4.0; 
+				pointtemp.y = this->pose.py;
+
+				temp_queue.push(pointtemp);
+			**/
+
+			while(!action_queue.empty())
+			{
+				temp_queue.push(action_queue.front());
+				action_queue.pop();
+			}
+
+			while(!temp_queue.empty())
+			{
+				action_queue.push(temp_queue.front());
+				temp_queue.pop();
+			}
+
+			this->queueDuplicate = false;
+		}
+	}
+}
+
+	/*if(msg.ranges[90] < 2.0 && msg.ranges[0] < 8.0)
 	{
 		if(this->rightTurnInit == false)
 		{
@@ -138,12 +194,7 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 				this->leftTurnInit = true;
 			}
 		}
-	}
-
-	checkTurningStatus();
-	//This is the callback function to process laser scan messages
-	//you can access the range data from msg.ranges[i]. i = sample number	
-}
+	}*/
 
 void Visitor::checkTurningStatus()
 {
@@ -158,8 +209,11 @@ void Visitor::checkTurningStatus()
 			this->orientation.currently_turning = false;
 			this->speed.linear_x = 2.0;
 			this->speed.angular_z = 0.0;
+		}
+	}
+}
 
-			if(this->leftTurnInit == true && this->rightTurnInit == true)
+			/*if(this->leftTurnInit == true && this->rightTurnInit == true)
 			{
 				ROS_INFO("STOP TURN!");
 				this->leftTurnInit = false;
@@ -190,6 +244,56 @@ void Visitor::checkTurningStatus()
 		}
 	}
 		
+}*/
+
+void Visitor::init_route()
+{
+	geometry_msgs::Point point;
+		point.x = 10.5; 
+		point.y = -39.0;
+
+	action_queue.push(point);
+	/*
+		point.x = 10.5;
+		point.y = 39.0;
+
+	action_queue.push(point);
+
+		point.x = 3.5;
+		point.y = 39.0;
+
+	action_queue.push(point);
+
+		point.x = 3.5;
+		point.y = -39.0;
+
+	action_queue.push(point);
+
+		point.x = -3.5;
+		point.y = -39.0;
+
+	action_queue.push(point);
+
+		point.x = -3.5;
+		point.y = 39.0;
+
+	action_queue.push(point);
+
+		point.x = -10.5;
+		point.y = 39.0;
+
+	action_queue.push(point);
+
+		point.x = -10.5;
+		point.y = -39.0;
+
+	action_queue.push(point);
+
+		point.x = 52.0;
+		point.y = -48.5;
+
+	action_queue.push(point);
+	*/
 }
 
 void Visitor::move(){}

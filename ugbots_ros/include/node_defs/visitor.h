@@ -21,6 +21,7 @@ public:
 	void turnRight();
 	void collisionDetected();
 	void checkTurningStatus();
+	void init_route();
 
 	enum State { IDLE, LOITERING, HARASSING, STOPPED };
 	State state;
@@ -28,6 +29,8 @@ public:
 	bool rightTurnInit;
 	bool leftTurnInit;
 	bool moveToEnabled;
+	double queueDuplicate;
+	double queueDuplicateCheckAngle;
 
 	char const* enum_to_string(State t);
 };

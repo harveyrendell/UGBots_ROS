@@ -20,10 +20,40 @@ public:
 		sub_list.node_stage_pub.publish(node_cmdvel);
 	}
 
+	/*void turn(double angle, double linear, double angular)
+	{
+		this->orientation.currently_turning = true;
+		this->orientation.desired_angle = this->orientation.desired_angle + angle;
+		this->speed.linear_x = linear;
+		this->speed.angular_z = angular;
+	}*/
+
 	void turn(double angle, double linear, double angular)
 	{
 		this->orientation.currently_turning = true;
 		this->orientation.desired_angle = this->orientation.desired_angle + angle;
+		double angle_difference = fabs(this->orientation.desired_angle - this->orientation.angle);
+		if(angle_difference < M_PI/20)
+		{
+			angular = M_PI/300;
+		}
+		doAngleCheck();
+		ROS_INFO("angluar speed: %f", angular);
+		if((this->orientation.desired_angle - this->orientation.angle) > 0)
+		{
+			if (angular < 0)
+			{
+				angular = -1.0 * angular;
+			}
+		}
+		else
+		{
+			if (angular > 0)
+			{
+				angular = -1.0 * angular;
+			}
+		}
+
 		this->speed.linear_x = linear;
 		this->speed.angular_z = angular;
 	}
