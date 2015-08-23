@@ -33,14 +33,14 @@ public:
 		doAngleCheck();
 		if((this->orientation.desired_angle - this->orientation.angle) > 0)
 		{
-			if (angular < 0)
+			if (angular > 0)
 			{
 				angular = -1.0 * angular;
 			}
 		}
 		else
 		{
-			if (angular > 0)
+			if (angular < 0)
 			{
 				angular = -1.0 * angular;
 			}
@@ -108,6 +108,7 @@ public:
 		{	
 			if(doubleComparator(orientation.angle, orientation.desired_angle))
 			{
+				ROS_INFO("CHECKTURNING STATUS IF STATEMENT ENTERED");
 				this->orientation.currently_turning = false;
 				this->speed.linear_x = 3.0;
 				this->speed.angular_z = 0.0; 
@@ -142,9 +143,10 @@ public:
 		if(!orientation.currently_turning)
 		{
 			this->speed.linear_x = speed;
-			if (fabs(distance_x) < 0.05)
+			if (fabs(distance_x) < 0.5)
 			{
-				this->speed.linear_x = 0.01;
+				ROS_INFO("slow down x");
+				this->speed.linear_x = fabs(distance_x);
 			}
 		}
 		return false;
@@ -169,9 +171,10 @@ public:
 		if(!orientation.currently_turning)
 		{
 			this->speed.linear_x = speed;
-			if (fabs(distance_y) < 0.05)
+			if (fabs(distance_y) < 0.5)
 			{
-				this->speed.linear_x = 0.01;
+				ROS_INFO("slow down x");
+				this->speed.linear_x = fabs(distance_y);
 			}
 		}
 		return false;
