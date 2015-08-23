@@ -1,5 +1,5 @@
-include "tree.inc"
-include "post.inc"
+include "models/tree.inc"
+include "models/post.inc"
 
 define rows model
 (

@@ -25,14 +25,14 @@ public class ROSinit extends JPanel {
 	private JLabel _possum = new JLabel("Possum:");
 	private JLabel _tractor = new JLabel("Tractor:");
 	
-	private JSpinner _pickerVal = new JSpinner(new SpinnerNumberModel(0,0,9,1));
-	private JSpinner _carrierVal = new JSpinner(new SpinnerNumberModel(0,0,9,1));
-	private JSpinner _workerVal = new JSpinner(new SpinnerNumberModel(0,0,9,1));
-	private JSpinner _visitorVal = new JSpinner(new SpinnerNumberModel(0,0,9,1));
-	private JSpinner _dogVal = new JSpinner(new SpinnerNumberModel(0,0,9,1));
-	private JSpinner _catVal = new JSpinner(new SpinnerNumberModel(0,0,9,1));
-	private JSpinner _possumVal = new JSpinner(new SpinnerNumberModel(0,0,9,1));
-	private JSpinner _tractorVal = new JSpinner(new SpinnerNumberModel(0,0,9,1));
+	private JSpinner _pickerVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
+	private JSpinner _carrierVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
+	private JSpinner _workerVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
+	private JSpinner _visitorVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
+	private JSpinner _dogVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
+	private JSpinner _catVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
+	private JSpinner _possumVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
+	private JSpinner _tractorVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
 	
 	private JButton _startButton = new JButton("Start");
 	
