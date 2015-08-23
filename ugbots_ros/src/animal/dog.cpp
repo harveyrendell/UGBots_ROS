@@ -85,6 +85,7 @@ void Dog::odom_callback(nav_msgs::Odometry msg)
 	calculateOrientation();
 	doAngleCheck();
 	checkTurningStatus();
+	publish();
 
 }
 
@@ -95,39 +96,26 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 	//you can access the range data from msg.ranges[i]. i = sample number
 	bool detection = false;
 	if (this->orientation.currently_turning == false){
+		ROS_INFO("11111");
 		for(int a = 0 ; a < 180; a++){
 			if ((msg.ranges[a] < 5.8) && (a > 85) && (a < 95)) {
+				ROS_INFO("22222");
 				detection = true;
 				turnBack();
 				break;
 			} else if ((msg.ranges[a] < 5.8) && (a <= 85)) {
+				ROS_INFO("33333");
 				detection = true;
 				turnLeft();
 				break;
 			} else if ((msg.ranges[a] < 5.8) && (a >= 95)){
+				ROS_INFO("44444");
 				detection = true;
 				turnRight();
 				break;
 			}
 		}
 	}
-/**
-	if (detection == true){
-		//this->speed.linear_x = 0.0;
-		//this->speed.angular_z = 0.0;
-		state = AGGRESSIVE;
-
-	} else {
-		state = RUNNING;
-		if (endOfPath == false){
-			this->speed.linear_x = 4.0;
-			if (this->orientation.currently_turning == true){
-				this->speed.angular_z = 3.0;
-			}
-		}
-	}
-
-**/	
 }
 
 void Dog::timerCallback(const ros::TimerEvent& e){
@@ -193,43 +181,6 @@ void Dog::turnBack(){
 	this->speed.linear_x = 0.1;
 	this->speed.angular_z = 5.0;
 }
-
-void Dog::calculateOrientation()
-{	
-	this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
-}
-
-//Angle translation for easier interpretation
-void Dog::doAngleCheck(){		
-	//if -ve rads, change to +ve rads
-	if(this->orientation.angle < 0)
-	{
-		this->orientation.angle = this->orientation.angle + 2.000000 * M_PI;
-	}
-	//if the desired angle is > 2pi, changed the desired angle to pi/2 
-	if(this->orientation.desired_angle > (2.000000 * M_PI))
-	{
-		this->orientation.desired_angle = M_PI / 2.000000;
-	}
-	//if the current angle is 2pi or more, translate the angle to 0< x <2pi 
-	if(this->orientation.angle > 2.000000 * M_PI)
-	{
-		this->orientation.angle = this->orientation.angle - 2.000000 * M_PI;	
-	}
-}
-
-void Dog::checkTurningStatus()
-{
-	if(this->orientation.currently_turning == true)
-	{
-		if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) == this->orientation.desired_angle)
-		{
-			stopTurn(); // stop the turn when desired angle is reacahed (2 clocks before the estimated angle)
-		}
-		return;
-	}
-}
-
 
 void Dog::collisionDetected(){}
 
@@ -298,13 +249,6 @@ geometry_msgs::Twist RobotNode_cmdvel;
 
 while (ros::ok())
 {
-
-	//messages to stage
-	RobotNode_cmdvel.linear.x = dg.speed.linear_x;
-	RobotNode_cmdvel.angular.z = dg.speed.angular_z;
-        
-	//publish the message
-	dg.sub_list.node_stage_pub.publish(RobotNode_cmdvel);
 
 	ros::spinOnce();
 

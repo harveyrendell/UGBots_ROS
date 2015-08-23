@@ -27,9 +27,6 @@ public:
 	void turnRight();
 	void turnBack();
 	void collisionDetected();
-	void calculateOrientation();
-	void doAngleCheck();
-	void checkTurningStatus();
 	State generateStatus();
 
 	char const* enum_to_string(State t);
