@@ -40,11 +40,11 @@ TEST(UnitTest, testStartupState)
 	EXPECT_EQ(node.state, Carrier::IDLE); 
 }
 
-TEST(TestSuite, testStateSwitchStopped)
+/*TEST(TestSuite, testStateSwitchStopped)
 {
 	node.moveX(10.0, 0.0);
 	EXPECT_EQ(node.state, Carrier::STOPPED); 	
-}
+}*/
 
 /*TEST(UnitTest, testStateSwitchTravelling)
 {
