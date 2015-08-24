@@ -14,7 +14,7 @@ Worker::Worker()
 	this->pose.theta = M_PI/2.0;
 	this->pose.px = -40;
 	this->pose.py = -44;
-	this->speed.linear_x = 2.0;
+	this->speed.linear_x = 0.0;
 	this->speed.max_linear_x = 3.0;
 	this->speed.angular_z = 0.0;
 	this->state = IDLE;
@@ -38,7 +38,7 @@ Worker::Worker(ros::NodeHandle &n)
 	this->pose.theta = M_PI/2.0;
 	this->pose.px = -40;
 	this->pose.py = -44;
-	this->speed.linear_x = 2.0;
+	this->speed.linear_x = 0.0;
 	this->speed.max_linear_x = 3.0;
 	this->speed.angular_z = 0.0;
 	this->state = IDLE;
@@ -54,15 +54,26 @@ Worker::Worker(ros::NodeHandle &n)
 	this->checkedThisRot = false;
 
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Worker::odom_callback, this);
+	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Worker::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Worker::laser_callback, this);
+
+	geometry_msgs::Point point;
+	point.x = 55.0; 
+	point.y = -43.0;
+
+	action_queue.push(point);
+	
+	point.x = 55.0;
+	point.y = -35.0;
+
+	action_queue.push(point);
 }
 
 void Worker::odom_callback(nav_msgs::Odometry msg)
 {
 	//gets the current position and angle and sets it to the object's fields 	
-	this->pose.px = -40 + msg.pose.pose.position.x;
-	this->pose.py = -44 + msg.pose.pose.position.y;
+	this->pose.px = msg.pose.pose.position.x;
+	this->pose.py = msg.pose.pose.position.y;
 	this->orientation.rotx = msg.pose.pose.orientation.x;
 		this->orientation.roty = msg.pose.pose.orientation.y;
 		this->orientation.rotz = msg.pose.pose.orientation.z;
@@ -70,28 +81,14 @@ void Worker::odom_callback(nav_msgs::Odometry msg)
 	
 	calculateOrientation();
 
+	begin_action(2.0);
+
 	doAngleCheck();		
 
 	checkTurningStatus();
 
-	//checkStaticTurningStatus();
-
-	if(state == IDLE)
-	{
-		state = PATROLLING;
-	}
-	else
-	{
-		if(orientation.currently_turning_static == true)
-		{
-			state = SAWDOG;
-		}
-		else
-		{
-			state = PATROLLING;
-		}
-	}
-	
+	publish();
+	//checkStaticTurningStatus();	
 
 	//ROS_INFO("/position/x/%f",this->pose.px);
 	//ROS_INFO("/position/y/%f",this->pose.py);
@@ -106,6 +103,7 @@ void Worker::odom_callback(nav_msgs::Odometry msg)
 
 void Worker::laser_callback(sensor_msgs::LaserScan msg)
 {		
+	/*
 	if(msg.ranges[90] < 5.5 && this->orientation.currently_turning == false)// && this->orientation.currently_turning_static == false) // stop when 5 meteres from the wall is reached directly to the front
 	{				
 		this->orientation.previous_right_distance = msg.ranges[0];
@@ -114,7 +112,7 @@ void Worker::laser_callback(sensor_msgs::LaserScan msg)
 		//turnRight();	//turn left
 		turn((- M_PI / 2.000000), 0.5, -5.0);
 	}		
-	/*
+	
 	if(this->orientation.currently_turning == false && this->orientation.currently_turning_static == false)
 	{
 		if(this->checkedThisRot == false)
@@ -229,9 +227,7 @@ ros::Rate loop_rate(10);
 int count = 0;
 
 while (ros::ok())
-{
-	node.publish();
-	
+{	
 	ros::spinOnce();
 
 	loop_rate.sleep();
