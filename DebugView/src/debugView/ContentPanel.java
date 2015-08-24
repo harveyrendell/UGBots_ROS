@@ -50,6 +50,7 @@ public class ContentPanel extends JPanel {
 		panel.setMaximumSize(new Dimension(900, 30));
 		_infoWrapper.setLayout(new GridLayout(0,2,0,0));
 		_debug.setViewportView(_infoWrapper);
+		_debug.getVerticalScrollBar().setUnitIncrement(20);
 		
 		this.add(_top);
 		this.add(panel);
@@ -58,13 +59,14 @@ public class ContentPanel extends JPanel {
 	
 	private void createLabels(){
 		String[] names = {"Picker","Carrier","Worker","Visitor","Dog","Cat","Possum","Tractor"};
+		String[] code = {"P","C","W","V","D","C","PO","T",};
 		int vals[] = _top.getVals();
-		int k = 0;
+		int k = 15;
 		String name = "robot_";
 		
 		for (int i = 0; i < vals.length; i++){
 			for (int j = 0; j <vals[i]; j++){
-				infoPanel panel = new infoPanel(name + k, names[i]);
+				infoPanel panel = new infoPanel(name + k, names[i] + "-" + code[i] + j);
 				panel.setMinimumSize(new Dimension(900, 200));
 				_map.put(name + k, panel);
 				k++;
@@ -75,7 +77,7 @@ public class ContentPanel extends JPanel {
 	private void paint(){
 		String name = "robot_";
 		
-		for (int i =0; i< _map.size(); i++){
+		for (int i =15; i < _map.size() + 15; i++){
 			_infoWrapper.add(_map.get(name + i));
 		}
 		

@@ -32,5 +32,5 @@ public:
 	void run();
 	void collisionDetected();
 	State generateStatus();
-	char* enum_to_string(State t);
+	char const* enum_to_string(State t);
 };

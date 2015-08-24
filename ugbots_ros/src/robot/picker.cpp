@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <node_defs/picker.h>
 
+
 Picker::Picker()
 {
 	//setting base attribute defaults
@@ -35,8 +36,7 @@ Picker::Picker(ros::NodeHandle &n)
 	speed.linear_x = 1.0;
 	speed.max_linear_x = 3.0;
 	speed.angular_z = 0.0;
-	state = PICKING;
-	station_x = 0;
+	state = IDLE;
 	station_y = -33;
 
 	queueDuplicateCheckAngle = 0.0;
@@ -83,13 +83,13 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	ROS_INFO("/position/x/%f", pose.px);
 	ROS_INFO("/position/y/%f", pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
+	ROS_INFO("%f degrees per clock", (msg.twist.twist.angular.z * 180/M_PI)/10);
 
 	//bin location, currently attached to the centre of robot
 	binStatus.bin_x = pose.px;
-	binStatus.bin_y = pose.py;	speed.linear_x = 1.0;
+	binStatus.bin_y = pose.py;
 	speed.max_linear_x = 3.0;
 	speed.angular_z = 0.0;
-	state = IDLE;
 	station_x = 0;
 
 
@@ -124,7 +124,7 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	//publish topic about current bin status
 	carrier_alert.publish(binStatus);
 
-	begin_action(3.0);	
+	begin_action_shortest_path(3.0);	
 	doAngleCheck();
 	checkTurningStatus();
 	publish();
@@ -133,43 +133,49 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 
 void Picker::laser_callback(sensor_msgs::LaserScan msg)
 {
-	
-	if(msg.ranges[90] < 2.0)
+	//laser detection that gets in way
+	int min_range = (int)(floor(180 * acos(0.75/2)/M_PI));
+	int max_range = (int)(ceil(180 * acos(-0.75/2)/M_PI));
+
+	for (int i = min_range; i < max_range; i++)
 	{
-		if(this->queueDuplicate == true)
+		if(msg.ranges[i] < 2.0)
 		{
-			this->queueDuplicateCheckAngle = this->orientation.angle;
-
-			std::queue<geometry_msgs::Point> temp_queue;
-
-			geometry_msgs::Point pointtemp;
-
-			
-			pointtemp.x = this->pose.px + 1 * cos(this->orientation.angle - (M_PI/2.0));
-			pointtemp.y = this->pose.py + 1 * sin(this->orientation.angle - (M_PI/2.0));
-			temp_queue.push(pointtemp);
-
-			pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
-			pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle);
-			temp_queue.push(pointtemp);
-
-			pointtemp.x = pointtemp.x + 1 * cos(this->orientation.angle + (M_PI/2.0));
-			pointtemp.y = pointtemp.y + 1 * sin(this->orientation.angle + (M_PI/2.0));
-			temp_queue.push(pointtemp);
-
-			while(!action_queue.empty())
+			if(this->queueDuplicate && !this->orientation.currently_turning)
 			{
-				temp_queue.push(action_queue.front());
-				action_queue.pop();
-			}
+				this->queueDuplicateCheckAngle = this->orientation.angle;
 
-			while(!temp_queue.empty())
-			{
-				action_queue.push(temp_queue.front());
-				temp_queue.pop();
-			}
+				std::queue<geometry_msgs::Point> temp_queue;
 
-			this->queueDuplicate = false;
+				geometry_msgs::Point pointtemp;
+
+				
+				pointtemp.x = this->pose.px + 4 * cos(this->orientation.angle - (M_PI/2.0));
+				pointtemp.y = this->pose.py + 4 * sin(this->orientation.angle - (M_PI/2.0));
+				temp_queue.push(pointtemp);
+
+				pointtemp.x = pointtemp.x + 5 * cos(this->orientation.angle);
+				pointtemp.y = pointtemp.y + 5 * sin(this->orientation.angle);
+				temp_queue.push(pointtemp);
+
+				pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle + (M_PI/2.0));
+				pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle + (M_PI/2.0));
+				temp_queue.push(pointtemp);
+
+				while(!action_queue.empty())
+				{
+					temp_queue.push(action_queue.front());
+					action_queue.pop();
+				}
+
+				while(!temp_queue.empty())
+				{
+					action_queue.push(temp_queue.front());
+					temp_queue.pop();
+				}
+
+				this->queueDuplicate = false;
+			}
 		}
 	}
 
@@ -221,6 +227,7 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 		}
 	}**/
 }
+void Picker::set_status(int status){}
 
 //hard coded function for robot to get to work station
 void Picker::goToWork() {

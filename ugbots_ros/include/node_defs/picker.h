@@ -39,6 +39,8 @@ public:
 	void turnLeft();
 	void turnRight();
 	void collisionDetected();
+
+	void set_status(int status);
 	
 	void goToWork();
 	void pickKiwi();

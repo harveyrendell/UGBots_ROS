@@ -1,0 +1,22 @@
+<launch>
+  <node pkg="ugbots_ros" type="CARRIER" name="Carrier" />
+  <test test-name="CarrierTests" pkg="ugbots_ros" type="CarrierTests" />
+
+  <node pkg="ugbots_ros" type="PICKER" name="Picker" />
+  <test test-name="PickerTests" pkg="ugbots_ros" type="PickerTests" />
+
+  <node pkg="ugbots_ros" type="CAT" name="Cat" />
+  <test test-name="CatTests" pkg="ugbots_ros" type="CatTests" />
+
+  <node pkg="ugbots_ros" type="DOG" name="Dog" />
+  <test test-name="DogTests" pkg="ugbots_ros" type="DogTests" />
+
+  <node pkg="ugbots_ros" type="POSSUM" name="Possum" />
+  <test test-name="PossumTests" pkg="ugbots_ros" type="PossumTests" />
+
+  <node pkg="ugbots_ros" type="WORKER" name="Worker" />
+  <test test-name="WorkerTests" pkg="ugbots_ros" type="WorkerTests" />
+
+  <node pkg="ugbots_ros" type="VISITOR" name="Visitor" />
+  <test test-name="VisitorTests" pkg="ugbots_ros" type="VisitorTests" />
+</launch>

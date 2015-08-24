@@ -45,7 +45,7 @@ public class infoPanel extends JPanel {
 		this.add(_status);
 		this.add(_message);
 		//Add progress bar to show the bins status
-		if (_type.getText().equals("Picker")){
+		if (_type.getText().contains("Picker")){
 			JLabel binLabel = new JLabel("Bin:");
 			_binProgress.setMaximumSize(new Dimension(100,15));
 			_binProgress.setMaximum(100);
