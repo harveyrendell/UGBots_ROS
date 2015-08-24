@@ -50,40 +50,47 @@ rosbuild_add_library(PossumLib src/animal/possum.cpp)
 rosbuild_add_library(WorkerLib src/person/worker.cpp)
 rosbuild_add_library(VisitorLib src/person/visitor.cpp)
 
+rosbuild_add_rostest(test/node.test)
+
 #Carrier
-#rosbuild_add_executable(CarrierTests EXCLUDE_FROM_ALL test/carrier_test.cpp)
-rosbuild_add_gtest(CarrierTests test/carrier_test.cpp)
+rosbuild_add_executable(CarrierTests EXCLUDE_FROM_ALL src/test/carrier_test.cpp)
+rosbuild_add_gtest_build_flags(CarrierTests)
+#rosbuild_add_rostest(test/node.test)
 target_link_libraries(CarrierTests CarrierLib)
 
 #Picker
-#rosbuild_add_executable(PickerTests EXCLUDE_FROM_ALL test/picker_test.cpp)
-rosbuild_add_gtest(PickerTests test/picker_test.cpp)
+rosbuild_add_executable(PickerTests EXCLUDE_FROM_ALL src/test/picker_test.cpp)
+rosbuild_add_gtest_build_flags(PickerTests)
+#rosbuild_add_rostest(test/node.test)
 target_link_libraries(PickerTests PickerLib)
 
 #Dog
-#rosbuild_add_executable(DogTests EXCLUDE_FROM_ALL test/dog_test.cpp)
-rosbuild_add_gtest(DogTests test/dog_test.cpp)
+rosbuild_add_executable(DogTests EXCLUDE_FROM_ALL src/test/dog_test.cpp)
+rosbuild_add_gtest_build_flags(DogTests)
+#rosbuild_add_rostest(test/node.test)
 target_link_libraries(DogTests DogLib)
 
 #Cat
-#rosbuild_add_executable(CatTests EXCLUDE_FROM_ALL test/cat_test.cpp)
-rosbuild_add_gtest(CatTests test/cat_test.cpp)
+rosbuild_add_executable(CatTests EXCLUDE_FROM_ALL src/test/cat_test.cpp)
+rosbuild_add_gtest_build_flags(CatTests)
+#rosbuild_add_rostest(test/node.test)
 target_link_libraries(CatTests CatLib)
 
 #Possum
-#rosbuild_add_executable(PossumTests EXCLUDE_FROM_ALL test/possum_test.cpp)
-rosbuild_add_gtest(PossumTests test/possum_test.cpp)
+rosbuild_add_executable(PossumTests EXCLUDE_FROM_ALL src/test/possum_test.cpp)
+rosbuild_add_gtest_build_flags(PossumTests)
+#rosbuild_add_rostest(test/node.test)
 target_link_libraries(PossumTests PossumLib)
 
 #Worker
-#rosbuild_add_executable(WorkerTests EXCLUDE_FROM_ALL test/worker_test.cpp)
-rosbuild_add_gtest(WorkerTests test/worker_test.cpp)
+rosbuild_add_executable(WorkerTests EXCLUDE_FROM_ALL src/test/worker_test.cpp)
+rosbuild_add_gtest_build_flags(WorkerTests)
+#rosbuild_add_rostest(test/node.test)
 target_link_libraries(WorkerTests WorkerLib)
 
 #Visitor
-#rosbuild_add_executable(VisitorTests EXCLUDE_FROM_ALL test/visitor_test.cpp)
-rosbuild_add_gtest(VisitorTests test/visitor_test.cpp)
+rosbuild_add_executable(VisitorTests EXCLUDE_FROM_ALL src/test/visitor_test.cpp)
+rosbuild_add_gtest_build_flags(VisitorTests)
+#rosbuild_add_rostest(test/node.test)
 target_link_libraries(VisitorTests VisitorLib)
 
-#Using rostest
-#rosbuild_add_rostest(test/mynode.test)
