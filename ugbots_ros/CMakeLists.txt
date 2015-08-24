@@ -41,6 +41,7 @@ rosbuild_add_executable(WORKER src/person/worker.cpp)
 rosbuild_add_executable(VISITOR src/person/visitor.cpp)
 rosbuild_add_executable(BEACON src/core/beacon.cpp)
 rosbuild_add_executable(CORE src/core/core.cpp)
+rosbuild_add_executable(TRACTOR src/person/tractor.cpp)
 
 rosbuild_add_library(CarrierLib src/robot/carrier.cpp)
 rosbuild_add_library(PickerLib src/robot/picker.cpp)
