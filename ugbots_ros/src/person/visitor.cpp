@@ -29,7 +29,7 @@ Visitor::Visitor(ros::NodeHandle &n)
 	this->pose.theta = M_PI/2.0;
 	this->pose.px = -40;
 	this->pose.py = -44;
-	this->speed.linear_x = 2.0;
+	this->speed.linear_x = 0.0;
 	this->speed.max_linear_x = 3.0;
 	this->speed.angular_z = 0.0;
 	this->state = IDLE;
@@ -47,6 +47,7 @@ Visitor::Visitor(ros::NodeHandle &n)
 	this->leftTurnInit = false;
 	this->queueDuplicateCheckAngle = 0.0;
 	this->queueDuplicate = true;
+	this->tourStarted = false;
 
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Visitor::odom_callback, this);
@@ -54,6 +55,7 @@ Visitor::Visitor(ros::NodeHandle &n)
 	
 	this->sub_row = n.subscribe<ugbots_ros::Position>("/row_loc",1000,&Visitor::core_callback, this);
 
+	this->waitingInLine = true;
 	//init_route();
 
 }
@@ -70,7 +72,10 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 	calculateOrientation();
 
-	begin_action_shortest_path(2.0);
+	if(!waitingInLine)
+	{
+		begin_action_shortest_path(2.0);
+	}
 
 	doAngleCheck();		
 
@@ -104,48 +109,81 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 {
-	
-	if(fabs(this->queueDuplicateCheckAngle - this->orientation.angle) >= (M_PI/4.000000))
-	{
-		this->queueDuplicate = true;
-		this->queueDuplicateCheckAngle = 0;
-	}
-	
 
-	if(msg.ranges[90] < 2.0)
-	{
-		if(this->queueDuplicate == true)
+	if(insideFarm())
+	{	
+		if(fabs(this->queueDuplicateCheckAngle - this->orientation.angle) >= (M_PI/4.000000))
 		{
-			this->queueDuplicateCheckAngle = this->orientation.angle;
+			this->queueDuplicate = true;
+			this->queueDuplicateCheckAngle = 0;
+		}
+		
 
-			std::queue<geometry_msgs::Point> temp_queue;
+		for(int i=85; i<96; i++)//if(msg.ranges[90] < 2.0 ||)
+		{
+			if(msg.ranges[i] < 2.0)
+			{
+				if(this->queueDuplicate == true)
+				{
+					this->queueDuplicateCheckAngle = this->orientation.angle;
 
-			geometry_msgs::Point pointtemp;
+					std::queue<geometry_msgs::Point> temp_queue;
 
+					geometry_msgs::Point pointtemp;
+
+					
+					pointtemp.x = this->pose.px + sqrt(8) * cos(this->orientation.angle - (M_PI/4.0));
+					pointtemp.y = this->pose.py + sqrt(8) * sin(this->orientation.angle - (M_PI/4.0));
+					temp_queue.push(pointtemp);
+
+					pointtemp.x = pointtemp.x + sqrt(8) * cos(this->orientation.angle + (M_PI/4.0));
+					pointtemp.y = pointtemp.y + sqrt(8) * sin(this->orientation.angle + (M_PI/4.0));
+					temp_queue.push(pointtemp);
+
+					while(!action_queue.empty())
+					{
+						temp_queue.push(action_queue.front());
+						action_queue.pop();
+					}
+
+					while(!temp_queue.empty())
+					{
+						action_queue.push(temp_queue.front());
+						temp_queue.pop();
+					}
+
+					this->queueDuplicate = false;
+				}
+				break;
+			}
+		}
+	}
+	else
+	{
+		if(!tourStarted)
+		{
+			if(msg.ranges[90] > 5)
+			{
+				if(msg.ranges[0] > 15)
+				{
+					this->speed.linear_x = 2.0;
+				}
+			}
+			else if(msg.ranges[90] <= 5)
+			{
+				this->speed.linear_x = 0.0;
+				return;
+			}
+
+			if(msg.ranges[0] > 5 && msg.ranges[0] < 15)
+			{
+				waiting();
+			}
 			
-			pointtemp.x = this->pose.px + sqrt(8) * cos(this->orientation.angle - (M_PI/4.0));
-			pointtemp.y = this->pose.py + sqrt(8) * sin(this->orientation.angle - (M_PI/4.0));
-			temp_queue.push(pointtemp);
-
-			pointtemp.x = pointtemp.x + sqrt(8) * cos(this->orientation.angle + (M_PI/4.0));
-			pointtemp.y = pointtemp.y + sqrt(8) * sin(this->orientation.angle + (M_PI/4.0));
-			temp_queue.push(pointtemp);
-
-			ROS_INFO("/message/FIRST POINT X: %f, Y: %f", pointtemp.x, pointtemp.y);
-
-			while(!action_queue.empty())
+			if(msg.ranges[0] < 5 && msg.ranges[0] < 15)
 			{
-				temp_queue.push(action_queue.front());
-				action_queue.pop();
+				startTour();
 			}
-
-			while(!temp_queue.empty())
-			{
-				action_queue.push(temp_queue.front());
-				temp_queue.pop();
-			}
-
-			this->queueDuplicate = false;
 		}
 	}
 }
@@ -285,6 +323,36 @@ void Visitor::doRouteSetup()
 		action_queue.push(end_low);
 	}
 	
+}
+
+void Visitor::waiting()
+{
+	this->waitingInLine = true;
+	this->speed.linear_x = 0.0;
+	this->speed.angular_z = 0.0;
+
+}
+
+void Visitor::startTour()
+{
+	this->tourStarted = true;
+	this->waitingInLine = false;
+	this->speed.linear_x = 2.0;
+}
+
+bool Visitor::insideFarm()
+{
+	if(this->pose.px > 50.0 || this->pose.px < -50.0)
+	{
+		return false;
+	}
+	
+	if(this->pose.py > 50.0 || this->pose.py < -50.0)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void Visitor::move(){}
