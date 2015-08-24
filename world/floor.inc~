@@ -1,7 +1,0 @@
-define field model
-(
-  color "brown"
-  size [120 120 0.1]
-
-
-)
