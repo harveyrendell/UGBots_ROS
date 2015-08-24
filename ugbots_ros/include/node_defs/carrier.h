@@ -6,6 +6,9 @@
 #include <sensor_msgs/LaserScan.h>
 #include <ugbots_ros/bin_status.h>
 
+#include <ugbots_ros/robot_details.h>
+#include <ugbots_ros/Position.h>
+
 #include <sstream>
 #include <stdlib.h>
 #include <node.h>
@@ -16,7 +19,6 @@ public:
 	bool moving;
 	bool undergoing_task;
 
-
 	bool x_completed;
 	bool x_started;
 	bool y_completed;
@@ -24,6 +26,12 @@ public:
 
 	double zero_angle;
 	double temprad;
+
+	bool idle_status_sent;
+	ros::Subscriber sub_ground;
+	ros::Subscriber sub_bin;
+	ros::Publisher core_alert;
+	ugbots_ros::robot_details robotDetails;
 
 	ros::Subscriber carrier_alert;
 	ros::Publisher carrier_alert_pub;
@@ -34,6 +42,9 @@ public:
 
 	Carrier();
 	Carrier(ros::NodeHandle &n);
+
+	void ground_callback(nav_msgs::Odometry msg);
+	void bin_loc_callback(ugbots_ros::Position pos);
 
 	void bin_callback(ugbots_ros::bin_status msg);
 	void odom_callback(nav_msgs::Odometry msg);

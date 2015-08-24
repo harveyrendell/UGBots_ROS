@@ -22,6 +22,8 @@ Carrier::Carrier()
 	moving = false;
 	undergoing_task = false;
 
+	idle_status_sent = false;
+
 	temprad = 0.0;
 }
 
@@ -40,6 +42,14 @@ Carrier::Carrier(ros::NodeHandle &n)
 	x_started = false;
 	y_completed = false;
 	x_started = false;
+
+	idle_status_sent = false;
+	std::string ns = n.getNamespace();
+	ns.erase(ns.begin());
+	robotDetails.ns = ns;
+
+	core_alert = n.advertise<ugbots_ros::robot_details>("/idle_carriers",1000);
+	sub_bin = n.subscribe<ugbots_ros::Position>("bin", 1000, &Carrier::bin_loc_callback, this);
 
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_1/cmd_vel",1000);
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_1/base_pose_ground_truth",1000, &Carrier::odom_callback, this);
@@ -93,6 +103,13 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 	orientation.rotz = msg.pose.pose.orientation.z;
 	orientation.rotw = msg.pose.pose.orientation.w;
 
+	if (state == IDLE && !idle_status_sent) 
+	{
+		robotDetails.x = pose.px;
+		robotDetails.y = pose.py;
+		core_alert.publish(robotDetails);
+		idle_status_sent = true;
+	}
 
 	//orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
 	//orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
@@ -129,8 +146,10 @@ void Carrier::laser_callback(sensor_msgs::LaserScan msg)
 	//you can access the range data from msg.ranges[i]. i = sample number	
 }
 
+void Carrier::bin_loc_callback(ugbots_ros::Position pos)
+{
 
-
+}
 
 
 void Carrier::move_forward(double distance)
