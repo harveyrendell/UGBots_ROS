@@ -22,6 +22,12 @@ public:
 	ros::Publisher carrier_alert;
 	ugbots_ros::bin_status binStatus;
 
+	geometry_msgs::Point point;
+
+	double queueDuplicate;
+	double queueDuplicateCheckAngle;
+
+
 	Picker();
 	Picker(ros::NodeHandle &n);
 	void odom_callback(nav_msgs::Odometry msg);

@@ -18,13 +18,6 @@ Possum::Possum()
 	this->speed.max_linear_x = 3.0;
 	this->speed.angular_z = 0.0;
 
-	this->orientation.previous_right_distance = 0;
-	this->orientation.previous_left_distance = 0;
-	this->orientation.previous_front_distance = 0;
-	this->orientation.angle = 0;
-	this->orientation.desired_angle = M_PI;
-	this->orientation.currently_turning = false;
-
 }
 
 Possum::Possum(ros::NodeHandle &n)
@@ -38,6 +31,7 @@ Possum::Possum(ros::NodeHandle &n)
 	this->speed.linear_x = 0.0;
 	this->speed.max_linear_x = 3.0;
 	this->speed.angular_z = 0.0;
+	this->orientation.currently_turning = false;
 
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Possum::odom_callback, this);

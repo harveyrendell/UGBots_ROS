@@ -51,6 +51,8 @@ Visitor::Visitor(ros::NodeHandle &n)
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Visitor::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Visitor::laser_callback, this);
+	
+	this->sub_row = n.subscribe<ugbots_ros::Position>("/row_loc",1000,&Visitor::core_callback, this);
 
 	init_route();
 
@@ -79,7 +81,7 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 	publish();
 
-
+	ROS_INFO("LIST SIZE %d", this->beacon_points.size());
 
 	//ROS_INFO("LINEAR SPEED: %f", this->speed.linear_x);
 	//ROS_INFO("ANGULAR SPEED: %f", this->speed.angular_z);
@@ -91,9 +93,9 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 	//checkStaticTurningStatus();
 
-	ROS_INFO("/position/x/%f",action_queue.front().x);
-	ROS_INFO("/position/y/%f",action_queue.front().y);
-	ROS_INFO("/status/TEMP/./");
+	//ROS_INFO("/position/x/%f",action_queue.front().x);
+	//ROS_INFO("/position/y/%f",action_queue.front().y);
+	//ROS_INFO("/status/TEMP/./");
 	/*
 	//ROS_INFO("ANGLE: %f",this->orientation.angle);
 	//ROS_INFO("DESIRED ANGLE: %f", this->orientation.desired_angle);
@@ -134,23 +136,6 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 			pointtemp.y = pointtemp.y + 2 * sin(this->orientation.angle + (M_PI/2.0));
 			temp_queue.push(pointtemp);
 
-			/*
-				pointtemp.x = this->pose.px; 
-				pointtemp.y = this->pose.py + 1.1;
-
-				temp_queue.push(pointtemp);
-
-				pointtemp.x = this->pose.px - 4.0; 
-				pointtemp.y = this->pose.py + 1.1;
-
-				temp_queue.push(pointtemp);
-
-				pointtemp.x = this->pose.px - 4.0; 
-				pointtemp.y = this->pose.py;
-
-				temp_queue.push(pointtemp);
-			**/
-
 			while(!action_queue.empty())
 			{
 				temp_queue.push(action_queue.front());
@@ -166,6 +151,16 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 			this->queueDuplicate = false;
 		}
 	}
+}
+
+void Visitor::core_callback(ugbots_ros::Position msg)
+{
+	geometry_msgs::Point pointtemp;
+	pointtemp.x = msg.x; 
+	pointtemp.y = msg.y;
+
+	this->beacon_points.push_back(pointtemp);
+	//ROS_INFO("/position/x/%f, /position/y/%f",msg.x,msg.y);
 }
 
 	/*if(msg.ranges[90] < 2.0 && msg.ranges[0] < 8.0)

@@ -16,7 +16,7 @@ public:
 	{
 		//messages to stage
 		node_cmdvel.linear.x = speed.linear_x;
-		node_cmdvel.linear.y = 3.0;
+		node_cmdvel.linear.y = speed.linear_y;
 		node_cmdvel.angular.z = speed.angular_z;
 		//publish the message
 		sub_list.node_stage_pub.publish(node_cmdvel);
@@ -35,32 +35,15 @@ public:
 		this->orientation.currently_turning = true;
 		this->orientation.desired_angle = this->orientation.desired_angle + angle;
 		double angle_difference = fabs(this->orientation.desired_angle - this->orientation.angle);
-		this->speed.angular_z = angular;
-		if(angle_difference < M_PI/20)
-		{
-			this->speed.angular_z = angular = M_PI/300;
-		}
-		doAngleCheck();
-		if(((this->orientation.desired_angle - this->orientation.angle) > 0) && !this->orientation.currently_turning)
-		{
-			ROS_INFO("clockwise");
-			if (angular > 0)
-			{
-				this->speed.angular_z = angular = -1.0 * angular;
-			}
-		}
-		else if(((this->orientation.desired_angle - this->orientation.angle) < 0) && !this->orientation.currently_turning)
-		{
-			ROS_INFO("anti-clockwise");
-			if (angular < 0)
-			{
-				this->speed.angular_z = angular = -1.0 * angular;
-			}
-		}
-
-		this->speed.linear_x = linear;
 		
-		this->orientation.currently_turning = true;
+		/*if(angle_difference < M_PI/10)
+		{
+			angular = M_PI/1800;
+		}**/
+
+		doAngleCheck();
+		this->speed.angular_z = angular;
+		this->speed.linear_x = linear;
 	}
 	bool begin_action_shortest_path(double speed)
 	{
@@ -80,6 +63,8 @@ public:
 		double angle = atan2((end_point.y - pose.py),(end_point.x - pose.px));
 
 		turn(angle - this->orientation.desired_angle , 0.0, M_PI/2);
+		ROS_INFO("DESIRED ANGLE: %f", this->orientation.desired_angle);
+		ROS_INFO("ANGLE: %f", this->orientation.angle);
 		checkTurningStatus();
 		if(!orientation.currently_turning)
 		{
@@ -121,7 +106,6 @@ public:
 		{	
 			if(doubleComparator(orientation.angle, orientation.desired_angle))
 			{
-				ROS_INFO("CHECKTURNING STATUS IF STATEMENT ENTERED");
 				this->orientation.currently_turning = false;
 				this->speed.linear_x = 3.0;
 				this->speed.angular_z = 0.0; 
@@ -139,7 +123,8 @@ public:
 
 	bool move_x(double distance, double speed) {
 		double distance_x = distance - pose.px;
-		if (fabs(distance_x) < 0.001) {
+		if (fabs(distance_x) < M_PI/18000) {
+			ROS_INFO("X DONE");
 			stop();
 			return true;
 		}
@@ -158,7 +143,7 @@ public:
 			this->speed.linear_x = speed;
 			if (fabs(distance_x) < 0.5)
 			{
-				ROS_INFO("slow down x");
+				//ROS_INFO("slow down x");
 				this->speed.linear_x = fabs(distance_x);
 			}
 		}
@@ -167,7 +152,8 @@ public:
 
 	bool move_y(double distance, double speed) {
 		double distance_y = distance - pose.py;
-		if (fabs(distance_y) < 0.001) {
+		if (fabs(distance_y) < M_PI/18000) {
+			ROS_INFO("Y DONE");
 			stop();
 			return true;
 		}
@@ -186,7 +172,7 @@ public:
 			this->speed.linear_x = speed;
 			if (fabs(distance_y) < 0.5)
 			{
-				ROS_INFO("slow down x");
+				//ROS_INFO("slow down x");
 				this->speed.linear_x = fabs(distance_y);
 			}
 		}
@@ -205,6 +191,8 @@ public:
 		geometry_msgs::Point end_point = action_queue.front();
 		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 		{
+			ROS_INFO("xdest: %f", end_point.x);
+			ROS_INFO("ydest: %f", end_point.y);
 			action_queue.pop();
 			stop();
 			return true;
@@ -222,7 +210,7 @@ public:
 
 	bool doubleComparator(double a, double b)
 	{
-	    return fabs(a - b) < M_PI/3000;
+	    return fabs(a - b) < M_PI/18000;
 	}
 
 
@@ -235,6 +223,9 @@ public:
 
 	//Queue of the Actions
 	std::queue<geometry_msgs::Point> action_queue;
+
+	//Beacon points
+	std::list<geometry_msgs::Point> beacon_points;
 
 	//NodeHandle for the node
 	//ros::NodeHandle n;
