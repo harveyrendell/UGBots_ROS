@@ -8,6 +8,7 @@ dog=$5
 cat=$6
 possum=$7
 tractor=$8
+kiwitree=$9
 
 mkdir -p world/config
 
@@ -16,6 +17,8 @@ rm world/config/robotinstances.inc
 rm world/config/peopleinstances.inc
 rm world/config/animalinstances.inc
 rm world/config/tractorinstances.inc
+rm world/config/treeinstances.inc
+rm world/config/beaconinstances.inc
 
 echo  \<launch\> > ugbots_ros/launch/world.launch
 echo include \"models\/robots.inc\" >> world/config/robotinstances.inc
@@ -25,7 +28,8 @@ echo include \"models\/cats.inc\" >> world/config/animalinstances.inc
 echo include \"models\/possums.inc\" >> world/config/animalinstances.inc
 echo include \"models\/visitors.inc\" >> world/config/peopleinstances.inc
 echo include \"models\/tractors.inc\" >> world/config/tractorinstances.inc
-
+echo include \"models\/kiwirow.inc\" >> world/config/treeinstances.inc
+echo include \"models\/beaconcore.inc\" >> world/config/beaconinstances.inc
 
 number=0
 beacon=15
@@ -40,6 +44,9 @@ po=0
 t=0
 rand=0
 rand2=0
+tree=0
+treenum=0
+z=0
 
 #Creating Core Unit
 echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
@@ -60,7 +67,7 @@ echo \<\/group\> >> ugbots_ros\/launch\/world.launch
 number=$(($number+1))
 done
 
-
+#creating picker robots
 while [ $i -lt $picker ];
 do
 
@@ -75,6 +82,7 @@ number=$(($number+1))
 
 done
 
+#creating carrier robots
 while [ $j -lt $carrier ];
 do
 
@@ -89,6 +97,7 @@ number=$(($number+1))
 
 done
 
+#creating worker nodes
 while [ $w -lt $worker ];
 do
 
@@ -122,6 +131,7 @@ done
 visitorx=50
 visitory=-47.5
 
+#creating visitor nodes
 while [ $v -lt $visitor ];
 do
 
@@ -140,6 +150,7 @@ visitorx=$(($rand+5))
 
 done
 
+#creating dogs
 while [ $d -lt $dog ];
 do
 
@@ -170,6 +181,7 @@ number=$(($number+1))
 
 done
 
+#creating possums
 while [ $po -lt $possum ];
 do
 
@@ -201,6 +213,7 @@ number=$(($number+1))
 
 done
 
+#creating tractors
 while [ $t -lt $tractor ];
 do
 
@@ -229,5 +242,50 @@ t=$(($t+1))
 number=$(($number+1))
 
 done
+
+#generating kiwifruit rows
+
+echo point\( pose [ 0 49 0 0 ] name \"V0\" color \"purple\" \) >> world/config/beaconinstances.inc
+
+if (( $kiwitree % 2 )); then
+    echo rows \(pose [ 0 -35 -1.002 0 ]\) >> world/config/treeinstances.inc
+    treenum=$(($treenum+1))
+    tree=$(($tree+1))
+    while [ $tree -lt $kiwitree ];
+    do
+        left=$(echo "scale=2; 0-$treenum*3.5" | bc)
+        right=$(echo "scale=2; 0+$treenum*3.5" | bc)
+        echo rows \(pose [ $left -35 -1.002 0 ]\) >> world/config/treeinstances.inc
+        echo rows \(pose [ $right -35 -1.002 0 ]\) >> world/config/treeinstances.inc
+
+        bleft=$(echo "scale=2; -1.75-$z*3.5" | bc)
+        bright=$(echo "scale=2; 1.75+$z*3.5" | bc)
+        echo point\( pose [ $bleft 38 0 0 ] name \"V0\" color \"yellow\" \) >> world/config/beaconinstances.inc
+        echo point\( pose [ $bright 38 0 0 ] name \"V0\" color \"yellow\" \) >> world/config/beaconinstances.inc
+        echo point\( pose [ $bleft -38 0 0 ] name \"V0\" color \"yellow\" \) >> world/config/beaconinstances.inc
+        echo point\( pose [ $bright -38 0 0 ] name \"V0\" color \"yellow\" \) >> world/config/beaconinstances.inc
+        tree=$(($tree+2))
+        treenum=$(($treenum+1))
+        z=$(($z+1))
+    done
+elif ! (( $kiwitree % 2 )); then
+    while [ $tree -lt $kiwitree ];
+    do
+        left=$(echo "scale=2; -1.75-$treenum*3.5" | bc)
+        right=$(echo "scale=2; 1.75+$treenum*3.5" | bc)
+        echo rows \(pose [ $left -35 -1.002 0 ]\) >> world/config/treeinstances.inc
+        echo rows \(pose [ $right -35 -1.002 0 ]\) >> world/config/treeinstances.inc
+
+        bleft=$(echo "scale=2; 0-$z*3.5" | bc)
+        bright=$(echo "scale=2; 0+$z*3.5" | bc)
+        echo point\( pose [ $bleft 38 0 0 ] name \"V0\" color \"yellow\" \) >> world/config/beaconinstances.inc
+        echo point\( pose [ $bright 38 0 0 ] name \"V0\" color \"yellow\" \) >> world/config/beaconinstances.inc
+        echo point\( pose [ $bleft -38 0 0 ] name \"V0\" color \"yellow\" \) >> world/config/beaconinstances.inc
+        echo point\( pose [ $bright -38 0 0 ] name \"V0\" color \"yellow\" \) >> world/config/beaconinstances.inc
+        tree=$(($tree+2))
+        treenum=$(($treenum+1))
+        z=$(($z+1))
+    done
+fi
 
 echo  \<\/launch\> >> ugbots_ros/launch/world.launch
