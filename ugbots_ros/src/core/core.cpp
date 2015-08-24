@@ -214,16 +214,26 @@ public:
 			Row current = *row;
 			//for only the rows that are unassigned
 			if (current.status == Row::UNASSIGNED) {
-				//set the target point as the start of the row
-				Point p = current.start_point;
+				//have both start and end point as valid start points
+				Point p;
+				int i;
+				Point ps = current.start_point;
+				Point pe = current.end_point;
 				ugbots_ros::Position station;
-				station.x = p.x;
-				station.y = p.y;
 				//get index for the closest robot
-				int i = getClosestPicker(p);
+				int a = getClosestPicker(ps);
+				int b = getClosestPicker(pe);
 				//when none exists, break out
-				if (i < 0) {
+				if (a < 0 || b < 0) {
 					break;
+				}
+				//select the start point with the closest distance
+				if (a < b) {
+					i = a;
+					p = ps;
+				} else {
+					i = b;
+					p = pe;
 				}
 				//set up the publishing topic
 				std::string topic = idlePickers[i].ns + "/station";
