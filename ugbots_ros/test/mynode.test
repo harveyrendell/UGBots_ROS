@@ -1,4 +1,0 @@
-<launch>
-  <node pkg="ugbots_ros" type="unit_tests" name="mynode" />
-  <test test-name="test_mynode" pkg="ugbots_ros" type="unit_tests" />
-</launch>
