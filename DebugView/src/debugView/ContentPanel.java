@@ -23,11 +23,12 @@ public class ContentPanel extends JPanel {
 	private ROSinit _top = new ROSinit();
 	private JButton _startButton = new JButton("Start");
 	private JButton _finishButton = new JButton("Finish");
+	private JButton _rosmake = new JButton("Compile");
+	private JButton _runTests = new JButton("Run Tests");
 	private JScrollPane _debug = new JScrollPane();
 	private JPanel _infoWrapper = new JPanel();
 	private HashMap<String, infoPanel> _map = new HashMap<String, infoPanel>();
-	private ContentPanel _self = this;
-	private Processes processes;
+	private Processes processes= new Processes(this, _top.getVals());
 	
 	public ContentPanel() {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -41,12 +42,15 @@ public class ContentPanel extends JPanel {
 		
 		JPanel panel = new JPanel();
 		panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		panel.add(_runTests);
+		panel.add(_rosmake);
 		panel.add(_startButton);
 		panel.add(_finishButton);
 		panel.add(new JSeparator());
 		panel.setMaximumSize(new Dimension(900, 30));
 		_infoWrapper.setLayout(new GridLayout(0,2,0,0));
 		_debug.setViewportView(_infoWrapper);
+		_debug.getVerticalScrollBar().setUnitIncrement(20);
 		
 		this.add(_top);
 		this.add(panel);
@@ -55,13 +59,14 @@ public class ContentPanel extends JPanel {
 	
 	private void createLabels(){
 		String[] names = {"Picker","Carrier","Worker","Visitor","Dog","Cat","Possum","Tractor"};
+		String[] code = {"P","C","W","V","D","C","PO","T",};
 		int vals[] = _top.getVals();
-		int k = 0;
+		int k = 15;
 		String name = "robot_";
 		
 		for (int i = 0; i < vals.length; i++){
 			for (int j = 0; j <vals[i]; j++){
-				infoPanel panel = new infoPanel(name + k, names[i]);
+				infoPanel panel = new infoPanel(name + k, names[i] + "-" + code[i] + j);
 				panel.setMinimumSize(new Dimension(900, 200));
 				_map.put(name + k, panel);
 				k++;
@@ -72,7 +77,7 @@ public class ContentPanel extends JPanel {
 	private void paint(){
 		String name = "robot_";
 		
-		for (int i =0; i< _map.size(); i++){
+		for (int i =15; i < _map.size() + 15; i++){
 			_infoWrapper.add(_map.get(name + i));
 		}
 		
@@ -87,9 +92,8 @@ public class ContentPanel extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				processes = new Processes(_self, _top.getVals());
+				processes.update(_top.getVals());
 				_infoWrapper.removeAll();
-				_map.clear();
 				_top.disableAll();
 				_startButton.setVisible(false);
 				_finishButton.setVisible(true);
@@ -109,10 +113,33 @@ public class ContentPanel extends JPanel {
 				_finishButton.setVisible(false);
 				_startButton.setVisible(true);
 				_top.enableAll();
-
+				
+				_map.clear();
 				processes.killProcs();
 			}
-			
+		});
+		
+		_runTests.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				processes.runTests();
+			}
+		});
+		
+		_rosmake.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				processes.rosmake();
+			}
 		});
 	}
+
+	public void killProcs() {
+		if (processes != null){
+			processes.killProcs();
+		}
+	}
+	
 }
