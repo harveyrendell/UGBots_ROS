@@ -2,7 +2,7 @@
 #include <node_structs/pose.h>
 #include <node_structs/subscriber_list.h>
 #include <node_structs/orientation.h>
-#include <queue> 
+#include <queue>
 
 class Node
 {
@@ -20,15 +20,6 @@ public:
 		//publish the message
 		sub_list.node_stage_pub.publish(node_cmdvel);
 	}
-
-	/*void turn(double angle, double linear, double angular)
-	{
-<<<<<<< HEAD
-		this->orientation.currently_turning = true;
-		this->orientation.desired_angle = this->orientation.desired_angle + angle;
-		this->speed.linear_x = linear;
-		this->speed.angular_z = angular;
-	}*/
 
 	void turn(double angle, double linear, double angular)
 	{

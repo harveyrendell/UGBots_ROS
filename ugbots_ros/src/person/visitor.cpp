@@ -23,8 +23,6 @@ Visitor::Visitor()
 
 Visitor::Visitor(ros::NodeHandle &n)
 {
-	//this->n = n;
-
 	//setting base attribute defaults
 	this->pose.theta = M_PI/2.0;
 	this->pose.px = -40;
