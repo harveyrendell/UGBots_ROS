@@ -236,9 +236,6 @@ public:
 	//Queue of the Actions
 	std::queue<geometry_msgs::Point> action_queue;
 
-	//Beacon points
-	std::list<geometry_msgs::Point> beacon_points;
-
 	//NodeHandle for the node
 	//ros::NodeHandle n;
 
