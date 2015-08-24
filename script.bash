@@ -1,13 +1,13 @@
 #!/bin/bash
 
-
 picker=$1
 carrier=$2
 worker=$3
 visitor=$4
 dog=$5
-possum=$6
-cat=$7
+cat=$6
+possum=$7
+tractor=$8
 
 mkdir -p world/config
 
@@ -15,15 +15,20 @@ rm ugbots_ros/launch/world.launch
 rm world/config/robotinstances.inc
 rm world/config/peopleinstances.inc
 rm world/config/animalinstances.inc
+rm world/config/tractorinstances.inc
 
 echo  \<launch\> > ugbots_ros/launch/world.launch
-echo include \"models\/robots.inc\" > world/config/robotinstances.inc
-echo include \"models\/workers.inc\" > world/config/peopleinstances.inc
-echo include \"models\/dogs.inc\" > world/config/animalinstances.inc
+echo include \"models\/robots.inc\" >> world/config/robotinstances.inc
+echo include \"models\/workers.inc\" >> world/config/peopleinstances.inc
+echo include \"models\/dogs.inc\" >> world/config/animalinstances.inc
+echo include \"models\/cats.inc\" >> world/config/animalinstances.inc
 echo include \"models\/possums.inc\" >> world/config/animalinstances.inc
 echo include \"models\/visitors.inc\" >> world/config/peopleinstances.inc
-echo include \"models\/cats.inc\" >> world/config/animalinstances.inc
+echo include \"models\/tractors.inc\" >> world/config/tractorinstances.inc
 
+
+number=0
+beacon=15
 i=0
 j=0
 w=0
@@ -33,32 +38,54 @@ d=0
 c=0
 po=0
 t=0
-ca=0
+rand=0
+rand2=0
+
+#Creating Core Unit
+echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
+echo \<node pkg=\"ugbots_ros\" name=\"core\" type=\"CORE\"\/\> >> ugbots_ros\/launch\/world.launch 
+echo \<\/group\> >> ugbots_ros\/launch\/world.launch
+
+number=$(($number+1))
+
+#creating Beacons
+while [ $number -lt $beacon ];
+do
+
+echo
+echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
+echo \<node pkg=\"ugbots_ros\" name=\"beacons\" type=\"BEACON\"\/\> >> ugbots_ros\/launch\/world.launch 
+echo \<\/group\> >> ugbots_ros\/launch\/world.launch
+
+number=$(($number+1))
+done
+
 
 while [ $i -lt $picker ];
 do
 
-echo \<group ns=\"robot_$i\"\> >> ugbots_ros\/launch\/world.launch
+echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"robotnode\" type=\"PICKER\"\/\> >> ugbots_ros\/launch\/world.launch 
 echo \<\/group\> >> ugbots_ros\/launch\/world.launch
 
-echo pickerRobot\(pose [ -48 $((48-$(($i * 5)))) 0 90 ]\ name \"R$i\" color \"red\"\) >> world/config/robotinstances.inc
+echo pickerRobot\(pose [ -48 $((48-$(($i * 5)))) 0 90 ]\ name \"P$i\" color \"red\"\) >> world/config/robotinstances.inc
 
 i=$(($i+1))
+number=$(($number+1))
 
 done
 
 while [ $j -lt $carrier ];
 do
 
-echo \<group ns=\"robot_$i\"\> >> ugbots_ros\/launch\/world.launch
+echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"robotnode\" type=\"CARRIER\"\/\> >> ugbots_ros\/launch\/world.launch
 echo \<\/group\> >> ugbots_ros\/launch\/world.launch
 
-echo carrierRobot\(pose [ -46 $((48-$(($j*5)))) 0 90 ] name \"R$i\" color \"blue\"\) >> world/config/robotinstances.inc
+echo carrierRobot\(pose [ -46 $((48-$(($j*5)))) 0 90 ] name \"C$j\" color \"blue\"\) >> world/config/robotinstances.inc
 
 j=$(($j+1))
-i=$(($i+1))
+number=$(($number+1))
 
 done
 
@@ -81,26 +108,35 @@ else
     rand2=$(( (RANDOM % 99) - 48 )) 
 fi
 
-echo \<group ns=\"robot_$i\"\> >> ugbots_ros/launch/world.launch
+echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"workernode\" type=\"WORKER\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
-echo worker\(pose [ $rand $rand2 0 0 ] name \"W$w\" \) >> world/config/peopleinstances.inc
+#echo worker\(pose [ 0 $((1+$(($w * 2)))) 0 0 ] name \"W$w\" color \"black\" \) >> world/config/peopleinstances.inc
+echo worker\(pose [ $rand $rand2 0 0 ] name \"W$w\" color \"black\" \) >> world/config/peopleinstances.inc
 w=$(($w+1))
-i=$(($i+1))
+number=$(($number+1))
 
 done
+
+visitorx=50
+visitory=-47.5
 
 while [ $v -lt $visitor ];
 do
 
-echo \<group ns=\"robot_$i\"\> >> ugbots_ros/launch/world.launch 
+rand=$visitorx
+rand2=$visitory
+
+echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch #### WORKER-> VISITOR
 echo \<node pkg=\"ugbots_ros\" name=\"visitornode\" type=\"VISITOR\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
-echo visitor\(pose [ 48 $((48-$(($v*2)))) 0 0 ] name \"V$v\" \) >> world/config/peopleinstances.inc
+#echo visitor\(pose [ 3.5 $((1+$(($v * 2)))) 0 0 ] name \"V$v\" color \"pink\" \) >> world/config/peopleinstances.inc
+echo visitor\(pose [ $rand $rand2 0 180 ] origin [ 0 0 0 270 ] name \"V$v\" color \"pink\" \) >> world/config/peopleinstances.inc
 v=$(($v+1))
-i=$(($i+1))
+number=$(($number+1))
+visitorx=$(($rand+5))
 
 done
 
@@ -123,13 +159,14 @@ else
     rand2=$(( (RANDOM % 99) - 48 )) 
 fi 
 
-echo \<group ns=\"robot_$i\"\> >> ugbots_ros/launch/world.launch
+echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"dognode\" type=\"DOG\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
-echo dog\( pose [ $rand $rand2 0 0 ] name \"D$d\" \) >> world/config/animalinstances.inc
+#echo dog\( pose [ 0 $((-1-$(($d * 2)))) 0 0 ] name \"D$d\" color \"brown\" \) >> world/config/animalinstances.inc
+echo dog\( pose [ $rand $rand2 0 0 ] name \"D$d\" color \"brown\" \) >> world/config/animalinstances.inc
 d=$(($d+1))
-i=$(($i+1))
+number=$(($number+1))
 
 done
 
@@ -152,18 +189,19 @@ else
     rand2=$(( (RANDOM % 99) - 48 )) 
 fi
 
-echo \<group ns=\"robot_$i\"\> >> ugbots_ros/launch/world.launch 
+echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch #### DOG -> POSSUM
 echo \<node pkg=\"ugbots_ros\" name=\"possumnode\" type=\"POSSUM\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
-echo possum\( pose [ $rand $rand2 0 0 ] name \"P$po\" color \"black\" \) >> world/config/animalinstances.inc
+#echo possum\( pose [ 3.5 $((-1-$(($c * 2)))) 0 0 ] name \"P$po\" color \"purple\" \) >> world/config/animalinstances.inc
+echo possum\( pose [ $rand $rand2 0 0 ] name \"PO$po\" color \"purple\" \) >> world/config/animalinstances.inc
 
 po=$(($po+1))
-i=$(($i+1))
+number=$(($number+1))
 
 done
 
-while [ $ca -lt $cat ];
+while [ $t -lt $tractor ];
 do
 
 rand=$(( (RANDOM % 97) - 46 )) 
@@ -182,13 +220,13 @@ else
     rand2=$(( (RANDOM % 99) - 48 )) 
 fi
 
-echo \<group ns=\"robot_$i\"\> >> ugbots_ros/launch/world.launch
-echo \<node pkg=\"ugbots_ros\" name=\"tractornode\" type=\"CAT\"\/\> >> ugbots_ros/launch/world.launch 
+echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch
+echo \<node pkg=\"ugbots_ros\" name=\"tractornode\" type=\"TRACTOR\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
-echo \c\a\t\( pose [ $rand $rand2 0 0 ] name \"C$ca\" \) >> world/config/animalinstances.inc
-ca=$(($ca+1))
-i=$(($i+1))
+echo tractor\( pose [ $rand $rand2 0 0 ] name \"T$t\" color \"brown\" \) >> world/config/tractorinstances.inc
+t=$(($t+1))
+number=$(($number+1))
 
 done
 
