@@ -80,8 +80,11 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 	doAngleCheck();		
 
 	checkTurningStatus();
-
-	doRouteSetup();
+	
+	if(!tourStarted)
+	{
+		doRouteSetup();
+	}
 
 	publish();
 
@@ -119,7 +122,7 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 		}
 		
 
-		for(int i=85; i<96; i++)//if(msg.ranges[90] < 2.0 ||)
+		for(int i=88; i<93; i++)//if(msg.ranges[90] < 2.0 ||)
 		{
 			if(msg.ranges[i] < 2.0)
 			{
@@ -180,9 +183,17 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 				waiting();
 			}
 			
-			if(msg.ranges[0] < 5 && msg.ranges[0] < 15)
+			if(msg.ranges[0] < 4.5)
 			{
 				startTour();
+			}
+		}
+		else
+		{
+			if(msg.ranges[90] < 2)
+			{
+				waitingInLine = true;
+				stop();
 			}
 		}
 	}
@@ -321,6 +332,18 @@ void Visitor::doRouteSetup()
 		action_queue.push(begin_high);
 		action_queue.push(end_high);
 		action_queue.push(end_low);
+
+		geometry_msgs::Point exitRoute;
+		exitRoute.x = 52.0;
+		exitRoute.y = -46.0;
+
+		action_queue.push(exitRoute);
+
+		exitRoute.x = 52.0;
+		exitRoute.y = -15.0;
+
+		action_queue.push(exitRoute);
+
 	}
 	
 }
@@ -356,7 +379,12 @@ bool Visitor::insideFarm()
 }
 
 void Visitor::move(){}
-void Visitor::stop(){}
+
+void Visitor::stop(){
+	this->speed.linear_x = 0.0;
+	this->speed.angular_z = 0.0;
+}
+
 void Visitor::turnLeft(){}
 void Visitor::turnRight(){}
 void Visitor::collisionDetected(){}
