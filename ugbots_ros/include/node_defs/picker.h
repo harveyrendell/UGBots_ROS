@@ -5,6 +5,9 @@
 #include <sensor_msgs/LaserScan.h>
 #include <ugbots_ros/bin_status.h>
 
+#include <ugbots_ros/Position.h>
+#include <ugbots_ros/robot_details.h>
+
 #include <sstream>
 #include <stdlib.h>
 #include <node.h>
@@ -18,6 +21,15 @@ public:
 	double station_x;
 	double station_y;
 	double zero_angle;
+
+	bool idle_status_sent;
+
+	ros::Publisher core_alert;
+	ros::Publisher bin_alert;
+	ros::Subscriber sub_station;
+	ugbots_ros::robot_details robotDetails;
+
+	void station_callback(ugbots_ros::Position pos);
 
 	ros::Publisher carrier_alert;
 	ugbots_ros::bin_status binStatus;
