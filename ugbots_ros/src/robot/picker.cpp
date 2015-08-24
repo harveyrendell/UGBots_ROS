@@ -42,9 +42,9 @@ Picker::Picker(ros::NodeHandle &n)
 	queueDuplicateCheckAngle = 0.0;
 	queueDuplicate = true;
 
-	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_15/cmd_vel",1000);
-	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_15/base_pose_ground_truth",1000, &Picker::odom_callback, this);
-	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_15/base_scan",1000,&Picker::laser_callback, this);
+	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Picker::odom_callback, this);
+	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
 	carrier_alert = n.advertise<ugbots_ros::bin_status>("/alert",1000);
 
 	
@@ -96,10 +96,10 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	if(action_queue.empty())
 	{
 		point.y = 38.0;
-		point.x = -10.5;
+		point.x = 10.5;
 		action_queue.push(point);
 		point.y = -38.0;
-		point.x = -10.5;
+		point.x = 10.5;
 		action_queue.push(point);
 	}
 
@@ -141,6 +141,7 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 	{
 		if(msg.ranges[i] < 2.0)
 		{
+			state = AVOIDING;
 			if(this->queueDuplicate && !this->orientation.currently_turning)
 			{
 				this->queueDuplicateCheckAngle = this->orientation.angle;
