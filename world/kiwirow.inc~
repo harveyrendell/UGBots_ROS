@@ -3,7 +3,7 @@ include "post.inc"
 
 define rows model
 (
-  tree (pose [0 0 0 0])
+  #tree (pose [0 0 0 0])
   post (pose [0 2.5 0 0])
   tree (pose [0 5 0 0])
   post (pose [0 7.5 0 0])

@@ -1,0 +1,37 @@
+include "worldinstances.inc"
+include "./config/robotinstances.inc"
+include "./config/workerinstances.inc"
+include "./config/animalinstances.inc"
+include "floor.inc"
+
+define floorplan model
+(
+  # sombre, sensible, artistic
+  color "brown"
+
+  # most maps will need a bounding box
+  boundary 1
+  ranger_return 1.000
+  laser_return 1
+)
+
+# set the resolution of the underlying raytrace model in meters
+
+resolution 0.02 #resolution of the underline bitmap model in meters. 
+
+interval_sim 100  # simulation timestep in milliseconds. length of each simulation update cycle.
+
+window
+( 
+  size [ 1000 700 ] #size of the window in pixels
+  scale 575.830 
+)
+
+# load an environment bitmap
+floorplan
+( 
+  name "swarm"
+  bitmap "swarm_world.pgm"
+  size [50.000 50.000 0.500]
+  pose [ 0.000 0.000 0.000 0.000 ]
+)

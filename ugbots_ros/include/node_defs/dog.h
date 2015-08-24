@@ -13,24 +13,26 @@ class Dog : public Node
 public:
 	Dog();
 	Dog(ros::NodeHandle &n);
+	enum State { IDLE, WALKING, RUNNING, RANDOMTURN};
+	State state;
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
+	void timerCallback(const ros::TimerEvent& e);
 	void move();
 	void stop();
 	void stopTurn();
+	void turnRandomly();
+	void walk();
+	void run();
 	void turnLeft();
 	void turnRight();
+	void turnBack();
 	void collisionDetected();
-	void calculateOrientation();
-	void doAngleCheck();
+	void checkTurningStatus();
+	void setStatus();
+	State generateStatus();
 
-	enum State { IDLE, ROAMING, AGGRESSIVE, FLEEING };
-	State state;
+	char const* enum_to_string(State t);
 
-	char* enum_to_string(State t);
-
-	bool endOfPath;
-	bool facingRight;
-	bool facingLeft;
 };
 

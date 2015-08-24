@@ -1,4 +1,4 @@
-define workerlaser ranger
+define visitorlaser ranger
 (
   sensor(
   range [ 0.0 30.0 ] # range
@@ -11,13 +11,14 @@ define workerlaser ranger
   
 )
 
-define worker position
+define visitor position
 (
-  size [0.5 0.5 1.8]
+  size [0.5 0.5 1.6]
   drive "diff"
 
   #body
   block(
+    color "pink"
   	points 4
 	point[0] [0.1 0.3]
 	point[1] [0.9 0.3]
@@ -28,6 +29,7 @@ define worker position
 
   #neck
   block(
+    color "white"
 	points 4
 	point[0] [0.4 0.4]
 	point[1] [0.6 0.4]
@@ -38,6 +40,7 @@ define worker position
 
   #head
   block(
+    color "white"
 	points 4
 	point[0] [0.3 0.35]
 	point[1] [0.7 0.35]
@@ -48,6 +51,7 @@ define worker position
 
   #legs
   block(
+    color "black"
 	points 4
 	point[0] [0.25 0.4]
 	point[1] [0.45 0.4]
@@ -57,6 +61,7 @@ define worker position
   )
 
   block(
+    color "black"
 	points 4
 	point[0] [0.55 0.4]
 	point[1] [0.75 0.4]
@@ -67,6 +72,7 @@ define worker position
 
   #arms
   block(
+    color "pink"
 	points 4
 	point[0] [0 0.45]
 	point[1] [0.1 0.45]
@@ -75,6 +81,7 @@ define worker position
 	z [0.7 1.4]
   )
   block(
+    color "pink"
 	points 4
 	point[0] [1 0.45]
 	point[1] [0.9 0.45]
@@ -82,26 +89,6 @@ define worker position
 	point[3] [1 0.55]
 	z [0.7 1.4]
   )
-
-  #hat
-  block(
-	points 4
-	point[0] [0.1 0.3]
-	point[1] [0.9 0.3]
-	point[2] [0.9 0.7]
-	point[3] [0.1 0.7]
-	z [1.7 1.72]
-  )
-
-  block(
-	points 4
-	point[0] [0.3 0.4]
-	point[1] [0.7 0.4]
-	point[2] [0.7 0.6]
-	point[3] [0.3 0.6]
-	z [1.72 1.8]
-  )
-  workerlaser(pose [ 0.050 0.000 0 90.000 ])
+  visitorlaser(pose [ 0.050 0.000 -1 0.000 ])
 )
-
 
