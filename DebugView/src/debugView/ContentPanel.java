@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.util.HashMap;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.BoxLayout;
 import javax.swing.JScrollPane;
@@ -25,6 +26,7 @@ public class ContentPanel extends JPanel {
 	private JButton _finishButton = new JButton("Finish");
 	private JButton _rosmake = new JButton("Compile");
 	private JButton _runTests = new JButton("Run Tests");
+	private JLabel _waitFor = new JLabel("Please wait 5 seconds for roscore to start");
 	private JScrollPane _debug = new JScrollPane();
 	private JPanel _infoWrapper = new JPanel();
 	private HashMap<String, infoPanel> _map = new HashMap<String, infoPanel>();
@@ -32,6 +34,7 @@ public class ContentPanel extends JPanel {
 	
 	public ContentPanel() {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		processes.runRos();
 		
 		addContent();
 		addListeners();
@@ -42,10 +45,12 @@ public class ContentPanel extends JPanel {
 		
 		JPanel panel = new JPanel();
 		panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		panel.add(_runTests);
+		panel.add(_waitFor);
 		panel.add(_rosmake);
+		panel.add(_runTests);
 		panel.add(_startButton);
 		panel.add(_finishButton);
+		waitForRos();
 		panel.add(new JSeparator());
 		panel.setMaximumSize(new Dimension(900, 30));
 		_infoWrapper.setLayout(new GridLayout(0,2,0,0));
@@ -61,10 +66,10 @@ public class ContentPanel extends JPanel {
 		String[] names = {"Picker","Carrier","Worker","Visitor","Dog","Cat","Possum","Tractor"};
 		String[] code = {"P","C","W","V","D","C","PO","T",};
 		int vals[] = _top.getVals();
-		int k = 15;
+		int k = (vals[8]) * 2 - 1;
 		String name = "robot_";
 		
-		for (int i = 0; i < vals.length; i++){
+		for (int i = 0; i < vals.length - 1; i++){
 			for (int j = 0; j <vals[i]; j++){
 				infoPanel panel = new infoPanel(name + k, names[i] + "-" + code[i] + j);
 				panel.setMinimumSize(new Dimension(900, 200));
@@ -76,8 +81,9 @@ public class ContentPanel extends JPanel {
 	
 	private void paint(){
 		String name = "robot_";
-		
-		for (int i =15; i < _map.size() + 15; i++){
+		int vals[] = _top.getVals();
+		int start = (vals[8]) * 2 - 1;
+		for (int i =start; i < _map.size() + start; i++){
 			_infoWrapper.add(_map.get(name + i));
 		}
 		
@@ -97,7 +103,7 @@ public class ContentPanel extends JPanel {
 				_top.disableAll();
 				_startButton.setVisible(false);
 				_finishButton.setVisible(true);
-				
+				processes.runRos();
 				createLabels();
 				paint();
 				
@@ -115,7 +121,7 @@ public class ContentPanel extends JPanel {
 				_top.enableAll();
 				
 				_map.clear();
-				processes.killProcs();
+				processes.finishProcs();
 			}
 		});
 		
@@ -140,6 +146,20 @@ public class ContentPanel extends JPanel {
 		if (processes != null){
 			processes.killProcs();
 		}
+	}
+	
+	public void waitForRos(){
+		_startButton.setEnabled(false);
+		_rosmake.setEnabled(false);
+		_runTests.setEnabled(false);
+		processes.waitFive();
+	}
+	
+	public void enableButtons(){
+		_startButton.setEnabled(true);
+		_rosmake.setEnabled(true);
+		_runTests.setEnabled(true);
+		_waitFor.setVisible(false);
 	}
 	
 }
