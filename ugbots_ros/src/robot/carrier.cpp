@@ -119,12 +119,12 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 	//orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
 	//orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
 	//orientation.roty-orientation.rotz*orientation.rotz);
-	ROS_INFO("/position/x/%f", this->pose.px);
-	ROS_INFO("/position/y/%f", this->pose.py);
-	ROS_INFO("/orientation/angle/%f", this->orientation.angle);
-	ROS_INFO("/speed/x/%f", msg.twist.twist.linear.x);
-	ROS_INFO("/speed/y/%f", msg.twist.twist.linear.y);
-	ROS_INFO("/status/%s/./", enum_to_string(state));
+	//ROS_INFO("/position/x/%f", this->pose.px);
+	//ROS_INFO("/position/y/%f", this->pose.py);
+	//ROS_INFO("/orientation/angle/%f", this->orientation.angle);
+	//ROS_INFO("/speed/x/%f", msg.twist.twist.linear.x);
+	//ROS_INFO("/speed/y/%f", msg.twist.twist.linear.y);
+	//ROS_INFO("/status/%s/./", enum_to_string(state));
 
 	if(localBinStatus.bin_stat == "FULL")
 	{

@@ -89,9 +89,11 @@ public:
 			return true;
 		}
 		geometry_msgs::Point end_point = action_queue.front();
+		set_status(state_queue.front());
 		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 		{
 			action_queue.pop();
+			state_queue.pop();
 			stop();
 			return true;
 		}
@@ -110,6 +112,7 @@ public:
 				this->speed.linear_x = distance;
 			}
 		}
+		return false;
 	}
 	void doAngleCheck()
 	{		
@@ -161,7 +164,7 @@ public:
 
 	bool move_x(double distance, double speed) {
 		double distance_x = distance - pose.px;
-		if (fabs(distance_x) < 0.0001) {
+		if (fabs(distance_x) < 0.0005) {
 			stop();
 			return true;
 		}
@@ -186,7 +189,7 @@ public:
 
 	bool move_y(double distance, double speed) {
 		double distance_y = distance - pose.py;
-		if (fabs(distance_y) < 0.0001) {
+		if (fabs(distance_y) < 0.0005) {
 			stop();
 			return true;
 		}
@@ -218,15 +221,20 @@ public:
 
 		if (action_queue.empty())
 		{
-			set_status(1);
 			return true;
 		}
 		geometry_msgs::Point end_point = action_queue.front();
+		set_status(state_queue.front());
+
 		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 		{
-			ROS_INFO("xdest: %f", end_point.x);
-			ROS_INFO("ydest: %f", end_point.y);
+			//ROS_INFO("xdest: %f", end_point.x);
+			//ROS_INFO("ydest: %f", end_point.y);
 			action_queue.pop();
+			state_queue.pop();
+			if (action_queue.empty()) {
+				set_status(0);
+			}
 			stop();
 			return true;
 		}
@@ -239,6 +247,7 @@ public:
 			}
 
 		}
+		return false;
 	}	
 
 	bool doubleAngleComparator(double a, double b)
@@ -261,7 +270,7 @@ public:
 
 	//Queue of the Actions
 	std::queue<geometry_msgs::Point> action_queue;
-
+	std::queue<int> state_queue;
 	//NodeHandle for the node
 	//ros::NodeHandle n;
 

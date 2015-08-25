@@ -60,6 +60,9 @@ public:
 
 	enum State { IDLE, TRAVELLING, PICKING, WAITING, AVOIDING, STOPPED };
 	State state;
+
+	State state_array[6] = {IDLE, TRAVELLING, PICKING, WAITING, AVOIDING, STOPPED};
+
 	char const* enum_to_string(State t);
 	
 	int binPercent;

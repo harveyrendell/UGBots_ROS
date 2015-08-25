@@ -28,7 +28,7 @@ public:
 		point.y = p.y;
 		//Add the beacon to organise into list of rows and beacons
 		addBeacon(point);
-
+		ROS_INFO("Number of Beacons: %d", beaconPositions.size());
 		ROS_INFO("Number of Rows: %d", rowPositions.size());
 	}
 
@@ -205,6 +205,11 @@ public:
 		return beaconPositions;
 	}
 
+	std::vector<RobotDetails> getPickerList()
+	{
+		return idlePickers;
+	}
+
 	//function to assign an unassigned row to the closest idle picker robot
 	void assignRowToClosest(ros::NodeHandle &n) {
 		//index for the list of rows
@@ -215,6 +220,7 @@ public:
 			Row current = *row;
 			//for only the rows that are unassigned
 			if (current.status == Row::UNASSIGNED) {
+				ROS_INFO("row list element: %d", rowNum);
 				//have both start and end point as valid start points
 				Point start;
 				Point end;
@@ -254,10 +260,10 @@ public:
 				ROS_INFO("station appointed to idle bot: %d, ns: %s", i, topic.c_str());
 				//erase the picker bot off the idle picker bot list
 				idlePickers.erase(idlePickers.begin() + i);
-				//publish the target point (station) to the picker bots topic
-				row_distributer.publish(bots_row);
 				//set the row as assigned
 				rowPositions[rowNum].status = Row::ASSIGNED;
+				//publish the target point (station) to the picker bots topic
+				row_distributer.publish(bots_row);
 				break;
 			}
 			rowNum++;
@@ -404,7 +410,9 @@ int main(int argc, char **argv)
 		}
 
 		if (count > 5) {
-			c.assignRowToClosest(n);
+			if (c.getPickerList().size() > 0) {
+				c.assignRowToClosest(n);
+			}
 			c.assignBinToClosest(n);
 		}
 

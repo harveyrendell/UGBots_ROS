@@ -38,7 +38,7 @@ Picker::Picker(ros::NodeHandle &n)
 	speed.linear_x = 0.0;
 	speed.max_linear_x = 3.0;
 	speed.angular_z = 0.0;
-	state = IDLE;
+	set_status(0);
 	station_y = -33;
 
 	queueDuplicateCheckAngle = 0.0;
@@ -97,10 +97,10 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 		idle_status_sent = true;
 	}
 
-	ROS_INFO("/position/x/%f", pose.px);
-	ROS_INFO("/position/y/%f", pose.py);
-	ROS_INFO("/status/%s/./", enum_to_string(state));
-	ROS_INFO("%f degrees per clock", (msg.twist.twist.angular.z * 180/M_PI)/10);
+	//ROS_INFO("/position/x/%f", action_queue.front().x);
+	//ROS_INFO("/position/y/%f", action_queue.front().y);
+	//ROS_INFO("/status/%s/./", enum_to_string(state));
+	//ROS_INFO("%f degrees per clock", (msg.twist.twist.angular.z * 180/M_PI)/10);
 
 	//bin location, currently attached to the centre of robot
 	binStatus.bin_x = pose.px;
@@ -110,7 +110,7 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	station_x = 0;
 
 
-	if(action_queue.empty())
+	/*if(action_queue.empty())
 	{
 		point.y = 38.0;
 		point.x = 10.5;
@@ -118,7 +118,7 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 		point.y = -38.0;
 		point.x = 10.5;
 		action_queue.push(point);
-	}
+	}*/
 
 	//relative actions for different states
 
@@ -142,7 +142,8 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	//publish topic about current bin status
 	carrier_alert.publish(binStatus);
 
-	begin_action_shortest_path(3.0);	
+	//begin_action_shortest_path(3.0);	
+	begin_action(3.0);
 	doAngleCheck();
 	checkTurningStatus();
 	publish();
@@ -152,7 +153,7 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 void Picker::laser_callback(sensor_msgs::LaserScan msg)
 {
 	//laser detection that gets in way
-	int min_range = (int)(floor(180 * acos(0.75/2)/M_PI));
+	/*int min_range = (int)(floor(180 * acos(0.75/2)/M_PI));
 	int max_range = (int)(ceil(180 * acos(-0.75/2)/M_PI));
 
 	for (int i = min_range; i < max_range; i++)
@@ -246,11 +247,31 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 		}
 	}**/
 }
-void Picker::set_status(int status){}
+void Picker::set_status(int status){
+	for(int i = 0; i < arraysize(state_array); i++)
+	{
+		if(i == status)
+		{
+			state = state_array[i];
+			if (state == IDLE) {
+				idle_status_sent = false;
+			}
+		}
+	}
+}
 
 void Picker::station_callback(ugbots_ros::picker_row pos)
 {
 	ROS_INFO("Robot given coordinates sx: %f, sy: %f, ex: %f, ey: %f", pos.start_x, pos.start_y, pos.end_x, pos.end_y);
+	geometry_msgs::Point p;
+	p.x = pos.start_x;
+	p.y = pos.start_y;
+	action_queue.push(p);
+	state_queue.push(1);
+	p.x = pos.end_x;
+	p.y = pos.end_y;
+	action_queue.push(p);
+	state_queue.push(2);
 }
 
 //hard coded function for robot to get to work station

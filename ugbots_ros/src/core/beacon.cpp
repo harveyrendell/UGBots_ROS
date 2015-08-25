@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 	// construct instance of class
 	Beacon b(n);
 
-	ros::Rate loop_rate(1);
+	ros::Rate loop_rate(10);
 
 	int count = 0;
 	while (ros::ok())
