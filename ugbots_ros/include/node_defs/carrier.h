@@ -54,16 +54,16 @@ public:
 	//bool moveY(double distance);
 	//bool begin_action();
 	void move_forward(double distance);
+	void set_status(int status);
 	//void checkTurningStatus();
-	void move();
 	void stop();
-	void turnLeft();
-	void turnRight();
-	void collisionDetected();
 	bool doubleComparator(double a, double b);
 
 	enum State {IDLE, TRAVELLING, CARRYING, AVOIDING, STOPPED};
 	State state;
+
+	State state_array[5] = {IDLE, TRAVELLING, CARRYING, AVOIDING, STOPPED};
+	
 
 
 	char const* enum_to_string(State t);

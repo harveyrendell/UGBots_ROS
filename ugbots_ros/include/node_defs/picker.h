@@ -35,6 +35,12 @@ public:
 	ros::Publisher carrier_alert;
 	ugbots_ros::bin_status binStatus;
 
+	geometry_msgs::Point point;
+
+	double queueDuplicate;
+	double queueDuplicateCheckAngle;
+
+
 	Picker();
 	Picker(ros::NodeHandle &n);
 	void odom_callback(nav_msgs::Odometry msg);
@@ -46,6 +52,8 @@ public:
 	void turnLeft();
 	void turnRight();
 	void collisionDetected();
+
+	void set_status(int status);
 	
 	void goToWork();
 	void pickKiwi();
