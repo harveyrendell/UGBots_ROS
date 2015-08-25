@@ -21,9 +21,10 @@ public class ROSinit extends JPanel {
 	private JLabel _worker = new JLabel("Workers:");
 	private JLabel _visitor = new JLabel("Visitors:");
 	private JLabel _dog = new JLabel("Dogs:");
-	private JLabel _cat = new JLabel("Cats");
-	private JLabel _possum = new JLabel("Possum:");
-	private JLabel _tractor = new JLabel("Tractor:");
+	private JLabel _cat = new JLabel("Cats:");
+	private JLabel _possum = new JLabel("Possums:");
+	private JLabel _tractor = new JLabel("Tractors:");
+	private JLabel _rows = new JLabel("Orchard Rows:");
 	
 	private JSpinner _pickerVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
 	private JSpinner _carrierVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
@@ -33,6 +34,7 @@ public class ROSinit extends JPanel {
 	private JSpinner _catVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
 	private JSpinner _possumVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
 	private JSpinner _tractorVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
+	private JSpinner _rowVal = new JSpinner(new SpinnerNumberModel(2,2,10,1));
 	
 	private JButton _startButton = new JButton("Start");
 	
@@ -53,7 +55,7 @@ public class ROSinit extends JPanel {
 	private void addPromptPanel(){
 		
 		JPanel panel = new JPanel();
-		panel.setLayout(new GridLayout(4, 4, 0, 0));
+		panel.setLayout(new GridLayout(0, 6, 0, 0));
 		
 		panel.add(_picker);
 		panel.add(_pickerVal);
@@ -71,6 +73,8 @@ public class ROSinit extends JPanel {
 		panel.add(_possumVal);
 		panel.add(_tractor);
 		panel.add(_tractorVal);
+		panel.add(_rows);
+		panel.add(_rowVal);
 		
 		this.add(panel);
 	}
@@ -85,7 +89,7 @@ public class ROSinit extends JPanel {
 		_catVal.setEnabled(false);
 		_possumVal.setEnabled(false);
 		_tractorVal.setEnabled(false);
-		
+		_rowVal.setEnabled(false);
 		_startButton.setEnabled(false);
 	}
 	
@@ -99,11 +103,12 @@ public class ROSinit extends JPanel {
 		_catVal.setEnabled(true);
 		_possumVal.setEnabled(true);
 		_tractorVal.setEnabled(true);
+		_rowVal.setEnabled(true);
 		
 	}
 	
 	public int[] getVals(){
-		int[] vals = new int[8];
+		int[] vals = new int[9];
 		vals[0] = (int) _pickerVal.getValue();
 		vals[1] = (int) _carrierVal.getValue();
 		vals[2] = (int) _workerVal.getValue();
@@ -112,6 +117,7 @@ public class ROSinit extends JPanel {
 		vals[5] = (int) _catVal.getValue();
 		vals[6] = (int) _possumVal.getValue();
 		vals[7] = (int) _tractorVal.getValue();
+		vals[8] = (int) _rowVal.getValue();
 		return vals;
 	}
 }
