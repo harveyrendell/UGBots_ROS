@@ -5,5 +5,3 @@ pkill rosmake
 pkill rostopic
 pkill rospack
 pkill roslaunch
-pkill rosmaster
-pkill roscore
