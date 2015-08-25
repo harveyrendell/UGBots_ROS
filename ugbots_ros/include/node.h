@@ -111,6 +111,7 @@ public:
 			}
 		}
 	}
+
 	void doAngleCheck()
 	{		
 		//if -ve rads, change to +ve rads
@@ -135,7 +136,6 @@ public:
 		}
 	}
 
-	//
 	void checkTurningStatus()
 	{
 		if(this->orientation.currently_turning == true)
@@ -212,6 +212,10 @@ public:
 		return false;
 	}
 
+	bool begin_action_avoidance(double speed)
+	{
+
+	}
 	
 	bool begin_action(double speed)
 	{
@@ -240,6 +244,8 @@ public:
 
 		}
 	}	
+
+
 
 	bool doubleAngleComparator(double a, double b)
 	{
