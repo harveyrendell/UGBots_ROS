@@ -1,4 +1,3 @@
-include "models/cmdCenter.inc"
 include "models/boundary.inc"
 include "models/shrub.inc"
 
@@ -15,8 +14,6 @@ shrub (pose [ 37 -2 0 0 ] color "green")
 shrub (pose [ 46 -15 0 0 ] color "green")
 shrub (pose [ 21 45 0 0 ] color "green")
 shrub (pose [ 29 40 0 0 ] color "green")
-
-cmdCenter (pose [ 30 -55 0 0 ] color "gray")
 
 boundary (pose [ -50 25 0 90 ])
 boundary (pose [ 50 25 0 90 ])

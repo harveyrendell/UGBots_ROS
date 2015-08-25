@@ -1,7 +1,19 @@
-define cmdCenter model
+define cmd ranger
+(
+  sensor(
+  range [ 0.0 0.0 ] # range
+  fov 180       # field of vision
+  samples 180   # samples 
+  )
+  # generic model properties
+  color "black"
+  size [ 0.00 0.00 0.0 ]
+)
+
+define cmdCenter position
 (
 
-  size [4 4 11]
+  size [2 2 13]
   block(
 	points 4
 	point[0] [0 0.125]
@@ -582,4 +594,6 @@ define cmdCenter model
 	point[3] [0.54166625 1]
 	z [7.6667 8.3333]
   )
+
+  cmd(pose [ 0.00 0.000 0 0.000 ])
 )
