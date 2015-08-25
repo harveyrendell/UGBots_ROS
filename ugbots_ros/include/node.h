@@ -2,7 +2,7 @@
 #include <node_structs/pose.h>
 #include <node_structs/subscriber_list.h>
 #include <node_structs/orientation.h>
-#include <queue> 
+#include <queue>
 
 class Node
 {
@@ -22,7 +22,6 @@ public:
 		//publish the message
 		sub_list.node_stage_pub.publish(node_cmdvel);
 	}
-
 
 	void turn(double angle, double linear, double angular)
 	{
