@@ -16,7 +16,7 @@ Picker::Picker()
 	pose.theta = M_PI/2.0;
 	pose.px = 10;
 	pose.py = 20;
-	speed.linear_x = 1.0;
+	speed.linear_x = 0.0;
 	speed.max_linear_x = 3.0;
 	speed.angular_z = 0.0;
 	state = IDLE;
@@ -35,7 +35,7 @@ Picker::Picker(ros::NodeHandle &n)
 	pose.theta = M_PI/2.0;
 	pose.px = 10;
 	pose.py = 20;
-	speed.linear_x = 1.0;
+	speed.linear_x = 0.0;
 	speed.max_linear_x = 3.0;
 	speed.angular_z = 0.0;
 	state = IDLE;
@@ -48,9 +48,9 @@ Picker::Picker(ros::NodeHandle &n)
 	ns.erase(ns.begin());
 	robotDetails.ns = ns;
 
-	sub_station = n.subscribe<ugbots_ros::Position>("station", 1000, &Picker::station_callback, this);
+	sub_station = n.subscribe<ugbots_ros::picker_row>("station", 1000, &Picker::station_callback, this);
 	core_alert = n.advertise<ugbots_ros::robot_details>("/idle_pickers", 1000);
-	bin_alert = n.advertise<ugbots_ros::Position>("full_bins", 1000);
+	bin_alert = n.advertise<ugbots_ros::Position>("/full_bins", 1000);
 
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Picker::odom_callback, this);
@@ -92,6 +92,7 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	if (state == IDLE && !idle_status_sent) {
 		robotDetails.x = pose.px;
 		robotDetails.y = pose.py;
+		ROS_INFO("x: %f, y: %f", robotDetails.x, robotDetails.y);
 		core_alert.publish(robotDetails);
 		idle_status_sent = true;
 	}
@@ -120,13 +121,14 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	}
 
 	//relative actions for different states
+
 	/*if (state == IDLE) {
 		state = TRAVELLING;
 		tempx = pose.px;
 		tempy = pose.py;
-		temprad = orientation.angle;
-		goToWork();
-		state = TRAVELLING;
+		//temprad = orientation.angle;
+		//goToWork();
+		//state = TRAVELLING;
 	} else if (state == TRAVELLING) {
 		goToWork();
 	} else if (state == PICKING) {
@@ -246,9 +248,9 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 }
 void Picker::set_status(int status){}
 
-void Picker::station_callback(ugbots_ros::Position pos)
+void Picker::station_callback(ugbots_ros::picker_row pos)
 {
-	ROS_INFO("Robot given coordinates x: %f, y: %f", pos.x, pos.y);
+	ROS_INFO("Robot given coordinates sx: %f, sy: %f, ex: %f, ey: %f", pos.start_x, pos.start_y, pos.end_x, pos.end_y);
 }
 
 //hard coded function for robot to get to work station
