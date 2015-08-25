@@ -23,6 +23,8 @@ Picker::Picker()
 	station_x = 0;
 	station_y = -33;
 	binPercent = 0;
+
+	idle_status_sent = false;
 }
 
 Picker::Picker(ros::NodeHandle &n)
@@ -41,6 +43,14 @@ Picker::Picker(ros::NodeHandle &n)
 
 	queueDuplicateCheckAngle = 0.0;
 	queueDuplicate = true;
+	idle_status_sent = false;
+	std::string ns = n.getNamespace();
+	ns.erase(ns.begin());
+	robotDetails.ns = ns;
+
+	sub_station = n.subscribe<ugbots_ros::Position>("station", 1000, &Picker::station_callback, this);
+	core_alert = n.advertise<ugbots_ros::robot_details>("/idle_pickers", 1000);
+	bin_alert = n.advertise<ugbots_ros::Position>("full_bins", 1000);
 
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Picker::odom_callback, this);
@@ -79,6 +89,12 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
 	orientation.roty-orientation.rotz*orientation.rotz);
 
+	if (state == IDLE && !idle_status_sent) {
+		robotDetails.x = pose.px;
+		robotDetails.y = pose.py;
+		core_alert.publish(robotDetails);
+		idle_status_sent = true;
+	}
 
 	ROS_INFO("/position/x/%f", pose.px);
 	ROS_INFO("/position/y/%f", pose.py);
@@ -229,6 +245,11 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 	}**/
 }
 void Picker::set_status(int status){}
+
+void Picker::station_callback(ugbots_ros::Position pos)
+{
+	ROS_INFO("Robot given coordinates x: %f, y: %f", pos.x, pos.y);
+}
 
 //hard coded function for robot to get to work station
 void Picker::goToWork() {

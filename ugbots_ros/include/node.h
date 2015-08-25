@@ -10,7 +10,6 @@ public:
 	virtual void stop() = 0;
 	virtual void set_status(int status){}
 
-
 	template <typename T,unsigned S>
 	inline unsigned arraysize(const T (&v)[S]) { return S; }
 
@@ -142,8 +141,8 @@ public:
 	{
 		if(this->orientation.currently_turning == true)
 		{	
-			ROS_INFO("desired angle: %f", orientation.desired_angle);
-			ROS_INFO("angle: %f", orientation.angle);
+			//ROS_INFO("desired angle: %f", orientation.desired_angle);
+			//ROS_INFO("angle: %f", orientation.angle);
 			if(doubleAngleComparator(orientation.angle, orientation.desired_angle))
 			{
 				this->orientation.currently_turning = false;
@@ -179,8 +178,8 @@ public:
 		}
 		if(!orientation.currently_turning)
 		{
-			
-			speed = deceleration(fabs(distance_x), 1, 0.001);
+			//if(fabs(distance_x) < 0.1)
+			speed = deceleration(fabs(distance_x), 1, 0.01);
 			this->speed.linear_x = speed;
 		}
 		return false;
