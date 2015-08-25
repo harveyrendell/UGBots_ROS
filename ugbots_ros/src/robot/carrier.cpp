@@ -57,7 +57,7 @@ Carrier::Carrier(ros::NodeHandle &n)
 	carrier_alert = n.subscribe<ugbots_ros::bin_status>("/alert",1000,&Carrier::bin_callback,this);
 	carrier_alert_pub = n.advertise<ugbots_ros::bin_status>("/alert",1000);
 
-	geometry_msgs::Point point;
+	/*geometry_msgs::Point point;
 	point.x = 36.0;
 	point.y = -4.0;
 	action_queue.push(point);
@@ -66,7 +66,7 @@ Carrier::Carrier(ros::NodeHandle &n)
 	action_queue.push(point);
 	point.y = -2.0;
 	point.x = -4.0;
-	action_queue.push(point);
+	action_queue.push(point);*/
 }
 
 void Carrier::bin_callback(ugbots_ros::bin_status msg)
@@ -116,8 +116,8 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 	//orientation.roty-orientation.rotz*orientation.rotz);
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
-	ROS_INFO("/orientation/angle/%f", this->orientation.angle);
-	//ROS_INFO("/status/%s/./", enum_to_string(state));
+	//ROS_INFO("/orientation/angle/%f", this->orientation.angle);
+	ROS_INFO("/status/%s/./", enum_to_string(state));
 
 	if(localBinStatus.bin_stat == "FULL")
 	{

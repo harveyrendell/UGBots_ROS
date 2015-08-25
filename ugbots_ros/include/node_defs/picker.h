@@ -5,6 +5,7 @@
 #include <sensor_msgs/LaserScan.h>
 #include <ugbots_ros/bin_status.h>
 
+#include <ugbots_ros/picker_row.h>
 #include <ugbots_ros/Position.h>
 #include <ugbots_ros/robot_details.h>
 
@@ -29,7 +30,7 @@ public:
 	ros::Subscriber sub_station;
 	ugbots_ros::robot_details robotDetails;
 
-	void station_callback(ugbots_ros::Position pos);
+	void station_callback(ugbots_ros::picker_row pos);
 
 	ros::Publisher carrier_alert;
 	ugbots_ros::bin_status binStatus;
