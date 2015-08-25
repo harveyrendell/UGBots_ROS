@@ -7,8 +7,9 @@ carrier=$2
 worker=$3
 visitor=$4
 dog=$5
-possum=$6
-tractor=$7
+cat=$6
+possum=$7
+tractor=$8
 
 mkdir -p world/config
 
@@ -16,17 +17,16 @@ rm ugbots_ros/launch/world.launch
 rm world/config/robotinstances.inc
 rm world/config/peopleinstances.inc
 rm world/config/animalinstances.inc
+rm world/config/tractorinstances.inc
 
 echo  \<launch\> > ugbots_ros/launch/world.launch
-echo include \"models\/robots.inc\" > world/config/robotinstances.inc
-echo include \"models\/workers.inc\" > world/config/peopleinstances.inc
-echo include \"models\/dogs.inc\" > world/config/animalinstances.inc
+echo include \"models\/robots.inc\" >> world/config/robotinstances.inc
+echo include \"models\/workers.inc\" >> world/config/peopleinstances.inc
+echo include \"models\/dogs.inc\" >> world/config/animalinstances.inc
+echo include \"models\/cats.inc\" >> world/config/animalinstances.inc
 echo include \"models\/possums.inc\" >> world/config/animalinstances.inc
 echo include \"models\/visitors.inc\" >> world/config/peopleinstances.inc
-
-
-
-
+echo include \"models\/tractors.inc\" >> world/config/tractorinstances.inc
 
 number=0
 beacon=15
@@ -181,11 +181,10 @@ else
     rand2=$(( (RANDOM % 99) - 48 )) 
 fi
 
-echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch #### DOG -> POSSUM
+echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch 
 echo \<node pkg=\"ugbots_ros\" name=\"possumnode\" type=\"POSSUM\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
-#echo possum\( pose [ 3.5 $((-1-$(($c * 2)))) 0 0 ] name \"P$po\" color \"purple\" \) >> world/config/animalinstances.inc
 echo possum\( pose [ $rand $rand2 0 0 ] name \"PO$po\" color \"purple\" \) >> world/config/animalinstances.inc
 
 po=$(($po+1))
