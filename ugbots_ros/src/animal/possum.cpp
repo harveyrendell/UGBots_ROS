@@ -41,6 +41,7 @@ Possum::Possum(ros::NodeHandle &n)
 
 void Possum::odom_callback(nav_msgs::Odometry msg)
 {
+	ROS_INFO("ENTERED ODOM CALLBACK");
 	//This is the call back function to process odometry messages coming from Stage. 	
 	this->pose.px = msg.pose.pose.position.x;
 	this->pose.py = msg.pose.pose.position.y;
@@ -58,7 +59,7 @@ void Possum::odom_callback(nav_msgs::Odometry msg)
 	doAngleCheck();
 	checkTurningStatus();
 	if(this->state == MOVINGACROSS){
-		begin_action(4.5);
+		begin_action(3.0);
 	}
 
 	publish();
@@ -67,6 +68,7 @@ void Possum::odom_callback(nav_msgs::Odometry msg)
 
 void Possum::laser_callback(sensor_msgs::LaserScan msg)
 {
+	ROS_INFO("ENTERED LASER CALLBACK");
 	if 	((this->state == IDLE) && (this->orientation.currently_turning == false)){
 		bool can_move = true;
 		for (int i = 0; i<150; i++){
@@ -81,6 +83,7 @@ void Possum::laser_callback(sensor_msgs::LaserScan msg)
 }
 
 void Possum::stop(){
+	ROS_INFO("ENTERED STOP METHOD");
 	if (direction == EAST){
 		row = row +1;
 	} else if (direction == WEST){
@@ -108,6 +111,7 @@ void Possum::stop(){
 	state = IDLE;
 	this->speed.linear_x = 0.0;
 	this->speed.angular_z = 0.0;
+	ROS_INFO("/status/%s/./", enum_to_string(this->state));
 }
 void Possum::stopTurn(){
 	this->orientation.currently_turning = false;
@@ -149,6 +153,7 @@ void Possum::checkTurningStatus() //override checkTurningStatus so that linear_x
 	{	
 		if(doubleComparator(this->orientation.angle, this->orientation.desired_angle))
 		{
+			ROS_INFO("Finished Turning");
 			state = IDLE;
 			this->orientation.currently_turning = false;
 			this->speed.linear_x = 0.0;
@@ -172,38 +177,6 @@ char const* Possum::enum_to_string(State t){
             return "INVALID ENUM";
     }
  }
-
-Possum::State Possum::generateStatus(){
-	int randNum;
-	srand (time(NULL));
-/* generate secret number between 1 and 5: */
-	randNum = rand() % 5 + 1;
-	if (randNum == 1){
-		return IDLE;
-	}else if (randNum == 2){
-		return ROAMING;
-	}else if (randNum == 3){
-		return FLEEING;
-	}else if (randNum == 4){
-		//check if possum is near vines before passing on MOVINGACROSS
-		if ((this->pose.px >= -3) && (this->pose.px <= 6)){
-			return MOVINGACROSS;
-		} else if ((this->pose.py >= -37.5) && (this->pose.py <= 38)){
-			return MOVINGACROSS;
-		} else {
-			return FLEEING;
-		}
-	} else {
-		//check if possum is near vines before passing on MOVINGACROSS
-		if ((this->pose.px >= -3) && (this->pose.px <= 6)){
-			return MOVINGACROSS;
-		} else if ((this->pose.py >= -37.5) && (this->pose.py <= 38)){
-			return MOVINGACROSS;
-		} else {
-			return FLEEING;
-		}
-	}
-}
 
 void Possum::move(){}
 void Possum::collisionDetected(){} 

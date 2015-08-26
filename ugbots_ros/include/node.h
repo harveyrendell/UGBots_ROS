@@ -91,6 +91,7 @@ public:
 		geometry_msgs::Point end_point = action_queue.front();
 		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 		{
+			ROS_INFO("Naaaaaamjun");
 			action_queue.pop();
 			stop();
 			return true;
