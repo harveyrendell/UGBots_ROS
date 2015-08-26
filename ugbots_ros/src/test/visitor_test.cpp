@@ -45,6 +45,12 @@ TEST(UnitTest, testStartupState)
 	EXPECT_EQ(node.state, Visitor::IDLE); 
 }
 
+TEST(UnitTest, testWaiting)
+{
+	node.waiting();
+	EXPECT_EQ(node.speed.linear_x, 0.0);
+}
+
 //###################### ACCEPTANCE TESTS ######################
 
 //Initialises a route and tests that it is added to the action_queue
@@ -68,16 +74,10 @@ TEST(AcceptanceTest, testTurnStop)
 	EXPECT_FALSE(node.orientation.currently_turning);
 }
 
-TEST(UnitTest, testStartTour)
+TEST(AcceptanceTest, testStartTour)
 {
 	node.startTour();
 	EXPECT_EQ(node.speed.linear_x, 2.0);
-}
-
-TEST(UnitTest, testWaiting)
-{
-	node.waiting();
-	EXPECT_EQ(node.speed.linear_x, 0.0);
 }
 
 // Run all the tests that were declared with TEST()
