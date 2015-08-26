@@ -45,6 +45,8 @@ Tractor::Tractor(ros::NodeHandle &n)
 
 	action_queue.push(point);
 
+	state = IDLE;
+
 }
 
 void Tractor::ground_callback(nav_msgs::Odometry msg)
@@ -78,11 +80,17 @@ void Tractor::ground_callback(nav_msgs::Odometry msg)
 
 	begin_action_shortest_path(2.0);
 
+	state = TRAVELLING;
+
 	doAngleCheck();		
 
 	checkTurningStatus();
 
 	publish();
+
+	ROS_INFO("/position/x/%f",this->pose.px);
+	ROS_INFO("/position/y/%f",this->pose.py);
+	ROS_INFO("/status/%s/./", enum_to_string(state));
 }
 
 
@@ -98,6 +106,18 @@ void Tractor::stop(){
 	speed.angular_z = 0.0;
 }
 void Tractor::collisionDetected(){}
+
+char const* enum_to_string(State t)
+{
+	switch (t){
+		case IDLE:
+			return "IDLE";
+		case TRAVELLING:
+			return "TRAVELLING";
+		default:
+			return ""; 
+	}
+}
 
 int main(int argc, char **argv)
 {
