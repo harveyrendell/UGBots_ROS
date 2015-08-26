@@ -40,17 +40,17 @@ TEST(UnitTest, testStartupState)
 
 //###################### ACCEPTANCE TESTS ######################
 
-/*TEST(TestSuite, testStateSwitchStopped)
+TEST(AcceptanceTest, testTurnStop)
 {
-	node.moveX(10.0, 0.0);
-	EXPECT_EQ(node.state, Carrier::STOPPED); 	
-}*/
+	setup();
 
-/*TEST(UnitTest, testStateSwitchTravelling)
-{
-	node.move_to(10.0, 10.0);
-	EXPECT_EQ(node.state, Carrier::TRAVELLING); 
-}*/
+	node.orientation.currently_turning = true;
+	node.orientation.desired_angle = node.orientation.angle;
+
+	node.checkTurningStatus();
+
+	EXPECT_FALSE(node.orientation.currently_turning);
+}
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){

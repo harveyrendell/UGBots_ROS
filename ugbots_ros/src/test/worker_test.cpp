@@ -52,7 +52,6 @@ TEST(AcceptanceTest, testLetVisitorIn)
 	EXPECT_TRUE(!node.action_queue.empty()); 
 }
 
-
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){
 	//Create a node to test with

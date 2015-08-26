@@ -46,6 +46,18 @@ TEST(UnitTest, testStartupState)
 
 //###################### ACCEPTANCE TESTS ######################
 
+TEST(AcceptanceTest, testTurnStop)
+{
+	setup();
+
+	node.orientation.currently_turning = true;
+	node.orientation.desired_angle = node.orientation.angle;
+
+	node.checkTurningStatus();
+
+	EXPECT_FALSE(node.orientation.currently_turning);
+}
+
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){
 	//Create a node to test with
