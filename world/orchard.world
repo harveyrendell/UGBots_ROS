@@ -17,6 +17,14 @@ define floorplan model
   laser_return 1
 )
 
+define grass model
+(
+    size [100 100 0.05]
+    color_rgba [ 0 1 0 0.5 ]
+    gui_move 0
+    obstacle_return 0
+)
+
 # set the resolution of the underlying raytrace model in meters
 
 resolution 0.02 #resolution of the underline bitmap model in meters. 
@@ -36,5 +44,10 @@ floorplan
   bitmap "swarm_world.pgm"
   size [50.000 50.000 0.500]
   pose [ 0.000 0.000 0.000 0.000 ]
+)
+
+grass
+(
+    pose [ 0 0 0.01 0 ]
 )
 

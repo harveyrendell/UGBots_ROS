@@ -81,36 +81,6 @@ public:
 		return tolerance * 10;
 	}
 
-	bool begin_action_shortest_path(double speed)
-	{
-		if(action_queue.empty())
-		{
-			set_status(0);
-			return true;
-		}
-		geometry_msgs::Point end_point = action_queue.front();
-		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
-		{
-			action_queue.pop();
-			stop();
-			return true;
-		}
-		double distance = sqrt(pow(end_point.x - pose.px, 2) + pow(end_point.y - pose.py, 2));
-		double angle = atan2((end_point.y - pose.py),(end_point.x - pose.px));
-
-		turn(angle - this->orientation.desired_angle , 0.0, M_PI/2);
-		checkTurningStatus();
-		if(!orientation.currently_turning)
-		{
-			set_status(1);
-			speed = deceleration(fabs(distance), 1, 0.005);
-			this->speed.linear_x = speed;
-			if (fabs(distance) < 0.5)
-			{
-				this->speed.linear_x = distance;
-			}
-		}
-	}
 	void doAngleCheck()
 	{		
 		//if -ve rads, change to +ve rads
@@ -135,15 +105,13 @@ public:
 		}
 	}
 
-	//
 	void checkTurningStatus()
 	{
 		if(this->orientation.currently_turning == true)
-		{	
-			//ROS_INFO("desired angle: %f", orientation.desired_angle);
-			//ROS_INFO("angle: %f", orientation.angle);
+		{
 			if(doubleAngleComparator(orientation.angle, orientation.desired_angle))
 			{
+				ROS_INFO("angle and desired angle is equal");
 				this->orientation.currently_turning = false;
 				this->speed.linear_x = 3.0;
 				this->speed.angular_z = 0.0; 
@@ -161,7 +129,7 @@ public:
 
 	bool move_x(double distance, double speed) {
 		double distance_x = distance - pose.px;
-		if (fabs(distance_x) < 0.0001) {
+		if (fabs(distance_x) < 0.0005) {
 			stop();
 			return true;
 		}
@@ -186,7 +154,7 @@ public:
 
 	bool move_y(double distance, double speed) {
 		double distance_y = distance - pose.py;
-		if (fabs(distance_y) < 0.0001) {
+		if (fabs(distance_y) < 0.0005) {
 			stop();
 			return true;
 		}
@@ -212,11 +180,82 @@ public:
 		return false;
 	}
 
+	bool begin_action_shortest_path(double speed)
+	{
+		if(action_queue.empty())
+		{
+			set_status(0);
+			return true;
+		}
+		geometry_msgs::Point end_point = action_queue.front();
+		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
+		{
+			action_queue.pop();
+			stop();
+			return true;
+		}
+
+		double distance = sqrt(pow(end_point.x - pose.px, 2) + pow(end_point.y - pose.py, 2));
+		double angle = atan2((end_point.y - pose.py),(end_point.x - pose.px));
+
+		turn(angle - this->orientation.desired_angle , 0.0, M_PI/2);
+		if(!orientation.currently_turning)
+		{
+			set_status(1);
+			speed = deceleration(fabs(distance), 1, 0.005);
+			this->speed.linear_x = speed;
+			if (fabs(distance) < 0.5)
+			{
+				this->speed.linear_x = distance;
+			}
+		}
+	}
+
+	bool begin_action_avoidance(double speed)
+	{
+		if(avoidance_queue.empty())
+		{
+			set_status(1);
+			return true;
+		}
+
+		geometry_msgs::Point end_point = avoidance_queue.front();
+		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
+		{
+			ROS_INFO("STOP PLS");
+			avoidance_queue.pop();
+			stop();
+			return true;
+		}
+		ROS_INFO("avoidance x: %f", end_point.x);
+		ROS_INFO("avoidance y: %f", end_point.y);
+
+		double distance = sqrt(pow(end_point.x - pose.px, 2) + pow(end_point.y - pose.py, 2));
+		this->orientation.desired_angle = atan2((end_point.y - pose.py),(end_point.x - pose.px));
+		doAngleCheck();
+
+		ROS_INFO("angle difference: %f",this->orientation.angle - this->orientation.desired_angle);
+		ROS_INFO("M_PI: %f", M_PI/2);
+		if(doubleAngleComparator((this->orientation.angle - this->orientation.desired_angle), M_PI/2))
+		{
+			speed = deceleration(fabs(distance), 1, 0.005);
+			this->speed.linear_y = -1.0 * speed;
+			this->speed.linear_x = 0.0;
+		}
+
+		if(doubleAngleComparator(this->orientation.angle, this->orientation.desired_angle))
+		{
+			ROS_INFO("go str8");
+			speed = deceleration(fabs(distance), 1, 0.005);
+			this->speed.linear_x = speed;
+		}
+	}
+
 	
 	bool begin_action(double speed)
 	{
 
-		if (action_queue.empty())
+		if(action_queue.empty())
 		{
 			set_status(1);
 			return true;
@@ -241,6 +280,8 @@ public:
 		}
 	}	
 
+
+
 	bool doubleAngleComparator(double a, double b)
 	{
 	    return fabs(a - b) < M_PI/3600000;
@@ -259,8 +300,11 @@ public:
 	//Velocity of the unit
 	Speed speed;
 
-	//Queue of the Actions
+	//Queue of the actions
 	std::queue<geometry_msgs::Point> action_queue;
+
+	//Queue of the avoidance actions
+	std::queue<geometry_msgs::Point> avoidance_queue;
 
 	//NodeHandle for the node
 	//ros::NodeHandle n;

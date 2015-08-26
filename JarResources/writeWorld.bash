@@ -282,7 +282,8 @@ echo \<node pkg=\"ugbots_ros\" name=\"possumnode\" type=\"POSSUM\"\/\> >> ugbots
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
 #echo possum\( pose [ 3.5 $((-1-$(($c * 2)))) 0 0 ] name \"P$po\" color \"purple\" \) >> world/config/animalinstances.inc
-echo possum\( pose [ $rand $rand2 0 0 ] name \"PO$po\" color \"purple\" \) >> world/config/animalinstances.inc
+possumStart=$(echo "scale=2; $bleft-1.75" | bc)
+echo possum\( pose [ $possumStart $rand2 0 0 ] name \"PO$po\" color \"purple\" \) >> world/config/animalinstances.inc
 
 po=$(($po+1))
 number=$(($number+1))
