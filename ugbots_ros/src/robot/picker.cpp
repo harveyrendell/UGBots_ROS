@@ -52,10 +52,12 @@ Picker::Picker(ros::NodeHandle &n)
 	core_alert = n.advertise<ugbots_ros::robot_details>("/idle_pickers", 1000);
 	bin_alert = n.advertise<ugbots_ros::Position>("/full_bins", 1000);
 
-	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_13/cmd_vel",1000);
-	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_13/base_pose_ground_truth",1000, &Picker::odom_callback, this);
-	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_13/base_scan",1000,&Picker::laser_callback, this);
+	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Picker::odom_callback, this);
+	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
 	carrier_alert = n.advertise<ugbots_ros::bin_status>("/alert",1000);
+
+	
 
 }
 
@@ -95,8 +97,8 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 		idle_status_sent = true;
 	}
 
-	ROS_INFO("/position/x/%f", pose.px);
-	ROS_INFO("/position/y/%f", pose.py);
+	ROS_INFO("/position/x/%f", msg.twist.twist.linear.x);
+	ROS_INFO("/position/y/%f", msg.twist.twist.linear.y);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
 	ROS_INFO("%f degrees per clock", (msg.twist.twist.angular.z * 180/M_PI)/10);
 
@@ -112,10 +114,10 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	if(action_queue.empty())
 	{
 		point.y = 38.0;
-		point.x = 10.5;
+		point.x = 8.75;
 		action_queue.push(point);
 		point.y = -38.0;
-		point.x = 10.5;
+		point.x = 8.75;
 		action_queue.push(point);
 	}
 
@@ -143,7 +145,7 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	//publish topic about current bin status
 	carrier_alert.publish(binStatus);
 
-	if(state == AVOIDING)
+	if(!avoidance_queue.empty())
 	{
 		begin_action_avoidance(3.0);
 	}
@@ -163,12 +165,12 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 void Picker::laser_callback(sensor_msgs::LaserScan msg)
 {
 	//laser detection that gets in way
-	int min_range = (int)(floor(180 * acos(0.75/3)/M_PI));
-	int max_range = (int)(ceil(180 * acos(-0.75/3)/M_PI));
+	int min_range = (int)(floor(180 * acos(0.75/2)/M_PI));
+	int max_range = (int)(ceil(180 * acos(-0.75/2)/M_PI));
 
 	for (int i = min_range; i < max_range; i++)
 	{
-		if(msg.ranges[i] < 3.0)
+		if(msg.ranges[i] < 2.0)
 		{
 			speed.linear_x = 0.0;
 			publish();
@@ -180,8 +182,8 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 
 				geometry_msgs::Point pointtemp;
 				
-				pointtemp.x = this->pose.px + 2 * cos(this->orientation.angle - (M_PI/2.0));
-				pointtemp.y = this->pose.py + 2 * sin(this->orientation.angle - (M_PI/2.0));
+				pointtemp.x = this->pose.px + 0.8 * cos(this->orientation.angle - (M_PI/2.0));
+				pointtemp.y = this->pose.py + 0.8 * sin(this->orientation.angle - (M_PI/2.0));
 				ROS_INFO("first point x: %f",pointtemp.x);
 				ROS_INFO("first point y: %f",pointtemp.y);
 				avoidance_queue.push(pointtemp);
@@ -192,8 +194,8 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 				ROS_INFO("second point y: %f",pointtemp.y);
 				avoidance_queue.push(pointtemp);
 
-				pointtemp.x = this->pose.px + 2 * cos(this->orientation.angle + (M_PI/2.0));
-				pointtemp.y = this->pose.py + 2 * sin(this->orientation.angle + (M_PI/2.0));
+				pointtemp.x = pointtemp.x + 0.8 * cos(this->orientation.angle + (M_PI/2.0));
+				pointtemp.y = pointtemp.y + 0.8 * sin(this->orientation.angle + (M_PI/2.0));
 				ROS_INFO("third point x: %f",pointtemp.x);
 				ROS_INFO("third point y: %f",pointtemp.y);				
 				avoidance_queue.push(pointtemp);
@@ -251,7 +253,15 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 		}
 	}**/
 }
-void Picker::set_status(int status){}
+void Picker::set_status(int status){
+	for(int i = 0; i < arraysize(state_array); i++)
+	{
+		if(i == status)
+		{
+			state = state_array[i];
+		}
+	}
+}
 
 void Picker::station_callback(ugbots_ros::picker_row pos)
 {
@@ -314,6 +324,8 @@ char const* Picker::enum_to_string(State t) {
 			return "WAITING";
 		case AVOIDING:
 			return "AVOIDING";
+		case STOPPED:
+			return "STOPPED";
 		default:
 			return ""; 
 	}
