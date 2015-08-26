@@ -12,33 +12,39 @@
 
 #include <node_defs/picker.h>
 
-Picker node;
+static Picker node;
 
-void odom_callback(nav_msgs::Odometry msg)
+void setup()
 {
-	//Mock callback function
+	// create a new instance of node
+	node = Picker();
 }
 
-void laser_callback(sensor_msgs::LaserScan msg)
-{
-	//Mock callback function
-}
+//######################### UNIT TESTS #########################
 
 TEST(UnitTest, testNodeInitialisedSpeed)
 {
+	setup();
+
 	EXPECT_EQ(node.speed.linear_x, 1.0);
 	EXPECT_EQ(node.speed.angular_z, 0.0);
 }
 
 TEST(UnitTest, testNodeTopSpeed)
 {
+	setup();
+
 	EXPECT_EQ(node.speed.max_linear_x, 3.0);
 }
 
 TEST(UnitTest, testStartupState)
 {
+	setup();
+
 	EXPECT_EQ(node.state, Picker::IDLE); 
 }
+
+//###################### ACCEPTANCE TESTS ######################
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){

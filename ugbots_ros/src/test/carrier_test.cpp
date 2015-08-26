@@ -12,17 +12,15 @@
 
 #include <node_defs/carrier.h>
 
-Carrier node;
+static Carrier node;
 
-void odom_callback(nav_msgs::Odometry msg)
+void setup()
 {
-	//Mock callback function
+	// create a new instance of node
+	node = Carrier();
 }
 
-void laser_callback(sensor_msgs::LaserScan msg)
-{
-	//Mock callback function
-}
+//######################### UNIT TESTS #########################
 
 TEST(UnitTest, testNodeInitialisedSpeed)
 {
@@ -39,6 +37,8 @@ TEST(UnitTest, testStartupState)
 {
 	EXPECT_EQ(node.state, Carrier::IDLE); 
 }
+
+//###################### ACCEPTANCE TESTS ######################
 
 /*TEST(TestSuite, testStateSwitchStopped)
 {

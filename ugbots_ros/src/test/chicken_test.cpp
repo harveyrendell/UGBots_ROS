@@ -12,7 +12,15 @@
 
 #include <node_defs/cat.h>
 
-Chicken node;
+static Chicken node;
+
+void setup()
+{
+	// create a new instance of node
+	node = Chicken();
+}
+
+//######################### UNIT TESTS #########################
 
 void odom_callback(nav_msgs::Odometry msg)
 {
@@ -39,6 +47,8 @@ TEST(UnitTest, testStartupState)
 {
 	EXPECT_EQ(node.state, Cat::IDLE); 
 }
+
+//###################### ACCEPTANCE TESTS ######################
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){

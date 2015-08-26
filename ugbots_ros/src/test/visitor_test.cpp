@@ -21,6 +21,8 @@ void setup()
 	node = Visitor();
 }
 
+//######################### UNIT TESTS #########################
+
 TEST(UnitTest, testNodeInitialisedSpeed)
 {
 	setup();
@@ -43,6 +45,8 @@ TEST(UnitTest, testStartupState)
 	EXPECT_EQ(node.state, Visitor::IDLE); 
 }
 
+//###################### ACCEPTANCE TESTS ######################
+
 //Initialises a route and tests that it is added to the action_queue
 TEST(AcceptanceTest, testActionQueueInit)
 {
@@ -50,12 +54,6 @@ TEST(AcceptanceTest, testActionQueueInit)
 
 	node.init_route();
 	EXPECT_TRUE(!node.action_queue.empty());
-}
-
-TEST(AcceptanceTest, testActionQueue)
-{
-	//node.action_queue.
-	//EXPECT_EQ(node.state, Visitor::IDLE); 
 }
 
 TEST(AcceptanceTest, testTurnStop)

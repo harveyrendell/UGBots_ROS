@@ -12,17 +12,15 @@
 
 #include <node_defs/dog.h>
 
-Dog node;
+static Dog node;
 
-void odom_callback(nav_msgs::Odometry msg)
+void setup()
 {
-	//Mock callback function
+	// create a new instance of node
+	node = Dog();
 }
 
-void laser_callback(sensor_msgs::LaserScan msg)
-{
-	//Mock callback function
-}
+//######################### UNIT TESTS #########################
 
 TEST(UnitTest, testNodeInitialisedSpeed)
 {
@@ -39,6 +37,8 @@ TEST(UnitTest, testStartupState)
 {
 	//EXPECT_EQ(node.state, Dog::ROAMING); 
 }
+
+//###################### ACCEPTANCE TESTS ######################
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){

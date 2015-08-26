@@ -12,24 +12,20 @@
 
 #include <node_defs/worker.h>
 
-Worker node;
+static Worker node;
 
-static bool a = false;
-
-void odom_callback(nav_msgs::Odometry msg)
+void setup()
 {
-	//Mock callback function
-	a = true;
+	// create a new instance of visitor
+	node = Worker();
 }
 
-void laser_callback(sensor_msgs::LaserScan msg)
-{
-	//Mock callback function
-	a = true;
-}
+//######################### UNIT TESTS #########################
 
 TEST(UnitTest, testNodeInitialisedSpeed)
 {
+	setup();
+
 	EXPECT_EQ(node.speed.linear_x, 0.0);
 	EXPECT_EQ(node.speed.angular_z, 0.0);
 }
@@ -41,7 +37,18 @@ TEST(UnitTest, testNodeTopSpeed)
 
 TEST(UnitTest, testStartupState)
 {
+	setup();
+
 	EXPECT_EQ(node.state, Worker::IDLE); 
+}
+
+//###################### ACCEPTANCE TESTS ######################
+
+TEST(AcceptanceTest, testLetVisitorIn)
+{
+	setup();
+	
+	EXPECT_EQ(); 
 }
 
 
