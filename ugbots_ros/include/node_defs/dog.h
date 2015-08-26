@@ -11,7 +11,6 @@
 class Dog : public Node
 {
 public:
-	Dog();
 	Dog(ros::NodeHandle &n);
 	enum State { IDLE, WALKING, RUNNING, RANDOMTURN};
 	State state;
@@ -33,6 +32,5 @@ public:
 	State generateStatus();
 
 	char const* enum_to_string(State t);
-
 };
 

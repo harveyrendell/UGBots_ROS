@@ -8,26 +8,12 @@
 #include <stdlib.h>
 #include <node_defs/possum.h>
 
-Possum::Possum()
-{
-	//setting base attribute defaults
-	this->pose.theta = M_PI/2.0;
-	this->pose.px = 10;
-	this->pose.py = 20;
-	this->speed.linear_x = 0.0;
-	this->speed.max_linear_x = 3.0;
-	this->speed.angular_z = 0.0;
-	this->state = IDLE;
-}
-
 Possum::Possum(ros::NodeHandle &n)
 {
-	//this->n = n;
-
 	//setting base attribute defaults
 	this->pose.theta = M_PI/2.0;
-	this->pose.px = -12.25;
-	this->pose.py = 33.5;
+	this->pose.px = 0;
+	this->pose.py = 0;
 	this->speed.linear_x = 0.0;
 	this->speed.max_linear_x = 3.0;
 	this->speed.angular_z = 0.0;
@@ -36,27 +22,36 @@ Possum::Possum(ros::NodeHandle &n)
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Possum::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Possum::laser_callback, this);
-	//this->sub_list.sub_timer = n.createTimer(ros::Duration(5), &Possum::timerCallback, this);
-
-	geometry_msgs::Point point;
 
 	this->state = IDLE;
 
-	row = 1; //starting at vine 1
-	direction = EAST;
+	this->row = 1; //starting at vine 1
+	this->direction = EAST;
 
-	point.x = this->pose.px;
-	point.y = this->pose.py - (this->speed.linear_x/10.0);
-	for (int i = 0; i<7; i++){
-		point.x = point.x + 3.5;
-		action_queue.push(point);
-	}
+	this->initial_coordinates_set = false;
 
 }
 
 void Possum::odom_callback(nav_msgs::Odometry msg)
 {
-	//This is the call back function to process odometry messages coming from Stage. 	
+	ROS_INFO("ENTERED ODOM CALLBACK");
+	//This is the call back function to process odometry messages coming from Stage.
+	if (initial_coordinates_set == false){
+		if((this->pose.px != msg.pose.pose.position.x) || (this->pose.py != msg.pose.pose.position.y)){
+			this->pose.px = msg.pose.pose.position.x;
+			this->pose.py = msg.pose.pose.position.y;
+		}
+		this->max_row = computeNumberOfRows();
+		geometry_msgs::Point point;
+		point.x = this->pose.px;
+		point.y = this->pose.py;
+		for (int i = 0; i<(this->max_row -1); i++){
+			point.x = point.x + 3.5;
+			action_queue.push(point);
+		}
+		initial_coordinates_set = true;
+	}
+
 	this->pose.px = msg.pose.pose.position.x;
 	this->pose.py = msg.pose.pose.position.y;
 
@@ -68,12 +63,11 @@ void Possum::odom_callback(nav_msgs::Odometry msg)
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(this->state));
-	ROS_INFO("linear speed: %f", this->speed.linear_x);
-	//ROS_INFO("angular speed: %f", this->speed.angular_z);
 	//ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
 	//ROS_INFO("orientation_angle: %f", this->orientation.angle);
-	ROS_INFO("%f, %f", action_queue.front().x , action_queue.front().y);
 
+	//ROS_INFO("goto x: %f", action_queue.front().x);
+	//ROS_INFO("goto y: %f", action_queue.front().y);
 	calculateOrientation();
 	doAngleCheck();
 	checkTurningStatus();
@@ -87,12 +81,13 @@ void Possum::odom_callback(nav_msgs::Odometry msg)
 
 void Possum::laser_callback(sensor_msgs::LaserScan msg)
 {
+	ROS_INFO("ENTERED LASER CALLBACK");
 	if 	((this->state == IDLE) && (this->orientation.currently_turning == false)){
-		ROS_INFO("/status/%s/./", enum_to_string(this->state));
 		bool can_move = true;
 		for (int i = 0; i<150; i++){
 			if (msg.ranges[i] < 3){ //node detected
 				can_move = false;
+				ROS_INFO("NODE DETECTED");
 			}
 		}
 		if (can_move == true){
@@ -101,78 +96,36 @@ void Possum::laser_callback(sensor_msgs::LaserScan msg)
 	}
 }
 
-/**void Possum::timerCallback(const ros::TimerEvent& e){
-	if ((this->orientation.currently_turning == false) && (state != MOVINGACROSS)){
-		ROS_INFO("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");
-		state = generateStatus();
-		if (state == IDLE){
-			stop();
-		}else if (state == ROAMING){
-			walk();
-		}else if (state == FLEEING){
-			run();
-		}else{
-			geometry_msgs::Point point;
-			if ((this->pose.px >= -3.0) && (this->pose.px <= 6.0)){
-				if (this->pose.py > 0.0){
-					//if possum is at top side of orchard
-					point.x = this->pose.px;
-					point.y = 38.0;
-					action_queue.push(point);
-				} else {
-					//if possum is at bottom side of orchard
-					point.x = this->pose.px;
-					point.y = -38.0;
-					action_queue.push(point);
-				}
-			} else if ((this->pose.py >= -37.5) && (this->pose.py <= 38.0)){
-				if (this->pose.px > 0.0) {
-					//if possum is at right side of orchard
-					point.x = 8.0;
-					point.y = this->pose.py - (this->speed.linear_x/10.0);
-					action_queue.push(point);
-				} else {
-					//if possum is at left side of orchard
-					point.x = -4.0;
-					point.y = this->pose.py;
-					action_queue.push(point);
-				}
-			}
-		}
-	}
-}**/
-
-void Possum::move(){
-
-}
 void Possum::stop(){
-	if (direction == EAST){
-		row = row +1;
-	} else if (direction == WEST){
-		row = row -1;
+	ROS_INFO("ENTERED STOP METHOD");
+	if (this->direction == EAST){
+		this->row = this->row +1;
+	} else if (this->direction == WEST){
+		this->row = this->row -1;
 	}
-	if (row == 8){
-		direction = WEST;
+	if (this->row == this->max_row){
+		this->direction = WEST;
 		geometry_msgs::Point point;
 		point.x = this->pose.px;
-		point.y = this->pose.py - (this->speed.linear_x/10.0);
+		point.y = this->pose.py;
 		for (int i = 0; i<7; i++){
 			point.x = point.x - 3.5;
 			action_queue.push(point);
 		}	
-	} else if (row == 1) {
-		direction = EAST;
+	} else if (this->row == 1) {
+		this->direction = EAST;
 		geometry_msgs::Point point;
 		point.x = this->pose.px;
-		point.y = this->pose.py - (this->speed.linear_x/10.0);
+		point.y = this->pose.py;
 		for (int i = 0; i<7; i++){
 			point.x = point.x + 3.5;
 			action_queue.push(point);
 		}
 	} 
-	state = IDLE;
+	this->state = IDLE;
 	this->speed.linear_x = 0.0;
 	this->speed.angular_z = 0.0;
+	ROS_INFO("/status/%s/./", enum_to_string(this->state));
 }
 void Possum::stopTurn(){
 	this->orientation.currently_turning = false;
@@ -214,7 +167,8 @@ void Possum::checkTurningStatus() //override checkTurningStatus so that linear_x
 	{	
 		if(doubleComparator(this->orientation.angle, this->orientation.desired_angle))
 		{
-			state = IDLE;
+			ROS_INFO("Finished Turning");
+			this->state = IDLE;
 			this->orientation.currently_turning = false;
 			this->speed.linear_x = 0.0;
 			this->speed.angular_z = 0.0; 
@@ -238,40 +192,15 @@ char const* Possum::enum_to_string(State t){
     }
  }
 
-Possum::State Possum::generateStatus(){
-	int randNum;
-	srand (time(NULL));
-/* generate secret number between 1 and 3: */
-	randNum = rand() % 5 + 1;
-	if (randNum == 1){
-		return IDLE;
-	}else if (randNum == 2){
-		return ROAMING;
-	}else if (randNum == 3){
-		return FLEEING;
-	}else if (randNum == 4){
-		ROS_INFO("ENTERED MOVINGACROSS");
-		//check if possum is near vines before passing on MOVINGACROSS.5
-		if ((this->pose.px >= -3) && (this->pose.px <= 6)){
-			return MOVINGACROSS;
-		} else if ((this->pose.py >= -37.5) && (this->pose.py <= 38)){
-			return MOVINGACROSS;
-		} else {
-			return FLEEING;
-		}
+int Possum::computeNumberOfRows(){
+	if (!(int(10 * (0-this->pose.px)) % 35)){
+		return int(((10 * (0-this->pose.px)) / 35)*2 +1);
 	} else {
-		ROS_INFO("ENTERED MOVINGACROSS");
-		//check if possum is near vines before passing on MOVINGACROSS.5
-		if ((this->pose.px >= -3) && (this->pose.px <= 6)){
-			return MOVINGACROSS;
-		} else if ((this->pose.py >= -37.5) && (this->pose.py <= 38)){
-			return MOVINGACROSS;
-		} else {
-			return FLEEING;
-		}
+		return int(((10 * (1.75-this->pose.px)) / 35)*2); 
 	}
 }
 
+void Possum::move(){}
 void Possum::collisionDetected(){} 
 
 int main(int argc, char **argv)
