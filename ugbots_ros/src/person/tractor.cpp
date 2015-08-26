@@ -33,6 +33,18 @@ Tractor::Tractor(ros::NodeHandle &n)
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Tractor::ground_callback, this);
 	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Tractor::laser_callback, this);
+
+	geometry_msgs::Point point;
+	point.x = -36.0; 
+	point.y = -12.0;
+
+	action_queue.push(point);
+	
+	point.x = -36.0; 
+	point.y = -28.0;
+
+	action_queue.push(point);
+
 }
 
 void Tractor::ground_callback(nav_msgs::Odometry msg)
