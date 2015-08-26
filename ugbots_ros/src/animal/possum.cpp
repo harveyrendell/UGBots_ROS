@@ -12,8 +12,8 @@ Possum::Possum(ros::NodeHandle &n)
 {
 	//setting base attribute defaults
 	this->pose.theta = M_PI/2.0;
-	this->pose.px = -12.25;
-	this->pose.py = 33.5;
+	this->pose.px = 0;
+	this->pose.py = 0;
 	this->speed.linear_x = 0.0;
 	this->speed.max_linear_x = 3.0;
 	this->speed.angular_z = 0.0;
@@ -25,25 +25,33 @@ Possum::Possum(ros::NodeHandle &n)
 
 	this->state = IDLE;
 
-	this->max_row = computeNumberOfRows();
-
 	this->row = 1; //starting at vine 1
 	this->direction = EAST;
 
-	geometry_msgs::Point point;
-	point.x = this->pose.px;
-	point.y = this->pose.py;
-	for (int i = 0; i<(this->max_row -1); i++){
-		point.x = point.x + 3.5;
-		action_queue.push(point);
-	}
+	this->initial_coordinates_set = false;
 
 }
 
 void Possum::odom_callback(nav_msgs::Odometry msg)
 {
 	ROS_INFO("ENTERED ODOM CALLBACK");
-	//This is the call back function to process odometry messages coming from Stage. 	
+	//This is the call back function to process odometry messages coming from Stage.
+	if (initial_coordinates_set == false){
+		if((this->pose.px != msg.pose.pose.position.x) || (this->pose.py != msg.pose.pose.position.y)){
+			this->pose.px = msg.pose.pose.position.x;
+			this->pose.py = msg.pose.pose.position.y;
+		}
+		this->max_row = computeNumberOfRows();
+		geometry_msgs::Point point;
+		point.x = this->pose.px;
+		point.y = this->pose.py;
+		for (int i = 0; i<(this->max_row -1); i++){
+			point.x = point.x + 3.5;
+			action_queue.push(point);
+		}
+		initial_coordinates_set = true;
+	}
+
 	this->pose.px = msg.pose.pose.position.x;
 	this->pose.py = msg.pose.pose.position.y;
 
@@ -55,11 +63,11 @@ void Possum::odom_callback(nav_msgs::Odometry msg)
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(this->state));
-	ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
-	ROS_INFO("orientation_angle: %f", this->orientation.angle);
+	//ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
+	//ROS_INFO("orientation_angle: %f", this->orientation.angle);
 
-	ROS_INFO("goto x: %f", action_queue.front().x);
-	ROS_INFO("goto y: %f", action_queue.front().y);
+	//ROS_INFO("goto x: %f", action_queue.front().x);
+	//ROS_INFO("goto y: %f", action_queue.front().y);
 	calculateOrientation();
 	doAngleCheck();
 	checkTurningStatus();

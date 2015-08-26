@@ -34,4 +34,5 @@ public:
 	State generateStatus();
 	char const* enum_to_string(State t);
 	int computeNumberOfRows();
+	bool initial_coordinates_set;
 };
