@@ -29,6 +29,7 @@ public:
 	ros::Publisher core_alert;
 	ros::Publisher bin_alert;
 	ros::Subscriber sub_station;
+	ros::Subscriber bin_status_alert;
 	ugbots_ros::robot_details robotDetails;
 
 	void station_callback(ugbots_ros::picker_row pos);
@@ -43,6 +44,7 @@ public:
 	Picker(ros::NodeHandle &n);
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
+	void bsa_callback(std_msgs::String msg);
 	void turn(bool clockwise, double desired_angle, double temprad);
 	void move(double distance, double px, double py);
 	void move();

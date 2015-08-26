@@ -32,7 +32,7 @@ Carrier::Carrier()
 
 Carrier::Carrier(ros::NodeHandle &n)
 {
-	//this->n = n;
+	this->nh = n;
 
 	//setting base attribute defaults
 	speed.linear_x = 0.0;
@@ -55,24 +55,13 @@ Carrier::Carrier(ros::NodeHandle &n)
 	robotDetails.ns = ns;
 
 	core_alert = n.advertise<ugbots_ros::robot_details>("/idle_carriers",1000);
-	sub_bin = n.subscribe<ugbots_ros::Position>("bin", 1000, &Carrier::bin_loc_callback, this);
+	sub_bin = n.subscribe<ugbots_ros::robot_details>("bin", 1000, &Carrier::bin_loc_callback, this);
 
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Carrier::odom_callback, this);
 	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Carrier::laser_callback, this);
 	carrier_alert = n.subscribe<ugbots_ros::bin_status>("/alert",1000,&Carrier::bin_callback,this);
 	carrier_alert_pub = n.advertise<ugbots_ros::bin_status>("/alert",1000);
-
-	/*geometry_msgs::Point point;
-	point.x = 36.0;
-	point.y = -4.0;
-	action_queue.push(point);
-	point.y = 4.0;
-	point.x = 38.0;
-	action_queue.push(point);
-	point.y = -2.0;
-	point.x = -4.0;
-	action_queue.push(point);*/
 }
 
 void Carrier::bin_callback(ugbots_ros::bin_status msg)
@@ -141,7 +130,19 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 		action_queue.push(location_point);
 	}
 
-	begin_action(1.5);
+	if (state == IDLE) {
+		begin_action(0);
+	} else if (state == TRAVELLING) {
+		begin_action(3);
+	} else if (state == CARRYING) {
+		if (!picker_bin_msg_sent) {
+			std::string topic = associated_picker + "/bin_emptied";
+			picker_alert = nh.advertise<std_msgs::String>(topic,1000,true);
+			picker_alert.publish(topic);
+			picker_bin_msg_sent = true;
+		}
+		begin_action(1.5);
+	}
 
 	doAngleCheck();
 	checkTurningStatus();
@@ -216,18 +217,22 @@ void Carrier::laser_callback(sensor_msgs::LaserScan msg)
 	}**/
 }
 
-void Carrier::bin_loc_callback(ugbots_ros::Position pos)
+void Carrier::bin_loc_callback(ugbots_ros::robot_details bin)
 {
+	//picker bin has not been emptied, hence false
+	picker_bin_msg_sent = false;
+	associated_picker = bin.ns;
+
 	//set first point of action, which is the pivot point
 	geometry_msgs::Point pivot;
-	pivot.x = pos.x;
+	pivot.x = bin.x;
 	pivot.y = -40;
 	action_queue.push(pivot);
 	state_queue.push(1);
 	//set goal point of picking up bin
 	geometry_msgs::Point bin_location;
-	bin_location.x = pos.x;
-	bin_location.y = pos.y;
+	bin_location.x = bin.x;
+	bin_location.y = bin.y;
 	action_queue.push(bin_location);
 	state_queue.push(1);
 	//set the carry course for the carrier back to its station
@@ -247,6 +252,10 @@ void Carrier::set_status(int status){
 		if(i == status)
 		{
 			state = state_array[i];
+			if (state == IDLE) {
+				idle_status_sent = false;
+				picker_bin_msg_sent = false; 
+			}
 		}
 	}
 }

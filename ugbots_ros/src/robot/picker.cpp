@@ -51,8 +51,9 @@ Picker::Picker(ros::NodeHandle &n)
 	robotDetails.ns = ns;
 
 	sub_station = n.subscribe<ugbots_ros::picker_row>("station", 1000, &Picker::station_callback, this);
+	bin_status_alert = n.subscribe<std_msgs::String>("bin_emptied", 1000, &Picker::bsa_callback, this);
 	core_alert = n.advertise<ugbots_ros::robot_details>("/idle_pickers", 1000);
-	bin_alert = n.advertise<ugbots_ros::Position>("/full_bins", 1000);
+	bin_alert = n.advertise<ugbots_ros::robot_details>("/full_bins", 1000);
 
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Picker::odom_callback, this);
@@ -125,7 +126,7 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 			pickKiwi();
 		} else if (state == WAITING) {
 			speed.linear_x = 0;
-			if (full_bin_sent == false) {
+			if (!full_bin_sent) {
 				callForCarrier();
 			}
 		}
@@ -185,6 +186,13 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 		}
 	}*/
 }
+
+void Picker::bsa_callback(std_msgs::String msg) {
+	begin_action(0);
+	binPercent = 0;
+	full_bin_sent = false;
+}
+
 void Picker::set_status(int status){
 	for(int i = 0; i < arraysize(state_array); i++)
 	{
@@ -218,7 +226,7 @@ void Picker::pickKiwi() {
 	srand(time(0));
 	
 	if(binPercent<100){
-		int randomInt = rand() % 13;
+		int randomInt = rand() % 2;
 		if (randomInt == 0) { 
 			binPercent = binPercent + 1;
 		}
@@ -234,9 +242,10 @@ void Picker::pickKiwi() {
 }
 
 void Picker::callForCarrier() {
-	ugbots_ros::Position bin_pos;
+	ugbots_ros::robot_details bin_pos;
 	bin_pos.x = pose.px;
 	bin_pos.y = pose.py - 2.8;
+	bin_pos.ns = robotDetails.ns;;
 	bin_alert.publish(bin_pos);
 	full_bin_sent = true;
 }
