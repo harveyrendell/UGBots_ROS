@@ -24,6 +24,7 @@ public:
 	//void stopTurnStatic();
 	//void spinOnTheSpot();
 	void checkTurningStatus();
+	void letInNextVisitor();
 	//void checkStaticTurningStatus();
 	//void calculateOrientation();
 

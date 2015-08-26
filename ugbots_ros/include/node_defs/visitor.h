@@ -26,12 +26,18 @@ public:
 	void init_route();
 	void doRouteSetup();
 
+	void waiting();
+	void startTour();
+	bool insideFarm();
+
 	enum State { IDLE, LOITERING, HARASSING, STOPPED };
 	State state;
 
 	bool rightTurnInit;
 	bool leftTurnInit;
 	bool moveToEnabled;
+	bool waitingInLine;
+	bool tourStarted;
 	double queueDuplicate;
 	double queueDuplicateCheckAngle;
 	ros::Subscriber sub_row;
