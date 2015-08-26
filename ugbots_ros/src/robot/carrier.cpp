@@ -155,8 +155,8 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 void Carrier::laser_callback(sensor_msgs::LaserScan msg)
 {
 	bool detected = false;
-	for (int i = 62; i < 119; i++) {
-		if (msg.ranges[i] < 1.588) {
+	for (int i = 55; i < 126; i++) {
+		if (msg.ranges[i] < 1.29035) {
 			detected = true;
 		}
 	}
