@@ -8,24 +8,8 @@
 #include <stdlib.h>
 #include <node_defs/dog.h>
 
-Dog::Dog()
-{
-	//setting base attribute defaults
-	this->pose.theta = M_PI/2.0;
-	this->pose.px = 10;
-	this->pose.py = 20;
-	this->speed.linear_x = 0.0;
-	this->speed.max_linear_x = 6.0;
-	this->speed.angular_z = 0.0;
-	this->orientation.currently_turning = false;
-
-	this->state = IDLE;
-}
-
 Dog::Dog(ros::NodeHandle &n)
 {
-	//this->n = n;
-
 	//setting base attribute defaults
 	this->pose.theta = M_PI/2.0;
 	this->pose.px = 10;
@@ -40,10 +24,7 @@ Dog::Dog(ros::NodeHandle &n)
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000, &Dog::laser_callback, this);
 	this->sub_list.sub_timer = n.createTimer(ros::Duration(5), &Dog::timerCallback, this);
 
-	//ros::Timer timer = n.createTimer(ros::Duration(10), timerCallback);
-
 	this->state = IDLE;
-
 }
 
 void Dog::odom_callback(nav_msgs::Odometry msg)
@@ -60,10 +41,6 @@ void Dog::odom_callback(nav_msgs::Odometry msg)
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
-	ROS_INFO("linear speed: %f", this->speed.linear_x);
-	ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
-	ROS_INFO("orientation_angle: %f", this->orientation.angle);
-
 
 	calculateOrientation();
 	doAngleCheck();
@@ -79,18 +56,14 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 	//you can access the range data from msg.ranges[i]. i = sample number
 	bool detection = false;
 	if (this->orientation.currently_turning == false){
-		ROS_INFO("11111");
 		for(int a = 0 ; a < 180; a++){
-			if ((msg.ranges[a] < 4) && (a > 80) && (a < 100)) {
-				ROS_INFO("BACK");
+			if ((msg.ranges[a] < 3) && (a > 80) && (a < 100)) {
 				turnBack();
 				break;
-			} else if ((msg.ranges[a] < 4) && (a <= 80)) {
-				ROS_INFO("TURN LEFT");
+			} else if ((msg.ranges[a] < 3) && (a <= 80)) {
 				turnLeft();
 				break;
-			} else if ((msg.ranges[a] < 4) && (a >= 100)){
-				ROS_INFO("TURN RIGHT");
+			} else if ((msg.ranges[a] < 3) && (a >= 100)){
 				turnRight();
 				break;
 			}
@@ -117,8 +90,6 @@ void Dog::setStatus(){
 		turnRandomly();
 	}
 }
-
-void Dog::move(){}
 
 //Stops the node
 void Dog::stop(){
@@ -193,8 +164,6 @@ void Dog::checkTurningStatus()
 	}
 }
 
-void Dog::collisionDetected(){}
-
 char const* Dog::enum_to_string(State t){
     switch(t){
         case WALKING:
@@ -225,6 +194,9 @@ Dog::State Dog::generateStatus(){
 		return RUNNING;
 	}
 }
+
+void Dog::collisionDetected(){}
+void Dog::move(){}
 
 int main(int argc, char **argv)
 {	

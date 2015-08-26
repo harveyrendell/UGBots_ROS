@@ -44,9 +44,16 @@ void Tractor::ground_callback(nav_msgs::Odometry msg)
 	orientation.roty = msg.pose.pose.orientation.y;
 	orientation.rotz = msg.pose.pose.orientation.z;
 	orientation.rotw = msg.pose.pose.orientation.w;
-	orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
-	orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
-	orientation.roty-orientation.rotz*orientation.rotz);
+
+	calculateOrientation();
+
+	begin_action_shortest_path(2.0);
+
+	doAngleCheck();		
+
+	checkTurningStatus();
+
+	publish();
 }
 
 

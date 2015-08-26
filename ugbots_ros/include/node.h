@@ -200,7 +200,6 @@ public:
 
 		turn(angle - this->orientation.desired_angle , 0.0, M_PI/2);
 		checkTurningStatus();
-
 		if(!orientation.currently_turning)
 		{
 			set_status(1);

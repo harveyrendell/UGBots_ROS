@@ -229,7 +229,7 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 			pointtemp.y = this->pose.py + sqrt(0.5) * sin(this->orientation.angle - (M_PI/4.0));
 			temp_queue.push(pointtemp);
 
-			/*pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
+			pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
 			pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle);
 			temp_queue.push(pointtemp);
 
