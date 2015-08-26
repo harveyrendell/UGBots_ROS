@@ -8,21 +8,8 @@
 #include <stdlib.h>
 #include <node_defs/cat.h>
 
-Cat::Cat()
-{
-	//setting base attribute defaults
-	this->pose.theta = M_PI/2.0;
-	this->pose.px = 10;
-	this->pose.py = 20;
-	this->speed.linear_x = 0.0;
-	this->speed.max_linear_x = 3.0;
-	this->speed.angular_z = 0.0;
-
-}
-
 Cat::Cat(ros::NodeHandle &n)
 {
-	//this->n = n;
 
 	//setting base attribute defaults
 	this->pose.theta = M_PI/2.0;
@@ -46,18 +33,7 @@ Cat::Cat(ros::NodeHandle &n)
 	point.x = 47.0;
 	point.y = 47.0;
 	action_queue.push(point);
-	/**point.x = 47.0;
-	point.y = -47.0;
-	action_queue.push(point);
-	point.x = -47.0;
-	point.y = -47.0;
-	action_queue.push(point);
-	point.x = -47.0;
-	point.y = 47.0;
-	action_queue.push(point);
-	point.x = 47.0;
-	point.y = 47.0;
-	action_queue.push(point);**/
+
 }
 
 void Cat::odom_callback(nav_msgs::Odometry msg)
@@ -71,7 +47,6 @@ void Cat::odom_callback(nav_msgs::Odometry msg)
 	this->orientation.rotz = msg.pose.pose.orientation.z;
 	this->orientation.rotw = msg.pose.pose.orientation.w;
 
-	ROS_INFO("/status/%s/./", enum_to_string(this->state));
 	if (direction == CLOCKWISE){
 		ROS_INFO("direction: CLOCKWISE");
 	} else {
@@ -89,9 +64,9 @@ void Cat::odom_callback(nav_msgs::Odometry msg)
 
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
-	//ROS_INFO("/status/%s/./", enum_to_string(this->state));
+	ROS_INFO("/status/%s/./", enum_to_string(this->state));
 	ROS_INFO("linear speed: %f", this->speed.linear_x);
-	//ROS_INFO("angular speed: %f", this->speed.angular_z);
+	ROS_INFO("angular speed: %f", this->speed.angular_z);
 	ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
 	ROS_INFO("orientation_angle: %f", this->orientation.angle);
 	ROS_INFO("%f, %f", action_queue.front().x , action_queue.front().y);
@@ -111,7 +86,6 @@ void Cat::laser_callback(sensor_msgs::LaserScan msg)
 	if(this->orientation.currently_turning == false){
 		for(int i=0; i<30; i++){
 			if(msg.ranges[i] < 2.5){
-				//ROS_INFO("LASER DETECTED");
 				turnBack();
 				break;
 			}
@@ -121,20 +95,21 @@ void Cat::laser_callback(sensor_msgs::LaserScan msg)
 
 void Cat::timerCallback(const ros::TimerEvent& e){
 	if (this->orientation.currently_turning == false){
-		state = generateStatus();
-		if (this->state == IDLE){
-			stop();
-		}else if (this->state == ROAMING){
-			walk();
-		}else{
-			run();
-		}
+		setStatus();
 	}
 }
 
-void Cat::move(){
-
+void Cat::setStatus(){
+	state = generateStatus();
+	if (this->state == IDLE){
+		stop();
+	}else if (this->state == ROAMING){
+		walk();
+	}else{
+		run();
+	}
 }
+
 void Cat::stopAfterPop(){
 	this->speed.linear_x = 0.0;
 	this->speed.angular_z = 0.0;
@@ -231,10 +206,8 @@ void Cat::turnBack(){
 
 	//empty action queue
 	while (action_queue.empty() == false){
-		ROS_INFO("POP COORDINATE");
 		action_queue.pop();
 	}
-	ROS_INFO("EXIT WHILE LOOP");
 
 	geometry_msgs::Point point;
 	if (this->direction == CLOCKWISE){
@@ -284,8 +257,7 @@ void Cat::checkTurningStatus(){
 		if(doubleComparator(orientation.angle, orientation.desired_angle))
 		{
 			this->orientation.currently_turning = false;
-			this->speed.linear_x = 0.0;
-			this->speed.angular_z = 0.0; 
+			setStatus();
 		}
 	return;
 	}
@@ -307,7 +279,7 @@ char* Cat::enum_to_string(State t){
 Cat::State Cat::generateStatus(){
 	int randNum;
 	srand (time(NULL));
-/* generate secret number between 1 and 3: */
+/* generate random number between 1 and 4 */
 	randNum = rand() % 4 + 1;
 	if (randNum == 1){
 		return IDLE;
@@ -323,7 +295,6 @@ bool Cat::begin_action(double speed){
 
 	if (action_queue.empty())
 	{
-		//set_status(1);
 		return true;
 	}
 	geometry_msgs::Point end_point = action_queue.front();
@@ -338,14 +309,13 @@ bool Cat::begin_action(double speed){
 	{
 		if(move_y(end_point.y, speed))
 		{
-			//set_status(2);
 		}
 
 	}
 }	
 
-
-void Cat::collisionDetected(){} 
+void Cat::move(){}
+void Cat::collisionDetected(){};
 
 int main(int argc, char **argv)
 {	
@@ -366,9 +336,7 @@ ros::Rate loop_rate(10);
 int count = 0;
 
 while (ros::ok())
-{
-	//node.publish();
-	
+{	
 	ros::spinOnce();
 
 	loop_rate.sleep();
