@@ -99,7 +99,6 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 		idle_status_sent = true;
 	}
 
-
 	ROS_INFO("/position/x/%f", pose.px);
 	ROS_INFO("/position/y/%f", pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
@@ -153,9 +152,13 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 		{
 			speed.linear_x = 0.0;
 			publish();
-			if(this->queueDuplicate && !this->orientation.currently_turning)
+
+			if(!this->orientation.currently_turning)
 			{
-				this->queueDuplicateCheckAngle = this->orientation.angle;
+				while(!avoidance_queue.empty())
+				{
+					avoidance_queue.pop();
+				}
 
 				std::queue<geometry_msgs::Point> temp_queue;
 
@@ -178,18 +181,8 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 				ROS_INFO("third point x: %f",pointtemp.x);
 				ROS_INFO("third point y: %f",pointtemp.y);				
 				avoidance_queue.push(pointtemp);
-
-				this->queueDuplicate = false;
 			}
 		}
-	}
-
-
-
-	/*if(fabs(this->queueDuplicateCheckAngle - this->orientation.angle) >= (M_PI/2.000000))
-	{
-		this->queueDuplicate = true;
-		this->queueDuplicateCheckAngle = 0;
 	}*/
 }
 void Picker::set_status(int status){
