@@ -113,7 +113,7 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 
 	if(insideFarm())
 	{	
-		if(fabs(this->queueDuplicateCheckAngle - this->orientation.angle) >= (M_PI/4.000000))
+		if(fabs(this->queueDuplicateCheckAngle - this->orientation.angle) >= (M_PI/2.000000))
 		{
 			this->queueDuplicate = true;
 			this->queueDuplicateCheckAngle = 0;
@@ -215,7 +215,7 @@ void Visitor::checkTurningStatus()
 		
 	if(this->orientation.currently_turning == true)
 	{
-		if(doubleComparator(this->orientation.angle , this->orientation.desired_angle))
+		if(doubleAngleComparator(this->orientation.angle , this->orientation.desired_angle))
 		{
 			this->orientation.currently_turning = false;
 			this->speed.linear_x = 2.0;
