@@ -32,4 +32,6 @@ define rows model
   tree (pose [0 65 0 0])
   post (pose [0 67.5 0 0])
   tree (pose [0 70 0 0])
+
+  gui_move 0
 )
