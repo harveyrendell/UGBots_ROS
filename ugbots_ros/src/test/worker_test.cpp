@@ -14,19 +14,23 @@
 
 Worker node;
 
+static bool a = false;
+
 void odom_callback(nav_msgs::Odometry msg)
 {
 	//Mock callback function
+	a = true;
 }
 
 void laser_callback(sensor_msgs::LaserScan msg)
 {
 	//Mock callback function
+	a = true;
 }
 
 TEST(UnitTest, testNodeInitialisedSpeed)
 {
-	EXPECT_EQ(node.speed.linear_x, 2.0);
+	EXPECT_EQ(node.speed.linear_x, 0.0);
 	EXPECT_EQ(node.speed.angular_z, 0.0);
 }
 
@@ -39,6 +43,7 @@ TEST(UnitTest, testStartupState)
 {
 	EXPECT_EQ(node.state, Worker::IDLE); 
 }
+
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){
