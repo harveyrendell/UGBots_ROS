@@ -275,7 +275,7 @@ index=$(( (RANDOM % 28) -14))
 
 yPos=$(echo "scale=2; $index*2.5 -1.25"| bc)
 
-echo possum\( pose [ $left $yPos 0 0 ] name \"PO$po\" color \"purple\" \) >> world/config/animalinstances.inc
+echo possum\( pose [ $left $yPos 0 0 ] origin [ 0 0 0 270 ] name \"PO$po\" color \"purple\" \) >> world/config/animalinstances.inc
 
 po=$(($po+1))
 number=$(($number+1))

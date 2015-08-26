@@ -105,6 +105,6 @@ define possum position
 	point[3] [0.4 0.1]
 	z [0.27 0.4]
   )
-  anilaser(pose [ 0.050 0.000 0 90.000 ])
+  anilaser(pose [ 0.050 0.000 0 0.000 ])
 )
 
