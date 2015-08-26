@@ -190,7 +190,7 @@ echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"robotnode\" type=\"CARRIER\"\/\> >> ugbots_ros\/launch\/world.launch
 echo \<\/group\> >> ugbots_ros\/launch\/world.launch
 
-echo carrierRobot\(pose [ -46 $((48-$(($j*5)))) 0 90 ] name \"C$j\" color \"blue\"\) >> world/config/robotinstances.inc
+echo carrierRobot\(pose [ $((25 + (($j*5)))) -15 0 270 ] name \"C$j\" color \"blue\"\) >> world/config/robotinstances.inc
 
 j=$(($j+1))
 number=$(($number+1))
