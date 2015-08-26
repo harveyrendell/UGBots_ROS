@@ -12,24 +12,20 @@
 
 #include <node_defs/worker.h>
 
-Worker node;
+static Worker node;
 
-static bool a = false;
-
-void odom_callback(nav_msgs::Odometry msg)
+void setup()
 {
-	//Mock callback function
-	a = true;
+	// create a new instance of visitor
+	node = Worker();
 }
 
-void laser_callback(sensor_msgs::LaserScan msg)
-{
-	//Mock callback function
-	a = true;
-}
+//######################### UNIT TESTS #########################
 
 TEST(UnitTest, testNodeInitialisedSpeed)
 {
+	setup();
+
 	EXPECT_EQ(node.speed.linear_x, 0.0);
 	EXPECT_EQ(node.speed.angular_z, 0.0);
 }
@@ -41,19 +37,26 @@ TEST(UnitTest, testNodeTopSpeed)
 
 TEST(UnitTest, testStartupState)
 {
+	setup();
+
 	EXPECT_EQ(node.state, Worker::IDLE); 
 }
 
+//###################### ACCEPTANCE TESTS ######################
+
+TEST(AcceptanceTest, testLetVisitorIn)
+{
+	setup();
+
+	node.letInNextVisitor();
+	EXPECT_TRUE(!node.action_queue.empty()); 
+}
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){
 	//Create a node to test with
 	ros::init(argc, argv, "WORKER");
 	ros::NodeHandle n;
-	
-	node.sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	node.sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, odom_callback);
-	node.sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,laser_callback);
 
 	//Run the test suite
 	testing::InitGoogleTest(&argc, argv);

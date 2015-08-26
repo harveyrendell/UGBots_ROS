@@ -12,17 +12,15 @@
 
 #include <node_defs/carrier.h>
 
-Carrier node;
+static Carrier node;
 
-void odom_callback(nav_msgs::Odometry msg)
+void setup()
 {
-	//Mock callback function
+	// create a new instance of node
+	node = Carrier();
 }
 
-void laser_callback(sensor_msgs::LaserScan msg)
-{
-	//Mock callback function
-}
+//######################### UNIT TESTS #########################
 
 TEST(UnitTest, testNodeInitialisedSpeed)
 {
@@ -40,27 +38,25 @@ TEST(UnitTest, testStartupState)
 	EXPECT_EQ(node.state, Carrier::IDLE); 
 }
 
-/*TEST(TestSuite, testStateSwitchStopped)
-{
-	node.moveX(10.0, 0.0);
-	EXPECT_EQ(node.state, Carrier::STOPPED); 	
-}*/
+//###################### ACCEPTANCE TESTS ######################
 
-/*TEST(UnitTest, testStateSwitchTravelling)
+TEST(AcceptanceTest, testTurnStop)
 {
-	node.move_to(10.0, 10.0);
-	EXPECT_EQ(node.state, Carrier::TRAVELLING); 
-}*/
+	setup();
+
+	node.orientation.currently_turning = true;
+	node.orientation.desired_angle = node.orientation.angle;
+
+	node.checkTurningStatus();
+
+	EXPECT_FALSE(node.orientation.currently_turning);
+}
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){
 	//Create a node to test with
 	ros::init(argc, argv, "CARRIER");
 	ros::NodeHandle n;
-	
-	node.sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	node.sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, odom_callback);
-	node.sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,laser_callback);
 
 	//Run the test suite
 	testing::InitGoogleTest(&argc, argv);
