@@ -211,9 +211,9 @@ public:
 	bool begin_action_avoidance(double speed)
 	{
 		set_status(3);
-			ROS_INFO("/message/avoidance");
 		if(avoidance_queue.empty())
 		{
+			ROS_INFO("/message/empty avoidance");
 			set_status(1);
 			return true;
 		}
@@ -221,7 +221,6 @@ public:
 		geometry_msgs::Point end_point = avoidance_queue.front();
 		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 		{
-			ROS_INFO("REACHED POINT");
 			avoidance_queue.pop();
 			stop();
 			return true;
@@ -230,14 +229,26 @@ public:
 		double distance = sqrt(pow(end_point.x - pose.px, 2) + pow(end_point.y - pose.py, 2));
 		this->orientation.desired_angle = atan2((end_point.y - pose.py),(end_point.x - pose.px));
 		doAngleCheck();
-
-		if(doubleComparator((this->orientation.angle - this->orientation.desired_angle), 3.0 * M_PI/2))
+		double angle_difference = this->orientation.angle - this->orientation.desired_angle;
+		if(angle_difference > M_PI)
 		{
+			angle_difference = angle_difference - 2.0 * M_PI;
+		}
+		if(angle_difference < -1.0 * M_PI )
+		{
+			angle_difference = angle_difference + 2.0 * M_PI;
+		}
+
+		ROS_INFO("");
+
+		if(doubleComparator(angle_difference, -1.0 * M_PI/2))
+		{
+			ROS_INFO("/message/up");
 			speed = deceleration(fabs(distance), 1, 0.005);
 			this->speed.linear_y = speed;
 			this->speed.linear_x = 0.0;
 		}
-		if(doubleComparator((this->orientation.angle - this->orientation.desired_angle), M_PI/2))
+		if(doubleComparator(angle_difference, M_PI/2))
 		{
 			speed = deceleration(fabs(distance), 1, 0.005);
 			this->speed.linear_y = -1.0 * speed;
@@ -246,7 +257,8 @@ public:
 
 		if(doubleComparator(this->orientation.angle, this->orientation.desired_angle))
 		{
-			ROS_INFO("go str8");
+
+			ROS_INFO("/message/straight");
 			speed = deceleration(fabs(distance), 1, 0.005);
 			this->speed.linear_x = speed;
 		}
@@ -270,7 +282,6 @@ public:
 			stop();
 			return true;
 		}
-
 		if(move_x(end_point.x, speed))
 		{
 			if(move_y(end_point.y, speed))
