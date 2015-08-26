@@ -12,27 +12,13 @@
 
 #include <node_defs/visitor.h>
 
-Visitor node;
-bool odom_cb = false;
-bool laser_cb = false;
+// the node
+static Visitor node;
 
 void setup()
 {
-	odom_cb = false;
-	laser_cb = false;
+	// create a new instance of visitor
 	node = Visitor();
-}
-
-void odom_callback(nav_msgs::Odometry msg)
-{
-	//Mock callback function
-	odom_cb = true;
-}
-
-void laser_callback(sensor_msgs::LaserScan msg)
-{
-	//Mock callback function
-	laser_cb = true;
 }
 
 TEST(UnitTest, testNodeInitialisedSpeed)
@@ -82,7 +68,18 @@ TEST(AcceptanceTest, testTurnStop)
 	node.checkTurningStatus();
 
 	EXPECT_FALSE(node.orientation.currently_turning);
-	//EXPECT_TRUE(node.orientation.angle, node.orientation.desired_angle)
+}
+
+TEST(UnitTest, testStartTour)
+{
+	node.startTour();
+	EXPECT_EQ(node.speed.linear_x, 2.0);
+}
+
+TEST(UnitTest, testWaiting)
+{
+	node.waiting();
+	EXPECT_EQ(node.speed.linear_x, 0.0);
 }
 
 // Run all the tests that were declared with TEST()
@@ -90,10 +87,6 @@ int main(int argc, char **argv){
 	//Create a node to test with
 	ros::init(argc, argv, "VISITOR");
 	ros::NodeHandle n;
-	
-	node.sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	node.sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, odom_callback);
-	node.sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,laser_callback);
 
 	//Run the test suite
 	testing::InitGoogleTest(&argc, argv);
