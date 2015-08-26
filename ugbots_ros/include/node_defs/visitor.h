@@ -30,7 +30,7 @@ public:
 	void startTour();
 	bool insideFarm();
 
-	enum State { IDLE, LOITERING, HARASSING, STOPPED };
+	enum State { IDLE, AVOIDING, TOURING };
 	State state;
 
 	bool rightTurnInit;

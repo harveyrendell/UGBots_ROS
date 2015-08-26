@@ -28,7 +28,7 @@ public:
 	//void checkStaticTurningStatus();
 	//void calculateOrientation();
 
-	enum State { IDLE, PATROLLING, RESPONDING, SAWDOG };
+	enum State { IDLE, QUEUENEXT };
 	State state;
 	
 	char const* enum_to_string(State t);
