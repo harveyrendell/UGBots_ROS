@@ -1,9 +1,9 @@
-define anilaser ranger
+define poslaser ranger
 (
   sensor(
-  range [ 0.0 7.0 ] # range
-  fov 180       # field of vision
-  samples 180   # samples 
+  range [ 0.0 3.5 ] # range
+  fov 150       # field of vision
+  samples 150   # samples 
   )
   # generic model properties
   color "black"
@@ -105,6 +105,6 @@ define possum position
 	point[3] [0.4 0.1]
 	z [0.27 0.4]
   )
-  anilaser(pose [ 0.050 0.000 0 0.000 ])
+  poslaser(pose [ 0.050 0.000 0 0.000 ])
 )
 
