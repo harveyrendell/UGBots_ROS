@@ -108,7 +108,7 @@ void Possum::stop(){
 		geometry_msgs::Point point;
 		point.x = this->pose.px;
 		point.y = this->pose.py;
-		for (int i = 0; i<7; i++){
+		for (int i = 0; i<(this->max_row-1); i++){
 			point.x = point.x - 3.5;
 			action_queue.push(point);
 		}	
@@ -117,7 +117,7 @@ void Possum::stop(){
 		geometry_msgs::Point point;
 		point.x = this->pose.px;
 		point.y = this->pose.py;
-		for (int i = 0; i<7; i++){
+		for (int i = 0; i<(this->max_row-1); i++){
 			point.x = point.x + 3.5;
 			action_queue.push(point);
 		}
