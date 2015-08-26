@@ -33,6 +33,18 @@ Tractor::Tractor(ros::NodeHandle &n)
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Tractor::ground_callback, this);
 	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Tractor::laser_callback, this);
+
+	geometry_msgs::Point point;
+	point.x = -36.0; 
+	point.y = -12.0;
+
+	action_queue.push(point);
+	
+	point.x = -36.0; 
+	point.y = -28.0;
+
+	action_queue.push(point);
+
 }
 
 void Tractor::ground_callback(nav_msgs::Odometry msg)
@@ -46,6 +58,23 @@ void Tractor::ground_callback(nav_msgs::Odometry msg)
 	orientation.rotw = msg.pose.pose.orientation.w;
 
 	calculateOrientation();
+
+	if(action_queue.size() == 1)
+	{
+		geometry_msgs::Point point;
+		if(action_queue.front().y == -12)
+		{
+			point.x = -36.0;
+			point.y = -28.0;
+		}
+		else
+		{
+			point.x = -36.0;
+			point.y = -12.0;
+		}
+
+		action_queue.push(point);
+	}
 
 	begin_action_shortest_path(2.0);
 
@@ -63,7 +92,11 @@ void Tractor::laser_callback(sensor_msgs::LaserScan msg)
 }
 
 void Tractor::move(){}
-void Tractor::stop(){}
+
+void Tractor::stop(){
+	speed.linear_x = 0.0;
+	speed.angular_z = 0.0;
+}
 void Tractor::collisionDetected(){}
 
 int main(int argc, char **argv)
