@@ -199,6 +199,7 @@ public:
 		double angle = atan2((end_point.y - pose.py),(end_point.x - pose.px));
 
 		turn(angle - this->orientation.desired_angle , 0.0, M_PI/2);
+		checkTurningStatus();
 		if(!orientation.currently_turning)
 		{
 			set_status(1);

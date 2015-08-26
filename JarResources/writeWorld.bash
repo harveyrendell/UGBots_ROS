@@ -96,7 +96,9 @@ if (( $kiwitree % 2 )); then
         echo point\( pose [ $bleft -38 0 0 ] name \"robot_$number\" color \"yellow\" \) >> world/config/beaconinstances.inc
         number=$(($number+1))
         
- 
+        echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
+		echo \<node pkg=\"ugbots_ros\" name=\"beacon\" type=\"BEACON\"\/\> >> ugbots_ros\/launch\/world.launch 
+		echo \<\/group\> >> ugbots_ros\/launch\/world.launch
         echo point\( pose [ $bright -38 0 0 ] name \"robot_$number\" color \"yellow\" \) >> world/config/beaconinstances.inc
         number=$(($number+1))
         
@@ -164,7 +166,7 @@ echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"robotnode\" type=\"PICKER\"\/\> >> ugbots_ros\/launch\/world.launch 
 echo \<\/group\> >> ugbots_ros\/launch\/world.launch
 
-echo pickerRobot\(pose [ -48 $((48-$(($i * 5)))) 0 90 ]\ name \"P$i\" color \"red\"\) >> world/config/robotinstances.inc
+echo pickerRobot\(pose [ -48 $((48-$(($i * 5)))) 0 0 ]\ name \"P$i\" color \"red\"\) >> world/config/robotinstances.inc
 
 i=$(($i+1))
 number=$(($number+1))
@@ -261,28 +263,19 @@ done
 while [ $po -lt $possum ];
 do
 
-rand=$(( (RANDOM % 97) - 46 )) 
-
-if (($rand>=-12 && $rand<=12));
-then
-    rand3=$(( (RANDOM % 15) - 49 )) 
-    rand4=$(( (RANDOM % 15) + 35 ))
-    if [ $(( (RANDOM % 2) + 1 )) -lt "2" ];
-    then
-        rand2=$rand3
-    else
-        rand2=$rand4
-    fi
-else
-    rand2=$(( (RANDOM % 99) - 48 )) 
-fi
-
 echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch #### DOG -> POSSUM
 echo \<node pkg=\"ugbots_ros\" name=\"possumnode\" type=\"POSSUM\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
 #echo possum\( pose [ 3.5 $((-1-$(($c * 2)))) 0 0 ] name \"P$po\" color \"purple\" \) >> world/config/animalinstances.inc
-echo possum\( pose [ $rand $rand2 0 0 ] name \"PO$po\" color \"purple\" \) >> world/config/animalinstances.inc
+
+possumStart=$(echo "scale=2; $bleft-1.75" | bc)
+
+index=$(( (RANDOM % 28) -14))
+
+yPos=$(echo "scale=2; $index*2.5 -1.25"| bc)
+
+echo possum\( pose [ $left $yPos 0 0 ] name \"PO$po\" color \"purple\" \) >> world/config/animalinstances.inc
 
 po=$(($po+1))
 number=$(($number+1))
