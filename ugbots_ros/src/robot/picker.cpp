@@ -97,8 +97,8 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 		idle_status_sent = true;
 	}
 
-	ROS_INFO("/position/x/%f", msg.twist.twist.linear.x);
-	ROS_INFO("/position/y/%f", msg.twist.twist.linear.y);
+	ROS_INFO("/position/x/%f", pose.px);
+	ROS_INFO("/position/y/%f", pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
 	ROS_INFO("%f degrees per clock", (msg.twist.twist.angular.z * 180/M_PI)/10);
 
@@ -174,9 +174,13 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 		{
 			speed.linear_x = 0.0;
 			publish();
-			if(this->queueDuplicate && !this->orientation.currently_turning)
+
+			if(!this->orientation.currently_turning)
 			{
-				this->queueDuplicateCheckAngle = this->orientation.angle;
+				while(!avoidance_queue.empty())
+				{
+					avoidance_queue.pop();
+				}
 
 				std::queue<geometry_msgs::Point> temp_queue;
 
@@ -199,59 +203,9 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 				ROS_INFO("third point x: %f",pointtemp.x);
 				ROS_INFO("third point y: %f",pointtemp.y);				
 				avoidance_queue.push(pointtemp);
-
-				this->queueDuplicate = false;
 			}
 		}
 	}
-
-
-
-	/*if(fabs(this->queueDuplicateCheckAngle - this->orientation.angle) >= (M_PI/2.000000))
-	{
-		this->queueDuplicate = true;
-		this->queueDuplicateCheckAngle = 0;
-	}
-	
-
-	if(msg.ranges[90] < 2.0)
-	{
-		if(this->queueDuplicate == true)
-		{
-			this->queueDuplicateCheckAngle = this->orientation.angle;
-
-			std::queue<geometry_msgs::Point> temp_queue;
-
-			geometry_msgs::Point pointtemp;
-
-			
-			pointtemp.x = this->pose.px + sqrt(0.5) * cos(this->orientation.angle - (M_PI/4.0));
-			pointtemp.y = this->pose.py + sqrt(0.5) * sin(this->orientation.angle - (M_PI/4.0));
-			temp_queue.push(pointtemp);
-
-			pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
-			pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle);
-			temp_queue.push(pointtemp);
-
-			pointtemp.x = pointtemp.x + sqrt(0.5) * cos(this->orientation.angle + (M_PI/4.0));
-			pointtemp.y = pointtemp.y + sqrt(0.5) * sin(this->orientation.angle + (M_PI/4.0));
-			temp_queue.push(pointtemp);
-
-			while(!action_queue.empty())
-			{
-				temp_queue.push(action_queue.front());
-				action_queue.pop();
-			}
-
-			while(!temp_queue.empty())
-			{
-				action_queue.push(temp_queue.front());
-				temp_queue.pop();
-			}
-
-			this->queueDuplicate = false;
-		}
-	}**/
 }
 void Picker::set_status(int status){
 	for(int i = 0; i < arraysize(state_array); i++)
