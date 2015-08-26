@@ -17,120 +17,21 @@ define tree model
   block(
 	color "green"
 	points 4
-	point[0] [0.2 0.2]
-	point[1] [0.8 0.2]
-	point[2] [0.8 0.8]
-	point[3] [0.2 0.8]
+	point[0] [0.9 0.9]
+	point[1] [1 0.9]
+	point[2] [1 1]
+	point[3] [0.9 1]
 	z [1.8 1.9]
   )
 
   block(
 	color "green"
 	points 4
-	point[0] [0.1 0.1]
-	point[1] [0.9 0.1]
-	point[2] [0.9 0.9]
-	point[3] [0.1 0.9]
-	z [1.9 2.0]
-  )
+	point[0] [0.1 0]
+	point[1] [0.2 0]
+	point[2] [0.2 0.1]
+	point[3] [0.1 0.1]
+	z [1.8 1.9]
 
-  block(
-	color "green"
-	points 4
-	point[0] [0 0]
-	point[1] [1 0]
-	point[2] [1 1]
-	point[3] [0 1]
-	z [2.0 2.05]
-  )
-
-  block(
-	color "green"
-	points 4
-	point[0] [0.05 0.05]
-	point[1] [0.95 0.05]
-	point[2] [0.95 0.95]
-	point[3] [0.05 0.95]
-	z [2.05 2.1]
-  )
-
-  block(
-	color "green"
-	points 4
-	point[0] [0.1 0.1]
-	point[1] [0.9 0.1]
-	point[2] [0.9 0.9]
-	point[3] [0.1 0.9]
-	z [2.1 2.15]
-  )
-
-  block(
-	color "green"
-	points 4
-	point[0] [0.15 0.15]
-	point[1] [0.85 0.15]
-	point[2] [0.85 0.85]
-	point[3] [0.15 0.85]
-	z [2.15 2.2]
-  )
-
-  block(
-	color "green"
-	points 4
-	point[0] [0.2 0.2]
-	point[1] [0.8 0.2]
-	point[2] [0.8 0.8]
-	point[3] [0.2 0.8]
-	z [2.2 2.3]
-  )
-
-  block(
-	color "green"
-	points 4
-	point[0] [0.25 0.25]
-	point[1] [0.75 0.25]
-	point[2] [0.75 0.75]
-	point[3] [0.25 0.75]
-	z [2.3 2.4]
-  )
-
-  block(
-	color "green"
-	points 4
-	point[0] [0.3 0.3]
-	point[1] [0.7 0.3]
-	point[2] [0.7 0.7]
-	point[3] [0.3 0.7]
-	z [2.4 2.5]
-  )
-
-  block(
-	color "green"
-	points 4
-	point[0] [0.35 0.35]
-	point[1] [0.65 0.35]
-	point[2] [0.65 0.65]
-	point[3] [0.35 0.65]
-	z [2.5 2.6]
-  )
-
-  block(
-	color "green"
-	points 4
-	point[0] [0.4 0.4]
-	point[1] [0.6 0.4]
-	point[2] [0.6 0.6]
-	point[3] [0.4 0.6]
-	z [2.6 2.65]
-  )
-
-  block(
-	color "green"
-	points 4
-	point[0] [0.45 0.45]
-	point[1] [0.55 0.45]
-	point[2] [0.55 0.55]
-	point[3] [0.45 0.55]
-	z [2.65 2.7]
   )
 )
