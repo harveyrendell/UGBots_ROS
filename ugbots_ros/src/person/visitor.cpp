@@ -293,8 +293,6 @@ void Visitor::doRouteSetup()
 	{
 		geometry_msgs::Point temp;
 		temp = *iter;
-
-		ROS_INFO("TEMP_X:%f, TEMP_Y:%f", temp.x, temp.y);
 		if(temp.x < lowest_x || doubleComparator(temp.x, lowest_x))
 		{
 			lowest_x = temp.x;
@@ -337,10 +335,7 @@ void Visitor::doRouteSetup()
 	exitRoute.x = 52.0;
 	exitRoute.y = -15.0;
 
-	action_queue.push(exitRoute);
-
-	}
-	
+	action_queue.push(exitRoute);	
 }
 
 void Visitor::waiting()

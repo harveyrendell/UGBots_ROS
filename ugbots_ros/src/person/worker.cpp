@@ -72,9 +72,9 @@ void Worker::odom_callback(nav_msgs::Odometry msg)
 	
 	calculateOrientation();
 
-	begin_action(2.0);
+	begin_action_shortest_path(2.0);
 
-	doAngleCheck();		
+	doAngleCheck();
 
 	checkTurningStatus();
 
