@@ -107,7 +107,7 @@ void Tractor::stop(){
 }
 void Tractor::collisionDetected(){}
 
-char const* enum_to_string(State t)
+char const* Tractor::enum_to_string(State t)
 {
 	switch (t){
 		case IDLE:
@@ -139,8 +139,6 @@ int count = 0;
 
 	while (ros::ok())
 	{
-		node.publish();
-
 		ros::spinOnce();
 
 		loop_rate.sleep();

@@ -16,7 +16,7 @@ public:
 	void ground_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
 
-	enum State { IDLE };
+	enum State { IDLE, TRAVELLING };
 	State state;
 	char const* enum_to_string(State t);
 
