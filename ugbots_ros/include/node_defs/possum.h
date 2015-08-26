@@ -3,6 +3,7 @@
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/LaserScan.h>
+#include <math.h>
 
 #include <sstream>
 #include <stdlib.h>
@@ -15,6 +16,7 @@ public:
 	enum State { IDLE, ROAMING, FLEEING, MOVINGACROSS };
 	State state;
 	int row;
+	int max_row;
 	enum Direction {NORTH, EAST, SOUTH, WEST};
 	Direction direction;
 	void odom_callback(nav_msgs::Odometry msg);
@@ -31,4 +33,5 @@ public:
 	void collisionDetected();
 	State generateStatus();
 	char const* enum_to_string(State t);
+	int computeNumberOfRows();
 };
