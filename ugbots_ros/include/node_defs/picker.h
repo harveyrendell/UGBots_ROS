@@ -58,8 +58,10 @@ public:
 	void goToWork();
 	void pickKiwi();
 
-	enum State { IDLE, TRAVELLING, PICKING, WAITING, AVOIDING, STOPPED };
+	enum State { IDLE, TRAVELLING, AVOIDING, PICKING, WAITING, STOPPED };
 	State state;
+	State state_array[6] = { IDLE, TRAVELLING, AVOIDING, WAITING, PICKING, STOPPED };
+
 	char const* enum_to_string(State t);
 	
 	int binPercent;
