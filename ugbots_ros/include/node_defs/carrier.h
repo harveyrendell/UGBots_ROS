@@ -27,6 +27,9 @@ public:
 	double zero_angle;
 	double temprad;
 
+	bool station_set;
+	double station_x;
+	double station_y;
 	bool idle_status_sent;
 	ros::Subscriber sub_ground;
 	ros::Subscriber sub_bin;

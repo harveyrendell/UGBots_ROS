@@ -61,7 +61,7 @@ TEST(AcceptanceTest, testActionQueue)
 
 TEST(AcceptanceTest, testBeginAction)
 {
-	EXPECT_TRUE(node.begin_action(3.0));
+	EXPECT_FALSE(node.begin_action(3.0));
 }
 
 // Run all the tests that were declared with TEST()

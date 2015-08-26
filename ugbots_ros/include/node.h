@@ -72,7 +72,7 @@ public:
 			{
 				return deceleration(distance, M_PI/180, max_tolerance);
 			}
-			if (tolerance < max_tolerance)
+			if (tolerance <= max_tolerance)
 			{
 				return max_tolerance;
 			}
@@ -205,15 +205,12 @@ public:
 			set_status(1);
 			speed = deceleration(fabs(distance), 1, 0.005);
 			this->speed.linear_x = speed;
-			if (fabs(distance) < 0.5)
-			{
-				this->speed.linear_x = distance;
-			}
 		}
 	}
 
 	bool begin_action_avoidance(double speed)
 	{
+		set_status(3);
 		if(avoidance_queue.empty())
 		{
 			set_status(1);
@@ -223,28 +220,30 @@ public:
 		geometry_msgs::Point end_point = avoidance_queue.front();
 		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 		{
-			ROS_INFO("STOP PLS");
+			ROS_INFO("REACHED POINT");
 			avoidance_queue.pop();
 			stop();
 			return true;
 		}
-		ROS_INFO("avoidance x: %f", end_point.x);
-		ROS_INFO("avoidance y: %f", end_point.y);
 
 		double distance = sqrt(pow(end_point.x - pose.px, 2) + pow(end_point.y - pose.py, 2));
 		this->orientation.desired_angle = atan2((end_point.y - pose.py),(end_point.x - pose.px));
 		doAngleCheck();
 
-		ROS_INFO("angle difference: %f",this->orientation.angle - this->orientation.desired_angle);
-		ROS_INFO("M_PI: %f", M_PI/2);
-		if(doubleAngleComparator((this->orientation.angle - this->orientation.desired_angle), M_PI/2))
+		if(doubleComparator((this->orientation.angle - this->orientation.desired_angle), 3.0 * M_PI/2))
+		{
+			speed = deceleration(fabs(distance), 1, 0.005);
+			this->speed.linear_y = speed;
+			this->speed.linear_x = 0.0;
+		}
+		if(doubleComparator((this->orientation.angle - this->orientation.desired_angle), M_PI/2))
 		{
 			speed = deceleration(fabs(distance), 1, 0.005);
 			this->speed.linear_y = -1.0 * speed;
 			this->speed.linear_x = 0.0;
 		}
 
-		if(doubleAngleComparator(this->orientation.angle, this->orientation.desired_angle))
+		if(doubleComparator(this->orientation.angle, this->orientation.desired_angle))
 		{
 			ROS_INFO("go str8");
 			speed = deceleration(fabs(distance), 1, 0.005);
@@ -265,8 +264,6 @@ public:
 
 		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 		{
-			//ROS_INFO("xdest: %f", end_point.x);
-			//ROS_INFO("ydest: %f", end_point.y);
 			action_queue.pop();
 			state_queue.pop();
 			if (action_queue.empty()) {
@@ -276,9 +273,9 @@ public:
 			return true;
 		}
 
-		if(move_x(end_point.x, speed))
+		if(move_y(end_point.y, speed))
 		{
-			if(move_y(end_point.y, speed))
+			if(move_x(end_point.x, speed))
 			{
 				//set_status(2);
 			}

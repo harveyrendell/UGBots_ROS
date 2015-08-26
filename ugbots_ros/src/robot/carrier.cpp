@@ -25,6 +25,7 @@ Carrier::Carrier()
 	undergoing_task = false;
 
 	idle_status_sent = false;
+	station_set = false;
 
 	temprad = 0.0;
 }
@@ -48,6 +49,7 @@ Carrier::Carrier(ros::NodeHandle &n)
 
 
 	idle_status_sent = false;
+	station_set = false;
 	std::string ns = n.getNamespace();
 	ns.erase(ns.begin());
 	robotDetails.ns = ns;
@@ -107,6 +109,11 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 	orientation.rotz = msg.pose.pose.orientation.z;
 	orientation.rotw = msg.pose.pose.orientation.w;
 
+	if (!station_set) {
+		station_x = pose.px;
+		station_y = pose.py;
+	}
+
 	calculateOrientation();
 	if (state == IDLE && !idle_status_sent) 
 	{
@@ -119,12 +126,12 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 	//orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
 	//orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
 	//orientation.roty-orientation.rotz*orientation.rotz);
-	//ROS_INFO("/position/x/%f", this->pose.px);
-	//ROS_INFO("/position/y/%f", this->pose.py);
+	ROS_INFO("/position/x/%f", this->pose.px);
+	ROS_INFO("/position/y/%f", this->pose.py);
 	//ROS_INFO("/orientation/angle/%f", this->orientation.angle);
 	//ROS_INFO("/speed/x/%f", msg.twist.twist.linear.x);
 	//ROS_INFO("/speed/y/%f", msg.twist.twist.linear.y);
-	//ROS_INFO("/status/%s/./", enum_to_string(state));
+	ROS_INFO("/status/%s/./", enum_to_string(state));
 
 	if(localBinStatus.bin_stat == "FULL")
 	{
@@ -133,7 +140,9 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 		location_point.y = localBinStatus.bin_y;
 		action_queue.push(location_point);
 	}
-	begin_action_shortest_path(3.0);
+
+	begin_action(1.5);
+
 	doAngleCheck();
 	checkTurningStatus();
 	publish();
@@ -209,10 +218,27 @@ void Carrier::laser_callback(sensor_msgs::LaserScan msg)
 
 void Carrier::bin_loc_callback(ugbots_ros::Position pos)
 {
-	//geometry_msgs::Point bin_location;
-	//bin_location.x = pos.x;
-	//bin_location.y = pos.y;
-	//action_queue(bin_location);
+	//set first point of action, which is the pivot point
+	geometry_msgs::Point pivot;
+	pivot.x = pos.x;
+	pivot.y = -40;
+	action_queue.push(pivot);
+	state_queue.push(1);
+	//set goal point of picking up bin
+	geometry_msgs::Point bin_location;
+	bin_location.x = pos.x;
+	bin_location.y = pos.y;
+	action_queue.push(bin_location);
+	state_queue.push(1);
+	//set the carry course for the carrier back to its station
+	geometry_msgs::Point carry_point;
+	carry_point.x = station_x;
+	carry_point.y = -42;
+	action_queue.push(carry_point);
+	state_queue.push(2);
+	carry_point.y = station_y;
+	action_queue.push(carry_point);
+	state_queue.push(2);
 }
 
 void Carrier::set_status(int status){
@@ -227,7 +253,6 @@ void Carrier::set_status(int status){
 
 void Carrier::stop()
 {
-	state = STOPPED;
 	speed.linear_x = 0.0;
 	speed.linear_y = 0.0;
 	speed.angular_z = 0.0;

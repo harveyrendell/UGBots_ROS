@@ -24,6 +24,7 @@ public:
 	double zero_angle;
 
 	bool idle_status_sent;
+	bool full_bin_sent;
 
 	ros::Publisher core_alert;
 	ros::Publisher bin_alert;
@@ -31,9 +32,6 @@ public:
 	ugbots_ros::robot_details robotDetails;
 
 	void station_callback(ugbots_ros::picker_row pos);
-
-	ros::Publisher carrier_alert;
-	ugbots_ros::bin_status binStatus;
 
 	geometry_msgs::Point point;
 
@@ -55,13 +53,13 @@ public:
 
 	void set_status(int status);
 	
-	void goToWork();
 	void pickKiwi();
+	void callForCarrier();
 
-	enum State { IDLE, TRAVELLING, PICKING, WAITING, AVOIDING, STOPPED };
+	enum State { IDLE, TRAVELLING, AVOIDING, PICKING, WAITING, STOPPED };
 	State state;
 
-	State state_array[6] = {IDLE, TRAVELLING, PICKING, WAITING, AVOIDING, STOPPED};
+	State state_array[6] = { IDLE, TRAVELLING, AVOIDING, WAITING, PICKING, STOPPED };
 
 	char const* enum_to_string(State t);
 	

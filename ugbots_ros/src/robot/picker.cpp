@@ -7,6 +7,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <stdlib.h>
+#include <ctime>
 #include <node_defs/picker.h>
 
 
@@ -44,6 +45,7 @@ Picker::Picker(ros::NodeHandle &n)
 	queueDuplicateCheckAngle = 0.0;
 	queueDuplicate = true;
 	idle_status_sent = false;
+	full_bin_sent = false;
 	std::string ns = n.getNamespace();
 	ns.erase(ns.begin());
 	robotDetails.ns = ns;
@@ -55,8 +57,10 @@ Picker::Picker(ros::NodeHandle &n)
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Picker::odom_callback, this);
 	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
-	carrier_alert = n.advertise<ugbots_ros::bin_status>("/alert",1000);
 
+	// point.x = 0.0;
+	// point.y = 38.0;
+	// action_queue.push(point);
 }
 
 void Picker::move(double distance, double px, double py)
@@ -95,61 +99,37 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 		idle_status_sent = true;
 	}
 
-	ROS_INFO("/position/x/%f", action_queue.front().x);
-	ROS_INFO("/position/y/%f", action_queue.front().y);
+
+	ROS_INFO("/position/x/%f", pose.px);
+	ROS_INFO("/position/y/%f", pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
 	//ROS_INFO("%f degrees per clock", (msg.twist.twist.angular.z * 180/M_PI)/10);
 
-
-	//bin location, currently attached to the centre of robot
-	binStatus.bin_x = pose.px;
-	binStatus.bin_y = pose.py;
 	speed.max_linear_x = 3.0;
 	speed.angular_z = 0.0;
 	station_x = 0;
 
-
-	/*if(action_queue.empty())
-	{
-		point.y = 38.0;
-		point.x = 10.5;
-		action_queue.push(point);
-		point.y = -38.0;
-		point.x = 10.5;
-		action_queue.push(point);
-	}*/
-
 	ROS_INFO("point x: %f point y: %f", action_queue.front().x, action_queue.front().y);
 
-	//relative actions for different states
-
-	/*if (state == IDLE) {
-		state = TRAVELLING;
-		tempx = pose.px;
-		tempy = pose.py;
-		//temprad = orientation.angle;
-		//goToWork();
-		//state = TRAVELLING;
-	} else if (state == TRAVELLING) {
-		goToWork();
-	} else if (state == PICKING) {
-		pickKiwi();
-	} else if (state == WAITING) {
-		binStatus.bin_x = 0.0;
-		binStatus.bin_y = pose.py-2;
-		speed.angular_z = M_PI;
-	}**/
-
-	//publish topic about current bin status
-	carrier_alert.publish(binStatus);
-
-	if(state == AVOIDING)
+	if(!avoidance_queue.empty())
 	{
 		begin_action_avoidance(3.0);
 	}
 	else
 	{
-		begin_action_shortest_path(3.0);
+		if (state == IDLE) {
+			begin_action(0);
+		} else if (state == TRAVELLING) {
+			begin_action(1);
+		} else if (state == PICKING) {
+			begin_action(0.5);
+			pickKiwi();
+		} else if (state == WAITING) {
+			speed.linear_x = 0;
+			if (full_bin_sent == false) {
+				callForCarrier();
+			}
+		}
 
 		ROS_INFO("in the else loop %f", speed.angular_z);
 	}
@@ -164,12 +144,12 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 void Picker::laser_callback(sensor_msgs::LaserScan msg)
 {
 	//laser detection that gets in way
-	int min_range = (int)(floor(180 * acos(0.75/3)/M_PI));
-	int max_range = (int)(ceil(180 * acos(-0.75/3)/M_PI));
+	/*int min_range = (int)(floor(180 * acos(0.75/2)/M_PI));
+	int max_range = (int)(ceil(180 * acos(-0.75/2)/M_PI));
 
 	for (int i = min_range; i < max_range; i++)
 	{
-		if(msg.ranges[i] < 3.0)
+		if(msg.ranges[i] < 2.0)
 		{
 			speed.linear_x = 0.0;
 			publish();
@@ -181,8 +161,8 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 
 				geometry_msgs::Point pointtemp;
 				
-				pointtemp.x = this->pose.px + 2 * cos(this->orientation.angle - (M_PI/2.0));
-				pointtemp.y = this->pose.py + 2 * sin(this->orientation.angle - (M_PI/2.0));
+				pointtemp.x = this->pose.px + 0.8 * cos(this->orientation.angle - (M_PI/2.0));
+				pointtemp.y = this->pose.py + 0.8 * sin(this->orientation.angle - (M_PI/2.0));
 				ROS_INFO("first point x: %f",pointtemp.x);
 				ROS_INFO("first point y: %f",pointtemp.y);
 				avoidance_queue.push(pointtemp);
@@ -193,8 +173,8 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 				ROS_INFO("second point y: %f",pointtemp.y);
 				avoidance_queue.push(pointtemp);
 
-				pointtemp.x = this->pose.px + 2 * cos(this->orientation.angle + (M_PI/2.0));
-				pointtemp.y = this->pose.py + 2 * sin(this->orientation.angle + (M_PI/2.0));
+				pointtemp.x = pointtemp.x + 0.8 * cos(this->orientation.angle + (M_PI/2.0));
+				pointtemp.y = pointtemp.y + 0.8 * sin(this->orientation.angle + (M_PI/2.0));
 				ROS_INFO("third point x: %f",pointtemp.x);
 				ROS_INFO("third point y: %f",pointtemp.y);				
 				avoidance_queue.push(pointtemp);
@@ -210,47 +190,7 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 	{
 		this->queueDuplicate = true;
 		this->queueDuplicateCheckAngle = 0;
-	}
-	
-
-	if(msg.ranges[90] < 2.0)
-	{
-		if(this->queueDuplicate == true)
-		{
-			this->queueDuplicateCheckAngle = this->orientation.angle;
-
-			std::queue<geometry_msgs::Point> temp_queue;
-
-			geometry_msgs::Point pointtemp;
-
-			
-			pointtemp.x = this->pose.px + sqrt(0.5) * cos(this->orientation.angle - (M_PI/4.0));
-			pointtemp.y = this->pose.py + sqrt(0.5) * sin(this->orientation.angle - (M_PI/4.0));
-			temp_queue.push(pointtemp);
-
-			pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
-			pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle);
-			temp_queue.push(pointtemp);
-
-			pointtemp.x = pointtemp.x + sqrt(0.5) * cos(this->orientation.angle + (M_PI/4.0));
-			pointtemp.y = pointtemp.y + sqrt(0.5) * sin(this->orientation.angle + (M_PI/4.0));
-			temp_queue.push(pointtemp);
-
-			while(!action_queue.empty())
-			{
-				temp_queue.push(action_queue.front());
-				action_queue.pop();
-			}
-
-			while(!temp_queue.empty())
-			{
-				action_queue.push(temp_queue.front());
-				temp_queue.pop();
-			}
-
-			this->queueDuplicate = false;
-		}
-	}**/
+	}*/
 }
 void Picker::set_status(int status){
 	for(int i = 0; i < arraysize(state_array); i++)
@@ -276,29 +216,13 @@ void Picker::station_callback(ugbots_ros::picker_row pos)
 	p.x = pos.end_x;
 	p.y = pos.end_y;
 	action_queue.push(p);
-	state_queue.push(2);
-}
-
-//hard coded function for robot to get to work station
-void Picker::goToWork() {
-	/*moveX(abs(station_x-tempx),tempx);
-	if (speed.linear_x == 0.0) {
-		turn(false, M_PI/2, temprad);
-		if (speed.angular_z == 0.0){
-			speed.linear_x = 1.0;
-			moveY(abs(station_y-tempy),tempy);
-			state = PICKING;
-			tempx = pose.px;
-			tempy = pose.py;
-			temprad = orientation.angle;
-		}
-	}**/
+	state_queue.push(4);
 }
 
 //function putting robot into picking mode
 void Picker::pickKiwi() {
-	speed.linear_x = 0.5;
-	
+	//speed.linear_x = 0.5;
+	srand(time(0));
 	
 	if(binPercent<100){
 		int randomInt = rand() % 13;
@@ -307,20 +231,21 @@ void Picker::pickKiwi() {
 		}
 		ROS_INFO("/bin/%d", binPercent);
 		ROS_INFO("/message/the bin is %d percent full", binPercent);
-		binStatus.bin_stat = "FILLING";
 
-		move_y(70.0,tempy);
-
-	}	
-
-
-	else if (binPercent == 100){
+	} else if (binPercent == 100){
 		binPercent = 100;
 		ROS_INFO("/bin/%d", binPercent);
 		ROS_INFO("/message/the bin is %d percent full", binPercent);
-		binStatus.bin_stat = "FULL";
 		state = WAITING;
 	}	
+}
+
+void Picker::callForCarrier() {
+	ugbots_ros::Position bin_pos;
+	bin_pos.x = pose.px;
+	bin_pos.y = pose.py - 2.8;
+	bin_alert.publish(bin_pos);
+	full_bin_sent = true;
 }
 
 char const* Picker::enum_to_string(State t) {
@@ -335,6 +260,8 @@ char const* Picker::enum_to_string(State t) {
 			return "WAITING";
 		case AVOIDING:
 			return "AVOIDING";
+		case STOPPED:
+			return "STOPPED";
 		default:
 			return ""; 
 	}
@@ -342,8 +269,6 @@ char const* Picker::enum_to_string(State t) {
 
 void Picker::move(){}
 void Picker::stop(){
-
-	state = STOPPED;
 	speed.linear_x = 0.0;
 	speed.linear_y = 0.0;
 	speed.angular_z = 0.0;
@@ -365,8 +290,6 @@ ros::NodeHandle n;
 //Creating the CarrierBot instance
 Picker node(n);
 
-node.binStatus.bin_stat = "EMPTY";
-
 //Setting the loop rate
 ros::Rate loop_rate(10);
 
@@ -376,8 +299,6 @@ int count = 0;
 while (ros::ok())
 {
 	node.publish();
-
-	node.carrier_alert.publish(node.binStatus);
 
 	ros::spinOnce();
 
