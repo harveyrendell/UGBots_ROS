@@ -279,68 +279,65 @@ void Visitor::doRouteSetup()
 	//decisions are easily configurable but for the final version
 	//decided that the visitor will go to the first and the last row
 	//before returning
-	if(beacon_points.size() == 7 && action_queue.size() == 0)
+	geometry_msgs::Point begin_low;
+	geometry_msgs::Point begin_high;
+	geometry_msgs::Point end_high;
+	geometry_msgs::Point end_low;
+
+	double lowest_x = 0.0;
+	double highest_x = 0.0;
+
+	std::list<geometry_msgs::Point>::iterator iter;
+
+	for(iter = beacon_points.begin(); iter != beacon_points.end(); iter++)
 	{
-		geometry_msgs::Point begin_low;
-		geometry_msgs::Point begin_high;
-		geometry_msgs::Point end_high;
-		geometry_msgs::Point end_low;
+		geometry_msgs::Point temp;
+		temp = *iter;
 
-		double lowest_x = 0.0;
-		double highest_x = 0.0;
-
-		std::list<geometry_msgs::Point>::iterator iter;
-
-		for(iter = beacon_points.begin(); iter != beacon_points.end(); iter++)
+		ROS_INFO("TEMP_X:%f, TEMP_Y:%f", temp.x, temp.y);
+		if(temp.x < lowest_x || doubleComparator(temp.x, lowest_x))
 		{
-			geometry_msgs::Point temp;
-			temp = *iter;
+			lowest_x = temp.x;
 
-			ROS_INFO("TEMP_X:%f, TEMP_Y:%f", temp.x, temp.y);
-
-			if(temp.x < lowest_x || doubleComparator(temp.x, lowest_x))
+			if(temp.y < 0)
 			{
-				lowest_x = temp.x;
-
-				if(temp.y < 0)
-				{
-					end_low.y = temp.y;
-					end_low.x = temp.x;
-				}
-			}
-			else if (temp.x > highest_x || doubleComparator(temp.x, highest_x))
-			{
-				highest_x = temp.x;
-
-				if(temp.y < 0)
-				{
-					begin_low.y = temp.y;
-					begin_low.x = temp.x;
-				}
+				end_low.y = temp.y;
+				end_low.x = temp.x;
 			}
 		}
+		else if (temp.x > highest_x || doubleComparator(temp.x, highest_x))
+		{
+			highest_x = temp.x;
 
-		begin_high.x = begin_low.x;
-		begin_high.y = begin_low.y * -1.0;
+			if(temp.y < 0)
+			{
+				begin_low.y = temp.y;
+				begin_low.x = temp.x;
+			}
+		}
+	}
 
-		end_high.x = end_low.x;
-		end_high.y = end_low.y * -1.0;
+	begin_high.x = begin_low.x;
+	begin_high.y = begin_low.y * -1.0;
 
-		action_queue.push(begin_low);
-		action_queue.push(begin_high);
-		action_queue.push(end_high);
-		action_queue.push(end_low);
+	end_high.x = end_low.x;
+	end_high.y = end_low.y * -1.0;
 
-		geometry_msgs::Point exitRoute;
-		exitRoute.x = 52.0;
-		exitRoute.y = -46.0;
+	action_queue.push(begin_low);
+	action_queue.push(begin_high);
+	action_queue.push(end_high);
+	action_queue.push(end_low);
 
-		action_queue.push(exitRoute);
+	geometry_msgs::Point exitRoute;
+	exitRoute.x = 52.0;
+	exitRoute.y = -46.0;
 
-		exitRoute.x = 52.0;
-		exitRoute.y = -15.0;
+	action_queue.push(exitRoute);
 
-		action_queue.push(exitRoute);
+	exitRoute.x = 52.0;
+	exitRoute.y = -15.0;
+
+	action_queue.push(exitRoute);
 
 	}
 	
@@ -359,6 +356,7 @@ void Visitor::startTour()
 	this->tourStarted = true;
 	this->waitingInLine = false;
 	this->speed.linear_x = 2.0;
+	doRouteSetup();
 }
 
 bool Visitor::insideFarm()
