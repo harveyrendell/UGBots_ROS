@@ -142,6 +142,8 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 			picker_bin_msg_sent = true;
 		}
 		begin_action(1.5);
+	} else if (state == STOPPED) {
+		speed.linear_x = 0;
 	}
 
 	doAngleCheck();
@@ -152,6 +154,18 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 
 void Carrier::laser_callback(sensor_msgs::LaserScan msg)
 {
+	bool detected = false;
+	for (int i = 62; i < 119; i++) {
+		if (msg.ranges[i] < 1.588) {
+			detected = true;
+		}
+	}
+	if (detected) {
+		state = STOPPED;
+	} else {
+		begin_action(0);
+	}
+
 	/*
 	if(fabs(this->queueDuplicateCheckAngle - this->orientation.angle) >= (M_PI/2.000000))
 	{

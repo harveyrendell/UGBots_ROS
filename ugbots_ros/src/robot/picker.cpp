@@ -129,7 +129,10 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 			if (!full_bin_sent) {
 				callForCarrier();
 			}
+		} else if (state == STOPPED) {
+			speed.linear_x = 0;
 		}
+
 
 		ROS_INFO("in the else loop %f", speed.angular_z);
 	}
@@ -143,6 +146,23 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 
 void Picker::laser_callback(sensor_msgs::LaserScan msg)
 {
+
+	bool robot_detected = false;
+	for (int i = 62; i < 119; i++) {
+		if (msg.ranges[i] < 1.588) {
+			robot_detected = true;
+		} else {
+			robot_detected = false;
+			break;
+		}
+	}
+	if (!robot_detected) {
+		if (state != WAITING) {
+			begin_action(0);
+		}
+	} else {
+		state = STOPPED;
+	}
 	//laser detection that gets in way
 	/*int min_range = (int)(floor(180 * acos(0.75/2)/M_PI));
 	int max_range = (int)(ceil(180 * acos(-0.75/2)/M_PI));
