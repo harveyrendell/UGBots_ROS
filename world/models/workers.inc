@@ -110,7 +110,7 @@ define worker position
 	point[3] [0.3 0.6]
 	z [1.72 1.8]
   )
-  workerlaser(pose [ 0.050 0.000 0 90.000 ])
+  workerlaser(pose [ 0.050 0.000 -1 0.000 ])
 )
 
 

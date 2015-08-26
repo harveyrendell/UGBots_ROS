@@ -10,9 +10,9 @@
 #include <sstream>
 #include <stdlib.h>
 
-#include <node_defs/worker.h>
+#include <node_defs/dog.h>
 
-Worker node;
+Dog node;
 
 void odom_callback(nav_msgs::Odometry msg)
 {
@@ -26,24 +26,24 @@ void laser_callback(sensor_msgs::LaserScan msg)
 
 TEST(UnitTest, testNodeInitialisedSpeed)
 {
-	EXPECT_EQ(node.speed.linear_x, 2.0);
+	EXPECT_EQ(node.speed.linear_x, 4.0);
 	EXPECT_EQ(node.speed.angular_z, 0.0);
 }
 
 TEST(UnitTest, testNodeTopSpeed)
 {
-	EXPECT_EQ(node.speed.max_linear_x, 3.0);
+	EXPECT_EQ(node.speed.max_linear_x, 4.0);
 }
 
 TEST(UnitTest, testStartupState)
 {
-	EXPECT_EQ(node.state, Worker::IDLE); 
+	//EXPECT_EQ(node.state, Dog::ROAMING); 
 }
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){
 	//Create a node to test with
-	ros::init(argc, argv, "WORKER");
+	ros::init(argc, argv, "DOG");
 	ros::NodeHandle n;
 	
 	node.sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);

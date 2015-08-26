@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <ugbots_ros/Position.h>
 #include <ugbots_ros/robot_details.h>
+#include <ugbots_ros/picker_row.h>
 #include <node_structs/row.h>
 #include <node_structs/robot_details.h>
 #include <math.h> 
@@ -214,25 +215,47 @@ public:
 			Row current = *row;
 			//for only the rows that are unassigned
 			if (current.status == Row::UNASSIGNED) {
-				//set the target point as the start of the row
-				Point p = current.start_point;
-				ugbots_ros::Position station;
-				station.x = p.x;
-				station.y = p.y;
+				//have both start and end point as valid start points
+				Point start;
+				Point end;
+				int i;
 				//get index for the closest robot
-				int i = getClosestPicker(p);
+				int a = getClosestPicker(current.start_point);
+				int b = getClosestPicker(current.end_point);
 				//when none exists, break out
-				if (i < 0) {
+				if (a < 0 || b < 0) {
 					break;
 				}
+				Point pa;
+				Point pb;
+				pa.x = idlePickers[a].x;
+				pa.y = idlePickers[a].y;
+				pb.x = idlePickers[b].x;
+				pb.y = idlePickers[b].y;
+				//select the start point with the closest distance
+				if (getDistance(pa, current.start_point) < getDistance(pb, current.end_point)) {
+					i = a;
+					start = current.start_point;
+					end = current.end_point;
+				} else {
+					i = b;
+					start = current.end_point;
+					end = current.start_point;
+				}
+
+				ugbots_ros::picker_row bots_row;
+				bots_row.start_x = start.x;
+				bots_row.start_y = start.y;
+				bots_row.end_x = end.x;
+				bots_row.end_y = end.y;
 				//set up the publishing topic
 				std::string topic = idlePickers[i].ns + "/station";
-				work_distributer = n.advertise<ugbots_ros::Position>(topic, 1000, true);
+				row_distributer = n.advertise<ugbots_ros::picker_row>(topic, 1000, true);
 				ROS_INFO("station appointed to idle bot: %d, ns: %s", i, topic.c_str());
 				//erase the picker bot off the idle picker bot list
 				idlePickers.erase(idlePickers.begin() + i);
 				//publish the target point (station) to the picker bots topic
-				work_distributer.publish(station);
+				row_distributer.publish(bots_row);
 				//set the row as assigned
 				rowPositions[rowNum].status = Row::ASSIGNED;
 				break;
@@ -287,14 +310,14 @@ public:
 			}
 
 			std::string topic = idleCarriers[i].ns + "/bin";
-			work_distributer = n.advertise<ugbots_ros::Position>(topic, 1000, true);
+			bin_distributer = n.advertise<ugbots_ros::Position>(topic, 1000, true);
 			ROS_INFO("bin appointed to idle bot: %d, ns: %s", i, topic.c_str());
 			//erase the carrier bot off the idle carrier bot list
 			idleCarriers.erase(idleCarriers.begin() + i);
 			//erase the bin off the list of full bins
 			binPositions.erase(binPositions.begin());
 			//publish the target point (bin location) to the carrier bots topic
-			work_distributer.publish(binLoc);
+			bin_distributer.publish(binLoc);
 		}
 	}
 
@@ -348,7 +371,8 @@ public:
 	ros::Subscriber full_bin_list;
 	ros::Subscriber picker_list;
 	ros::Subscriber carrier_list;
-	ros::Publisher work_distributer;
+	ros::Publisher bin_distributer;
+	ros::Publisher row_distributer;
 	ros::Publisher rows_list;
 
 private:

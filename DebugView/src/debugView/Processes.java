@@ -28,6 +28,22 @@ public class Processes {
 		
 	}
 	
+	public void waitFive(){
+		SwingWorker<Void,Void> wait = new SwingWorker<Void,Void>(){
+
+			@Override
+			protected Void doInBackground() throws Exception {
+				Thread.sleep(5000);
+				_panel.enableButtons();
+				return null;
+				
+				
+			}
+		};
+		
+		wait.execute();
+	}
+	
 	public void update(int[] vals){
 		_vals = vals;
 	}
@@ -35,15 +51,13 @@ public class Processes {
 	
 	public void start(){
 		writeWorldFiles();
-		runRos();
 		runWorld();
 		launchNodes();
 		readTopics();
-		
 	}
 	
 	//Process to run roscore
-	private void runRos(){
+	public void runRos(){
 		rosWorker = new SwingWorker<Void,Void>(){
 
 			@Override
@@ -68,7 +82,7 @@ public class Processes {
 				
 				_writeWorldFiles = new ProcessBuilder("/bin/bash","JarResources/writeWorld.bash", "" + _vals[0],
 						"" + _vals[1], "" + _vals[2], "" + _vals[3], "" + _vals[4], "" + _vals[5],
-						"" + _vals[6], "" + _vals[7]).start();
+						"" + _vals[6], "" + _vals[7], "" + _vals[8]).start();
 				return null;
 			}
 		};
@@ -171,15 +185,14 @@ public class Processes {
 	}
 	
 	//Kill all processes
-	public void killProcs(){
+	public void finishProcs(){
 		SwingWorker<Void, Void> killAll = new SwingWorker<Void,Void>(){
 
 			@Override
 			protected Void doInBackground() throws Exception {
-				Process kill = new ProcessBuilder("/bin/bash", "JarResources/kill.bash").start();
+				Process kill = new ProcessBuilder("/bin/bash", "JarResources/finish.bash").start();
 				return null;
 			}
-			
 		};
 		killAll.execute();
 		if(_topic != null){
@@ -211,6 +224,20 @@ public class Processes {
 			}
 		};
 		rosmake.execute();
-		
+	}
+	
+	public void killProcs(){
+		SwingWorker<Void, Void> killAll = new SwingWorker<Void,Void>(){
+
+			@Override
+			protected Void doInBackground() throws Exception {
+				Process kill = new ProcessBuilder("/bin/bash", "JarResources/kill.bash").start();
+				return null;
+			}
+		};
+		killAll.execute();
+		if(_topic != null){
+			_topic.destroy();
+		}
 	}
 }

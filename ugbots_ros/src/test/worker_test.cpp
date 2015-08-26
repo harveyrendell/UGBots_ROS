@@ -10,18 +10,22 @@
 #include <sstream>
 #include <stdlib.h>
 
-#include <node_defs/visitor.h>
+#include <node_defs/worker.h>
 
-Visitor node;
+Worker node;
+
+static bool a = false;
 
 void odom_callback(nav_msgs::Odometry msg)
 {
 	//Mock callback function
+	a = true;
 }
 
 void laser_callback(sensor_msgs::LaserScan msg)
 {
 	//Mock callback function
+	a = true;
 }
 
 TEST(UnitTest, testNodeInitialisedSpeed)
@@ -37,13 +41,14 @@ TEST(UnitTest, testNodeTopSpeed)
 
 TEST(UnitTest, testStartupState)
 {
-	EXPECT_EQ(node.state, Visitor::IDLE); 
+	EXPECT_EQ(node.state, Worker::IDLE); 
 }
+
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){
 	//Create a node to test with
-	ros::init(argc, argv, "VISITOR");
+	ros::init(argc, argv, "WORKER");
 	ros::NodeHandle n;
 	
 	node.sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);

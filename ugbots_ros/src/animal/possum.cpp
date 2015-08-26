@@ -158,7 +158,7 @@ void Possum::checkTurningStatus() //override checkTurningStatus so that linear_x
 	}
 }
 
-char* Possum::enum_to_string(State t){
+char const* Possum::enum_to_string(State t){
     switch(t){
         case IDLE:
             return "IDLE";
