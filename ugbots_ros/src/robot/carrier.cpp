@@ -229,6 +229,7 @@ void Carrier::stop()
 {
 	state = STOPPED;
 	speed.linear_x = 0.0;
+	speed.linear_y = 0.0;
 	speed.angular_z = 0.0;
 }
 

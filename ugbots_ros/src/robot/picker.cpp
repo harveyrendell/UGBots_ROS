@@ -52,12 +52,10 @@ Picker::Picker(ros::NodeHandle &n)
 	core_alert = n.advertise<ugbots_ros::robot_details>("/idle_pickers", 1000);
 	bin_alert = n.advertise<ugbots_ros::Position>("/full_bins", 1000);
 
-	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Picker::odom_callback, this);
-	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
+	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_13/cmd_vel",1000);
+	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_13/base_pose_ground_truth",1000, &Picker::odom_callback, this);
+	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_13/base_scan",1000,&Picker::laser_callback, this);
 	carrier_alert = n.advertise<ugbots_ros::bin_status>("/alert",1000);
-
-	
 
 }
 
@@ -102,6 +100,7 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	ROS_INFO("/status/%s/./", enum_to_string(state));
 	//ROS_INFO("%f degrees per clock", (msg.twist.twist.angular.z * 180/M_PI)/10);
 
+
 	//bin location, currently attached to the centre of robot
 	binStatus.bin_x = pose.px;
 	binStatus.bin_y = pose.py;
@@ -119,6 +118,8 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 		point.x = 10.5;
 		action_queue.push(point);
 	}*/
+
+	ROS_INFO("point x: %f point y: %f", action_queue.front().x, action_queue.front().y);
 
 	//relative actions for different states
 
@@ -142,10 +143,20 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	//publish topic about current bin status
 	carrier_alert.publish(binStatus);
 
-	//begin_action_shortest_path(3.0);	
-	begin_action(3.0);
+	if(state == AVOIDING)
+	{
+		begin_action_avoidance(3.0);
+	}
+	else
+	{
+		begin_action_shortest_path(3.0);
+
+		ROS_INFO("in the else loop %f", speed.angular_z);
+	}
+
 	doAngleCheck();
 	checkTurningStatus();
+	ROS_INFO("x: %f, y: %f", action_queue.front().x, action_queue.front().y);
 	publish();
 }
 
@@ -153,14 +164,15 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 void Picker::laser_callback(sensor_msgs::LaserScan msg)
 {
 	//laser detection that gets in way
-	/*int min_range = (int)(floor(180 * acos(0.75/2)/M_PI));
-	int max_range = (int)(ceil(180 * acos(-0.75/2)/M_PI));
+	int min_range = (int)(floor(180 * acos(0.75/3)/M_PI));
+	int max_range = (int)(ceil(180 * acos(-0.75/3)/M_PI));
 
 	for (int i = min_range; i < max_range; i++)
 	{
-		if(msg.ranges[i] < 2.0)
+		if(msg.ranges[i] < 3.0)
 		{
-			state = AVOIDING;
+			speed.linear_x = 0.0;
+			publish();
 			if(this->queueDuplicate && !this->orientation.currently_turning)
 			{
 				this->queueDuplicateCheckAngle = this->orientation.angle;
@@ -168,31 +180,24 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 				std::queue<geometry_msgs::Point> temp_queue;
 
 				geometry_msgs::Point pointtemp;
-
 				
-				pointtemp.x = this->pose.px + 4 * cos(this->orientation.angle - (M_PI/2.0));
-				pointtemp.y = this->pose.py + 4 * sin(this->orientation.angle - (M_PI/2.0));
-				temp_queue.push(pointtemp);
+				pointtemp.x = this->pose.px + 2 * cos(this->orientation.angle - (M_PI/2.0));
+				pointtemp.y = this->pose.py + 2 * sin(this->orientation.angle - (M_PI/2.0));
+				ROS_INFO("first point x: %f",pointtemp.x);
+				ROS_INFO("first point y: %f",pointtemp.y);
+				avoidance_queue.push(pointtemp);
 
-				pointtemp.x = pointtemp.x + 5 * cos(this->orientation.angle);
-				pointtemp.y = pointtemp.y + 5 * sin(this->orientation.angle);
-				temp_queue.push(pointtemp);
+				pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
+				pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle);
+				ROS_INFO("second point x: %f",pointtemp.x);
+				ROS_INFO("second point y: %f",pointtemp.y);
+				avoidance_queue.push(pointtemp);
 
-				pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle + (M_PI/2.0));
-				pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle + (M_PI/2.0));
-				temp_queue.push(pointtemp);
-
-				while(!action_queue.empty())
-				{
-					temp_queue.push(action_queue.front());
-					action_queue.pop();
-				}
-
-				while(!temp_queue.empty())
-				{
-					action_queue.push(temp_queue.front());
-					temp_queue.pop();
-				}
+				pointtemp.x = this->pose.px + 2 * cos(this->orientation.angle + (M_PI/2.0));
+				pointtemp.y = this->pose.py + 2 * sin(this->orientation.angle + (M_PI/2.0));
+				ROS_INFO("third point x: %f",pointtemp.x);
+				ROS_INFO("third point y: %f",pointtemp.y);				
+				avoidance_queue.push(pointtemp);
 
 				this->queueDuplicate = false;
 			}
@@ -223,7 +228,7 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 			pointtemp.y = this->pose.py + sqrt(0.5) * sin(this->orientation.angle - (M_PI/4.0));
 			temp_queue.push(pointtemp);
 
-			/*pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
+			pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
 			pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle);
 			temp_queue.push(pointtemp);
 
@@ -328,13 +333,22 @@ char const* Picker::enum_to_string(State t) {
 			return "PICKING";
 		case WAITING:
 			return "WAITING";
+		case AVOIDING:
+			return "AVOIDING";
 		default:
 			return ""; 
 	}
 }
 
 void Picker::move(){}
-void Picker::stop(){}
+void Picker::stop(){
+
+	state = STOPPED;
+	speed.linear_x = 0.0;
+	speed.linear_y = 0.0;
+	speed.angular_z = 0.0;
+
+}
 void Picker::turnLeft(){}
 void Picker::turnRight(){}
 void Picker::collisionDetected(){}

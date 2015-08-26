@@ -17,7 +17,7 @@ Possum::Possum()
 	this->speed.linear_x = 0.0;
 	this->speed.max_linear_x = 3.0;
 	this->speed.angular_z = 0.0;
-
+	this->state = IDLE;
 }
 
 Possum::Possum(ros::NodeHandle &n)
