@@ -147,11 +147,11 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 
 	if(!avoidance_queue.empty())
 	{
-		begin_action_avoidance(3.0);
+		begin_action_avoidance(0.1);
 	}
 	else
 	{
-		begin_action_shortest_path(3.0);
+		begin_action_shortest_path(0.1);
 
 		ROS_INFO("in the else loop %f", speed.angular_z);
 	}

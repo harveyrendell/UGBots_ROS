@@ -46,6 +46,7 @@ Visitor::Visitor(ros::NodeHandle &n)
 	this->queueDuplicateCheckAngle = 0.0;
 	this->queueDuplicate = true;
 	this->tourStarted = false;
+	this->angleChangeStarted = false;
 
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Visitor::odom_callback, this);
@@ -84,7 +85,7 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 	ROS_INFO("/position/x/%f",this->pose.px);
 	ROS_INFO("/position/y/%f",this->pose.py);
-	ROS_INFO("/status/%s/./", enum_to_string(state));
+	ROS_INFO("/status/%s/./", enum_to_string(state));0.8 * cos(this->orientation.angle - (M_PI/2.0));
 }
 
 
@@ -93,10 +94,22 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 
 	if(insideFarm())
 	{	
-		if(fabs(this->queueDuplicateCheckAngle - this->orientation.angle) >= (M_PI/2.000000))
+		if(queueDuplicate == false)
+		{
+			if(angleChangeStarted == false)
+			{
+				if(queueDuplicateCheckAngle != orientation.angle)
+				{
+					angleChangeStarted = true;
+				}
+			}
+		}
+
+		if(doubleComparator(this->queueDuplicateCheckAngle, this->orientation.angle) && angleChangeStarted == true)
 		{
 			this->queueDuplicate = true;
 			this->queueDuplicateCheckAngle = 0;
+			this->angleChangeStarted = false;
 		}
 		
 
@@ -112,12 +125,11 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 
 					geometry_msgs::Point pointtemp;
 
-					
-					pointtemp.x = this->pose.px + sqrt(8) * cos(this->orientation.angle - (M_PI/4.0));
+					pointtemp.x = this->pose.px + 1.2 * cos(this->orientation.angle - (M_PI/2.0));
 					pointtemp.y = this->pose.py + sqrt(8) * sin(this->orientation.angle - (M_PI/4.0));
 					temp_queue.push(pointtemp);
 
-					pointtemp.x = pointtemp.x + sqrt(8) * cos(this->orientation.angle + (M_PI/4.0));
+					pointtemp.x = pointtemp.x + 1.2 * cos(this->orientation.angle + (M_PI/2.0));
 					pointtemp.y = pointtemp.y + sqrt(8) * sin(this->orientation.angle + (M_PI/4.0));
 					temp_queue.push(pointtemp);
 

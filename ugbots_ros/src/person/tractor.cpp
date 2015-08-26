@@ -59,6 +59,23 @@ void Tractor::ground_callback(nav_msgs::Odometry msg)
 
 	calculateOrientation();
 
+	if(action_queue.size() == 1)
+	{
+		geometry_msgs::Point point;
+		if(action_queue.front().y == -12)
+		{
+			point.x = -36.0;
+			point.y = -28.0;
+		}
+		else
+		{
+			point.x = -36.0;
+			point.y = -12.0;
+		}
+
+		action_queue.push(point);
+	}
+
 	begin_action_shortest_path(2.0);
 
 	doAngleCheck();		
@@ -75,7 +92,11 @@ void Tractor::laser_callback(sensor_msgs::LaserScan msg)
 }
 
 void Tractor::move(){}
-void Tractor::stop(){}
+
+void Tractor::stop(){
+	speed.linear_x = 0.0;
+	speed.angular_z = 0.0;
+}
 void Tractor::collisionDetected(){}
 
 int main(int argc, char **argv)
