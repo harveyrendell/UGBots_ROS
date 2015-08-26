@@ -22,6 +22,7 @@ define grass model
     size [100 100 0.05]
     color_rgba [ 0 1 0 0.5 ]
     gui_move 0
+    obstacle_return 0
 )
 
 # set the resolution of the underlying raytrace model in meters
