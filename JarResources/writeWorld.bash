@@ -23,6 +23,7 @@ rm world/config/treeinstances.inc
 rm world/config/beaconinstances.inc
 
 echo  \<launch\> > ugbots_ros/launch/world.launch
+echo include \"models\/cmdCenter.inc\" >> world/config/beaconinstances.inc
 echo include \"models\/beaconcore.inc\" >> world/config/beaconinstances.inc
 echo include \"models\/kiwirow.inc\" >> world/config/treeinstances.inc
 echo include \"models\/robots.inc\" >> world/config/robotinstances.inc
@@ -57,7 +58,7 @@ echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"core\" type=\"CORE\"\/\> >> ugbots_ros\/launch\/world.launch 
 echo \<\/group\> >> ugbots_ros\/launch\/world.launch
 
-echo point\( pose [ 0 49 0 0 ] name \"core\" color \"purple\" \) >> world/config/beaconinstances.inc
+echo cmdCenter\( pose [ 40 40 0 0 ] origin [ 0 0 0 270 ] name \"core\" color \"DimGrey\" \) >> world/config/beaconinstances.inc
 
 number=$(($number+1))
 
@@ -108,37 +109,45 @@ elif ! (( $kiwitree % 2 )); then
     do
         left=$(echo "scale=2; -1.75-$treenum*3.5" | bc)
         right=$(echo "scale=2; 1.75+$treenum*3.5" | bc)
+
         echo rows \(pose [ $left -35 -1.002 0 ]\) >> world/config/treeinstances.inc
         echo rows \(pose [ $right -35 -1.002 0 ]\) >> world/config/treeinstances.inc
+	
 
         bleft=$(echo "scale=2; 0-$z*3.5" | bc)
         bright=$(echo "scale=2; 0+$z*3.5" | bc)
-        
+	
+	if !(($tree==0)); then
         echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
 		echo \<node pkg=\"ugbots_ros\" name=\"beacon\" type=\"BEACON\"\/\> >> ugbots_ros\/launch\/world.launch 
 		echo \<\/group\> >> ugbots_ros\/launch\/world.launch
         echo point\( pose [ $bleft 38 0 0 ] name \"robot_$number\" color \"yellow\" \) >> world/config/beaconinstances.inc
         number=$(($number+1))
-        
+	fi
+
         echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
 		echo \<node pkg=\"ugbots_ros\" name=\"beacon\" type=\"BEACON\"\/\> >> ugbots_ros\/launch\/world.launch 
 		echo \<\/group\> >> ugbots_ros\/launch\/world.launch
         echo point\( pose [ $bright 38 0 0 ] name \"robot_$number\" color \"yellow\" \) >> world/config/beaconinstances.inc
         number=$(($number+1))
-        
+
+	if !(($tree==0)); then
         echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
 		echo \<node pkg=\"ugbots_ros\" name=\"beacon\" type=\"BEACON\"\/\> >> ugbots_ros\/launch\/world.launch 
 		echo \<\/group\> >> ugbots_ros\/launch\/world.launch
         echo point\( pose [ $bleft -38 0 0 ] name \"robot_$number\" color \"yellow\" \) >> world/config/beaconinstances.inc
         number=$(($number+1))
-        
+	fi
+
         echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
 		echo \<node pkg=\"ugbots_ros\" name=\"beacon\" type=\"BEACON\"\/\> >> ugbots_ros\/launch\/world.launch 
 		echo \<\/group\> >> ugbots_ros\/launch\/world.launch
         echo point\( pose [ $bright -38 0 0 ] name \"robot_$number\" color \"yellow\" \) >> world/config/beaconinstances.inc
-        number=$(($number+1))
+	number=$(($number+1))
+
+
         
-        tree=$(($tree+2))
+	tree=$(($tree+2))
         treenum=$(($treenum+1))
         z=$(($z+1))
     done
@@ -181,34 +190,21 @@ done
 while [ $w -lt $worker ];
 do
 
-rand=$(( (RANDOM % 97) - 46 )) 
-
-if (($rand>=-12 && $rand<=12));
-then
-    rand3=$(( (RANDOM % 15) - 49 )) 
-    rand4=$(( (RANDOM % 15) + 35 ))
-    if [ $(( (RANDOM % 2) + 1 )) -lt "2" ];
-    then
-        rand2=$rand3
-    else
-        rand2=$rand4
-    fi
-else
-    rand2=$(( (RANDOM % 99) - 48 )) 
-fi
+rand=55
+rand2=-40
 
 echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"workernode\" type=\"WORKER\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
 #echo worker\(pose [ 0 $((1+$(($w * 2)))) 0 0 ] name \"W$w\" color \"black\" \) >> world/config/peopleinstances.inc
-echo worker\(pose [ $rand $rand2 0 0 ] name \"W$w\" color \"black\" \) >> world/config/peopleinstances.inc
+echo worker\(pose [ $rand $rand2 0 270 ] origin [ 0 0 0 90 ] name \"W$w\" color \"black\" \) >> world/config/peopleinstances.inc
 w=$(($w+1))
 number=$(($number+1))
 
 done
 
-visitorx=50
+visitorx=58
 visitory=-47.5
 
 #creating visitor nodes
@@ -223,7 +219,7 @@ echo \<node pkg=\"ugbots_ros\" name=\"visitornode\" type=\"VISITOR\"\/\> >> ugbo
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
 #echo visitor\(pose [ 3.5 $((1+$(($v * 2)))) 0 0 ] name \"V$v\" color \"pink\" \) >> world/config/peopleinstances.inc
-echo visitor\(pose [ $rand $rand2 0 180 ] origin [ 0 0 0 270 ] name \"V$v\" color \"pink\" \) >> world/config/peopleinstances.inc
+echo visitor\(pose [ $rand $rand2 0 180 ] origin [ 0 0 0 90 ] name \"V$v\" color \"pink\" \) >> world/config/peopleinstances.inc
 v=$(($v+1))
 number=$(($number+1))
 visitorx=$(($rand+5))

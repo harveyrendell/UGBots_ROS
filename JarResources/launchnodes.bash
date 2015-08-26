@@ -5,7 +5,6 @@ roscd
 
 cd ugbots_ros
 
-sleep 5
 
 rosmake ugbots_ros
 
