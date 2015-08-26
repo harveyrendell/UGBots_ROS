@@ -225,7 +225,8 @@ public:
 			stop();
 			return true;
 		}
-
+		ROS_INFO("dx: %f, dy: %f", end_point.x, end_point.y);
+		ROS_INFO("x: %f, y: %f", this->pose.px, this->pose.py);
 		double distance = sqrt(pow(end_point.x - pose.px, 2) + pow(end_point.y - pose.py, 2));
 		this->orientation.desired_angle = atan2((end_point.y - pose.py),(end_point.x - pose.px));
 		doAngleCheck();
@@ -239,17 +240,19 @@ public:
 			angle_difference = angle_difference + 2.0 * M_PI;
 		}
 
-		ROS_INFO("");
+		ROS_INFO("angle diff: %f", angle_difference);
+		ROS_INFO("difference: %f", distance);
 
 		if(doubleComparator(angle_difference, -1.0 * M_PI/2))
 		{
-			ROS_INFO("/message/up");
+			ROS_INFO("LEFT");
 			speed = deceleration(fabs(distance), 1, 0.005);
 			this->speed.linear_y = speed;
 			this->speed.linear_x = 0.0;
 		}
 		if(doubleComparator(angle_difference, M_PI/2))
 		{
+			ROS_INFO("RIGHT");
 			speed = deceleration(fabs(distance), 1, 0.005);
 			this->speed.linear_y = -1.0 * speed;
 			this->speed.linear_x = 0.0;
@@ -257,8 +260,8 @@ public:
 
 		if(doubleComparator(this->orientation.angle, this->orientation.desired_angle))
 		{
-
-			ROS_INFO("/message/straight");
+			ROS_INFO("straight");
+			//ROS_INFO("/message/straight");
 			speed = deceleration(fabs(distance), 1, 0.005);
 			this->speed.linear_x = speed;
 		}

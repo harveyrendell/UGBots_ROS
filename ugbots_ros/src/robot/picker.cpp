@@ -52,9 +52,9 @@ Picker::Picker(ros::NodeHandle &n)
 	core_alert = n.advertise<ugbots_ros::robot_details>("/idle_pickers", 1000);
 	bin_alert = n.advertise<ugbots_ros::Position>("/full_bins", 1000);
 
-	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Picker::odom_callback, this);
-	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
+	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_13/cmd_vel",1000);
+	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_13/base_pose_ground_truth",1000, &Picker::odom_callback, this);
+	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_13/base_scan",1000,&Picker::laser_callback, this);
 	carrier_alert = n.advertise<ugbots_ros::bin_status>("/alert",1000);
 
 	
@@ -165,15 +165,14 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 void Picker::laser_callback(sensor_msgs::LaserScan msg)
 {
 	//laser detection that gets in way
-	int min_range = (int)(floor(180 * acos(0.75/2)/M_PI));
-	int max_range = (int)(ceil(180 * acos(-0.75/2)/M_PI));
+	int min_range = (int)(floor(180 * acos(0.75/3)/M_PI));
+	int max_range = (int)(ceil(180 * acos(-0.75/3)/M_PI));
 
 	for (int i = min_range; i < max_range; i++)
 	{
-		if(msg.ranges[i] < 2.0)
+		if(msg.ranges[i] < 3.0)
 		{
 			speed.linear_x = 0.0;
-			publish();
 
 			if(!this->orientation.currently_turning)
 			{
@@ -186,8 +185,8 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 
 				geometry_msgs::Point pointtemp;
 				
-				pointtemp.x = this->pose.px + 0.8 * cos(this->orientation.angle - (M_PI/2.0));
-				pointtemp.y = this->pose.py + 0.8 * sin(this->orientation.angle - (M_PI/2.0));
+				pointtemp.x = this->pose.px + 0.2 * cos(this->orientation.angle - (M_PI/2.0));
+				pointtemp.y = this->pose.py + 0.2 * sin(this->orientation.angle - (M_PI/2.0));
 				ROS_INFO("first point x: %f",pointtemp.x);
 				ROS_INFO("first point y: %f",pointtemp.y);
 				avoidance_queue.push(pointtemp);
@@ -198,14 +197,15 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 				ROS_INFO("second point y: %f",pointtemp.y);
 				avoidance_queue.push(pointtemp);
 
-				pointtemp.x = pointtemp.x + 0.8 * cos(this->orientation.angle + (M_PI/2.0));
-				pointtemp.y = pointtemp.y + 0.8 * sin(this->orientation.angle + (M_PI/2.0));
+				pointtemp.x = pointtemp.x + 0.2 * cos(this->orientation.angle + (M_PI/2.0));
+				pointtemp.y = pointtemp.y + 0.2 * sin(this->orientation.angle + (M_PI/2.0));
 				ROS_INFO("third point x: %f",pointtemp.x);
 				ROS_INFO("third point y: %f",pointtemp.y);				
 				avoidance_queue.push(pointtemp);
 			}
 		}
 	}
+			publish();
 }
 void Picker::set_status(int status){
 	for(int i = 0; i < arraysize(state_array); i++)
