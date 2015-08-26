@@ -97,9 +97,9 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 		idle_status_sent = true;
 	}
 
-	//ROS_INFO("/position/x/%f", action_queue.front().x);
-	//ROS_INFO("/position/y/%f", action_queue.front().y);
-	//ROS_INFO("/status/%s/./", enum_to_string(state));
+	ROS_INFO("/position/x/%f", action_queue.front().x);
+	ROS_INFO("/position/y/%f", action_queue.front().y);
+	ROS_INFO("/status/%s/./", enum_to_string(state));
 	//ROS_INFO("%f degrees per clock", (msg.twist.twist.angular.z * 180/M_PI)/10);
 
 	//bin location, currently attached to the centre of robot

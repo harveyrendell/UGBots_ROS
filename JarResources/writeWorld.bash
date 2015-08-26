@@ -96,7 +96,9 @@ if (( $kiwitree % 2 )); then
         echo point\( pose [ $bleft -38 0 0 ] name \"robot_$number\" color \"yellow\" \) >> world/config/beaconinstances.inc
         number=$(($number+1))
         
- 
+        echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
+        echo \<node pkg=\"ugbots_ros\" name=\"beacon\" type=\"BEACON\"\/\> >> ugbots_ros\/launch\/world.launch 
+        echo \<\/group\> >> ugbots_ros\/launch\/world.launch
         echo point\( pose [ $bright -38 0 0 ] name \"robot_$number\" color \"yellow\" \) >> world/config/beaconinstances.inc
         number=$(($number+1))
         
