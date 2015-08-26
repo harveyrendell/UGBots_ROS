@@ -54,6 +54,7 @@ Visitor::Visitor(ros::NodeHandle &n)
 	this->sub_row = n.subscribe<ugbots_ros::Position>("/row_loc",1000,&Visitor::core_callback, this);
 
 	this->waitingInLine = true;
+	this->state = IDLE;
 	//init_route();
 
 }
@@ -78,33 +79,12 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 	doAngleCheck();		
 
 	checkTurningStatus();
-	
-	if(!tourStarted)
-	{
-		doRouteSetup();
-	}
 
 	publish();
 
-	//ROS_INFO("X_CORD %f", this->action_queue.front().x);
-
-	//ROS_INFO("LINEAR SPEED: %f", this->speed.linear_x);
-	//ROS_INFO("ANGULAR SPEED: %f", this->speed.angular_z);
-
-
-	//ROS_INFO("ANGLE: %f",this->orientation.angle);
-	//ROS_INFO("DESIRED ANGLE: %f", this->orientation.desired_angle);
-
-
-	//checkStaticTurningStatus();
-
-	//ROS_INFO("/position/x/%f",action_queue.front().x);
-	//ROS_INFO("/position/y/%f",action_queue.front().y);
-	//ROS_INFO("/status/TEMP/./");
-	/*
-	//ROS_INFO("ANGLE: %f",this->orientation.angle);
-	//ROS_INFO("DESIRED ANGLE: %f", this->orientation.desired_angle);
-	*/
+	ROS_INFO("/position/x/%f",this->pose.px);
+	ROS_INFO("/position/y/%f",this->pose.py);
+	ROS_INFO("/status/%s/./", enum_to_string(state));
 }
 
 
@@ -167,7 +147,7 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 			{
 				if(msg.ranges[0] > 15)
 				{
-					this->speed.linear_x = 2.0;
+					this->speed.linear_x = 0.5;
 				}
 			}
 			else if(msg.ranges[90] <= 5)
@@ -351,6 +331,7 @@ void Visitor::startTour()
 	this->tourStarted = true;
 	this->waitingInLine = false;
 	this->speed.linear_x = 2.0;
+	this->state = TOURING;
 	doRouteSetup();
 }
 
@@ -379,7 +360,19 @@ void Visitor::stop(){
 void Visitor::turnLeft(){}
 void Visitor::turnRight(){}
 void Visitor::collisionDetected(){}
-char const* Visitor::enum_to_string(State t){ return ""; }
+char const* Visitor::enum_to_string(State t)
+{
+	switch(t){
+		case IDLE:
+			return "IDLE";
+		case AVOIDING:
+			return "AVOIDING";
+		case TOURING:
+			return "TOURING";
+		default:
+			return "";
+	}
+}
 
 int main(int argc, char **argv)
 {	

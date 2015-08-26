@@ -79,6 +79,15 @@ void Worker::odom_callback(nav_msgs::Odometry msg)
 	checkTurningStatus();
 
 	publish();
+
+	if(this->speed.linear_x == 0)
+	{
+		state = IDLE;
+	}
+
+	ROS_INFO("/position/x/%f",this->pose.px);
+	ROS_INFO("/position/y/%f",this->pose.py);
+	ROS_INFO("/status/%s/./", enum_to_string(state));
 }
 
 
@@ -110,6 +119,8 @@ void Worker::letInNextVisitor()
 	point.y = -36.0;
 
 	action_queue.push(point);
+
+	state = QUEUENEXT;
 }
 
 void Worker::move(){}
@@ -136,12 +147,8 @@ char const* Worker::enum_to_string(State t)
 	switch(t){
 		case IDLE:
 			return "IDLE";
-		case PATROLLING:
-			return "PATROLLING";
-		case RESPONDING:
-			return "RESPONDING";
-		case SAWDOG:
-			return "SAWDOG";
+		case QUEUENEXT:
+			return "QUEUENEXT";
 		default:
 			return "";
 	}
