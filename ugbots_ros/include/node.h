@@ -111,7 +111,6 @@ public:
 		{
 			if(doubleAngleComparator(orientation.angle, orientation.desired_angle))
 			{
-				ROS_INFO("angle and desired angle is equal");
 				this->orientation.currently_turning = false;
 				this->speed.linear_x = 3.0;
 				this->speed.angular_z = 0.0; 
@@ -171,11 +170,8 @@ public:
 		if(!orientation.currently_turning)
 		{
 			this->speed.linear_x = speed;
-			if (fabs(distance_y) < 0.5)
-			{
-				//ROS_INFO("slow down x");
-				this->speed.linear_x = fabs(distance_y);
-			}
+			speed = deceleration(fabs(distance_y), 1, 0.01);
+			this->speed.linear_x = fabs(distance_y);
 		}
 		return false;
 	}
@@ -213,7 +209,6 @@ public:
 		set_status(3);
 		if(avoidance_queue.empty())
 		{
-			ROS_INFO("/message/empty avoidance");
 			set_status(1);
 			return true;
 		}
@@ -225,7 +220,6 @@ public:
 			stop();
 			return true;
 		}
-
 		double distance = sqrt(pow(end_point.x - pose.px, 2) + pow(end_point.y - pose.py, 2));
 		this->orientation.desired_angle = atan2((end_point.y - pose.py),(end_point.x - pose.px));
 		doAngleCheck();
@@ -239,17 +233,17 @@ public:
 			angle_difference = angle_difference + 2.0 * M_PI;
 		}
 
-		ROS_INFO("");
-
+		ROS_INFO("/message/angle: %f %f %f", end_point.x, end_point.y, distance);
 		if(doubleComparator(angle_difference, -1.0 * M_PI/2))
 		{
-			ROS_INFO("/message/up");
+			ROS_INFO("/message/goees in right");
 			speed = deceleration(fabs(distance), 1, 0.005);
 			this->speed.linear_y = speed;
 			this->speed.linear_x = 0.0;
 		}
 		if(doubleComparator(angle_difference, M_PI/2))
 		{
+			ROS_INFO("/message/goees in left");
 			speed = deceleration(fabs(distance), 1, 0.005);
 			this->speed.linear_y = -1.0 * speed;
 			this->speed.linear_x = 0.0;
@@ -257,9 +251,9 @@ public:
 
 		if(doubleComparator(this->orientation.angle, this->orientation.desired_angle))
 		{
-
-			ROS_INFO("/message/straight");
+			ROS_INFO("/message/goees in forward");
 			speed = deceleration(fabs(distance), 1, 0.005);
+			this->speed.linear_y = 0.0;
 			this->speed.linear_x = speed;
 		}
 	}

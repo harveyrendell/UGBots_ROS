@@ -85,8 +85,8 @@ void Worker::odom_callback(nav_msgs::Odometry msg)
 		state = IDLE;
 	}
 
-	ROS_INFO("/position/x/%f",this->pose.px);
-	ROS_INFO("/position/y/%f",this->pose.py);
+	ROS_INFO("/position/x/%f",this->action_queue.front().x);
+	ROS_INFO("/position/y/%f",this->action_queue.front().y);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
 }
 
@@ -143,7 +143,6 @@ void Worker::stop(){
 	this->speed.linear_x = 0.0;
 	this->speed.angular_z = 0.0;
 }
-
 void Worker::collisionDetected(){}
 
 char const* Worker::enum_to_string(State t)
