@@ -2,7 +2,7 @@ include "models/boundary.inc"
 include "models/shrub.inc"
 include "models/binloc.inc"
 
-
+#location of shrubs
 shrub (pose [ 0 -43 0 0 ])
 shrub (pose [ -45 -30 0 0 ])
 shrub (pose [ -35 16 0 0 ])
@@ -17,6 +17,7 @@ shrub (pose [ 46 -15 0 0 ])
 shrub (pose [ 21 45 0 0 ])
 shrub (pose [ 29 40 0 0 ])
 
+#fence
 boundary (pose [ -50 25 0 90 ])
 boundary (pose [ 50 25 0 90 ])
 boundary (pose [ -50 -25 0 90 ])
@@ -27,4 +28,5 @@ boundary (pose [ 25 50 0 0 ])
 boundary (pose [ -25 -50 0 0 ])
 boundary (pose [ 25 -50 0 0 ])
 
+#bin location
 binloc (pose [ 32.5 -12.5 0 0 ])

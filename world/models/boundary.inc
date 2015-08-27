@@ -1,3 +1,4 @@
+#model for fence
 define boundary model
 (
   color "black"

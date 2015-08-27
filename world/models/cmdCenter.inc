@@ -1,3 +1,4 @@
+#model for command tower
 define cmd ranger
 (
   sensor(

@@ -1,3 +1,4 @@
+#model for kiwifruit trees
 define tree model
 (
   size [2 5 2.7]

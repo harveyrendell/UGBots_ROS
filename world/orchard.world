@@ -17,6 +17,7 @@ define floorplan model
   laser_return 1
 )
 
+#floor color
 define grass model
 (
     size [100.000 100.000 0.050]

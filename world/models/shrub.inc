@@ -1,3 +1,4 @@
+#model for shrubs
 define shrub model
 (
   size [1 1 1]

@@ -2,6 +2,7 @@
 source ~/.bashrc
 roscd
 
+#assign parameters to appropriate variables
 picker=$1
 carrier=$2
 worker=$3
@@ -12,8 +13,10 @@ possum=$7
 tractor=$8
 kiwitree=$9
 
+#make a directory to store all the instances file to
 mkdir -p world/config
 
+#remove all previous files if they exist
 rm ugbots_ros/launch/world.launch
 rm world/config/robotinstances.inc
 rm world/config/peopleinstances.inc
@@ -22,6 +25,7 @@ rm world/config/tractorinstances.inc
 rm world/config/treeinstances.inc
 rm world/config/beaconinstances.inc
 
+#initialise each instance file by adding the model include statement
 echo  \<launch\> > ugbots_ros/launch/world.launch
 echo include \"models\/cmdCenter.inc\" >> world/config/beaconinstances.inc
 echo include \"models\/beaconcore.inc\" >> world/config/beaconinstances.inc
@@ -53,23 +57,28 @@ tree=0
 treenum=0
 z=0
 
-#Creating Core Unit
+#Creating Core Unit ****
+#echo launch code into launch file
 echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"core\" type=\"CORE\"\/\> >> ugbots_ros\/launch\/world.launch 
 echo \<\/group\> >> ugbots_ros\/launch\/world.launch
 
-echo cmdCenter\( pose [ 40 40 0 0 ] origin [ 0 0 0 270 ] name \"core\" color \"DimGrey\" \) >> world/config/beaconinstances.inc
+#write position of command center into instances file
+echo cmdCenter\( pose [ 40 40  0 0 ] origin [ 0 0 0 270 ] name \"core\" color \"DimGrey\" \) >> world/config/beaconinstances.inc
 
 number=$(($number+1))
 
-#generating kiwifruit rows
 
+#generating kiwifruit rows ***
+#generating odd number of instances of kiwifruit rows
 if (( $kiwitree % 2 )); then
+    #create one row in center
     echo rows \(pose [ 0 -35 -1.002 0 ]\) >> world/config/treeinstances.inc
     treenum=$(($treenum+1))
     tree=$(($tree+1))
     while [ $tree -lt $kiwitree ];
     do
+        #create two rows on either side until specified number of trees reached
         left=$(echo "scale=2; 0-$treenum*3.5" | bc)
         right=$(echo "scale=2; 0+$treenum*3.5" | bc)
         echo rows \(pose [ $left -35 -1.002 0 ]\) >> world/config/treeinstances.inc
@@ -78,6 +87,7 @@ if (( $kiwitree % 2 )); then
         bleft=$(echo "scale=2; -1.75-$z*3.5" | bc)
         bright=$(echo "scale=2; 1.75+$z*3.5" | bc)
         
+        #write launch code for beacons into launch file and create beacons on both ends of the rows
         echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
 		echo \<node pkg=\"ugbots_ros\" name=\"beacon\" type=\"BEACON\"\/\> >> ugbots_ros\/launch\/world.launch 
 		echo \<\/group\> >> ugbots_ros\/launch\/world.launch
@@ -106,19 +116,21 @@ if (( $kiwitree % 2 )); then
         treenum=$(($treenum+1))
         z=$(($z+1))
     done
+#generating even number of rows of kiwifruit rows
 elif ! (( $kiwitree % 2 )); then
     while [ $tree -lt $kiwitree ];
     do
         left=$(echo "scale=2; -1.75-$treenum*3.5" | bc)
         right=$(echo "scale=2; 1.75+$treenum*3.5" | bc)
 
+        #generate two rows at a time until specified number is reached
         echo rows \(pose [ $left -35 -1.002 0 ]\) >> world/config/treeinstances.inc
         echo rows \(pose [ $right -35 -1.002 0 ]\) >> world/config/treeinstances.inc
-	
 
         bleft=$(echo "scale=2; 0-$z*3.5" | bc)
         bright=$(echo "scale=2; 0+$z*3.5" | bc)
 	
+    #write launch code for beacons into launch file and create beacons on both ends of the kiwifruit rows
 	if !(($tree==0)); then
         echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
 		echo \<node pkg=\"ugbots_ros\" name=\"beacon\" type=\"BEACON\"\/\> >> ugbots_ros\/launch\/world.launch 
@@ -164,6 +176,7 @@ temp=0
 while [ $i -lt $picker ];
 do
 
+#write launch code for picker robots into launch file
 echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"robotnode\" type=\"PICKER\"\/\> >> ugbots_ros\/launch\/world.launch 
 echo \<\/group\> >> ugbots_ros\/launch\/world.launch
@@ -173,6 +186,8 @@ if !(($i%2)); then
 	temp=$(($temp+1))
 fi
 
+#write instance of picker robot into instance file
+#position picker robots in a line at the bottom
 posx=$((-40 + (( $(($i%2)) * 5 )) ))
 posy=$((-50 + $(($temp * 4))))
 echo pickerRobot\(pose [ $posx $posy 0 0 ]\ name \"P$i\" color \"red\"\) >> world/config/robotinstances.inc
@@ -185,11 +200,12 @@ done
 #creating carrier robots
 while [ $j -lt $carrier ];
 do
-
+# write launch code for carrier robots into launch file
 echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"robotnode\" type=\"CARRIER\"\/\> >> ugbots_ros\/launch\/world.launch
 echo \<\/group\> >> ugbots_ros\/launch\/world.launch
 
+#write instance of carrier robot into instance file
 echo carrierRobot\(pose [ $((25 + (($j*5)))) -15 0 270 ] name \"C$j\" color \"blue\"\) >> world/config/robotinstances.inc
 
 j=$(($j+1))
@@ -204,10 +220,13 @@ do
 rand=55
 rand2=-40
 
+#write launch code for workers into launch file
 echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"workernode\" type=\"WORKER\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
+#write instance of workers into instance file
+#workers are spawned near the entrance of the kiwifruit orchard
 echo worker\(pose [ $rand $rand2 0 270 ] origin [ 0 0 0 90 ] name \"W$w\"\) >> world/config/peopleinstances.inc
 w=$(($w+1))
 number=$(($number+1))
@@ -224,10 +243,13 @@ do
 rand=$visitorx
 rand2=$visitory
 
+#write launch code for visitors into launch file
 echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch 
 echo \<node pkg=\"ugbots_ros\" name=\"visitornode\" type=\"VISITOR\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
+#write instance of visitors into instance file
+#visitors are spawned at the entrance of the kiwifruit orchard
 echo visitor\(pose [ $rand $rand2 0 180 ] origin [ 0 0 0 90 ] name \"V$v\" \) >> world/config/peopleinstances.inc
 v=$(($v+1))
 number=$(($number+1))
@@ -241,6 +263,7 @@ do
 
 rand=$(( (RANDOM % 97) - 46 )) 
 
+#dogs are spawned at random places in the kiwifruit orchard
 if (($rand>=-12 && $rand<=12));
 then
     rand3=$(( (RANDOM % 15) - 49 )) 
@@ -254,11 +277,12 @@ then
 else
     rand2=$(( (RANDOM % 99) - 48 )) 
 fi 
-
+#write launch code for dogs into launch file
 echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"dognode\" type=\"DOG\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
+#write instance of dogs into instance file
 echo dog\( pose [ $rand $rand2 0 0 ] origin [ 0 0 0 270 ] name \"D$d\" \) >> world/config/animalinstances.inc
 d=$(($d+1))
 number=$(($number+1))
@@ -271,10 +295,12 @@ do
 
 rand=$(( (RANDOM % 80) - 40 )) 
 
+#write launch code for cats into launch file
 echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"catnode\" type=\"CAT\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
+#write instance of cat into instance file
 echo cats\( pose [ $rand 47 0 0 ] origin [ 0 0 0 270 ] name \"C$c\" \) >> world/config/animalinstances.inc
 c=$(($c+1))
 number=$(($number+1))
@@ -285,16 +311,19 @@ done
 while [ $po -lt $possum ];
 do
 
+#write launch code for possums in the launch file
 echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch 
 echo \<node pkg=\"ugbots_ros\" name=\"possumnode\" type=\"POSSUM\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
+#possums are spawned near the kiwifruit trees
 possumStart=$(echo "scale=2; $bleft-1.75" | bc)
 
 index=$(( (RANDOM % 28) -14))
 
 yPos=$(echo "scale=2; $index*2.5 -1.25"| bc)
 
+#write instance of possum into instance file
 echo possum\( pose [ $left $yPos 0 0 ] origin [ 0 0 0 270 ] name \"PO$po\" color \"wheat4\" \) >> world/config/animalinstances.inc
 
 po=$(($po+1))
@@ -306,8 +335,9 @@ done
 while [ $t -lt $tractor ];
 do
 
+#random spawn point
 rand=$(( (RANDOM % 97) - 46 )) 
-
+#make sure spawn point is not inside the kiwifruit rows
 if (($rand>=-12 && $rand<=12));
 then
     rand3=$(( (RANDOM % 15) - 49 )) 
@@ -322,10 +352,12 @@ else
     rand2=$(( (RANDOM % 99) - 48 )) 
 fi
 
+#launch code into launch file
 echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"tractornode\" type=\"TRACTOR\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
+#write instance of tractor into instance file
 echo tractor\( pose [ $rand $rand2 0 0 ] origin [ 0 0 0 270] name \"T$t\" \) >> world/config/tractorinstances.inc
 t=$(($t+1))
 number=$(($number+1))

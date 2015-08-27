@@ -1,3 +1,4 @@
+#bin location model
 define binloc model
 (
   size [25 10 2.0]

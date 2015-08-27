@@ -1,3 +1,4 @@
+#model for workers
 define workerlaser ranger
 (
   sensor(

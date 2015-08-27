@@ -1,6 +1,8 @@
 include "models/tree.inc"
 include "models/post.inc"
 
+
+#model for row of kiwifruit trees and posts
 define rows model
 (
   tree (pose [0 0 0 0])

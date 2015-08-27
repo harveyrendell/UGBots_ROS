@@ -1,3 +1,4 @@
+#model for cats
 define catlaser ranger
 (
   sensor(

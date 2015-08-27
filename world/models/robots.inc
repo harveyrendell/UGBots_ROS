@@ -1,3 +1,4 @@
+#models for both robots
 define robolaser ranger
 (
   sensor(
@@ -10,6 +11,7 @@ define robolaser ranger
   size [ 0.05 0.05 0.1 ]
 )
 
+#carrier robot
 define carrierRobot position
 (
   size [1.8 1.5 1.0]
@@ -18,6 +20,7 @@ define carrierRobot position
   velocity_bounds [ -10 10 -10 10 -10 10 -90 90 ]
 )
 
+#picker robot
 define pickerRobot position
 (
   size [2.5 1.5 1.0]
