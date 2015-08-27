@@ -149,14 +149,10 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 
 	for (int i = min_range; i < max_range; i++)
 	{
-		if(msg.ranges[i] < 3.0)
+		if(msg.ranges[i] < 3.0 && state == PICKING)
 		{
 			speed.linear_x = 0.0;
 			publish();
-			if(state == PICKING && !avoidance_queue.empty())
-			{
-				return;
-			}
 			if(!this->orientation.currently_turning && avoidance_queue.empty())
 			{
 				
@@ -185,7 +181,6 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 		}
 	}
 			publish();
-	}
 }
 
 void Picker::bsa_callback(std_msgs::String msg) {

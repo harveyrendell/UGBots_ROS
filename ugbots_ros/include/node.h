@@ -170,10 +170,8 @@ public:
 		if(!orientation.currently_turning)
 		{
 			this->speed.linear_x = speed;
-			if (fabs(distance_y) < 0.5)
-			{
-				this->speed.linear_x = fabs(distance_y);
-			}
+			speed = deceleration(fabs(distance_y), 1, 0.01);
+			this->speed.linear_x = fabs(distance_y);
 		}
 		return false;
 	}
