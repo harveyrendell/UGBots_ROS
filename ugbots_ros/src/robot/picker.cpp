@@ -120,9 +120,9 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 		if (state == IDLE) {
 			begin_action(0);
 		} else if (state == TRAVELLING) {
-			begin_action(1);
-		} else if (state == PICKING) {
 			begin_action(0.5);
+		} else if (state == PICKING) {
+			begin_action(0.25);
 			pickKiwi();
 		} else if (state == WAITING) {
 			speed.linear_x = 0;

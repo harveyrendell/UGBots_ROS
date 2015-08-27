@@ -15,6 +15,7 @@ define carrierRobot position
   size [1.8 1.5 1.0]
   drive "omni"
   robolaser(pose [ 0.050 0.000 -1 0.000 ])
+  velocity_bounds [ 0 3 0 0 0 0 -90 90 ]
 )
 
 define pickerRobot position
