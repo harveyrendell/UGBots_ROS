@@ -118,6 +118,7 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	else
 	{
 		if (state == IDLE) {
+			speed.linear_x = 0;
 			begin_action(0);
 		} else if (state == TRAVELLING) {
 			begin_action(0.5);
