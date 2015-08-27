@@ -15,10 +15,11 @@ define visitor position
 (
   size [0.5 0.5 1.6]
   drive "diff"
+  velocity_bounds [ -10 10 -10 10 -10 10 -90 90 ]
 
   #body
   block(
-    color "pink"
+    color "black"
   	points 4
 	point[0] [0.1 0.3]
 	point[1] [0.9 0.3]
@@ -29,7 +30,7 @@ define visitor position
 
   #neck
   block(
-    color "white"
+    color "SandyBrown"
 	points 4
 	point[0] [0.4 0.4]
 	point[1] [0.6 0.4]
@@ -40,7 +41,7 @@ define visitor position
 
   #head
   block(
-    color "white"
+    color "SandyBrown"
 	points 4
 	point[0] [0.3 0.35]
 	point[1] [0.7 0.35]
@@ -51,7 +52,7 @@ define visitor position
 
   #legs
   block(
-    color "black"
+    color "LightBlue1"
 	points 4
 	point[0] [0.25 0.4]
 	point[1] [0.45 0.4]
@@ -61,7 +62,7 @@ define visitor position
   )
 
   block(
-    color "black"
+    color "LightBlue1"
 	points 4
 	point[0] [0.55 0.4]
 	point[1] [0.75 0.4]
@@ -72,7 +73,7 @@ define visitor position
 
   #arms
   block(
-    color "pink"
+    color "black"
 	points 4
 	point[0] [0 0.45]
 	point[1] [0.1 0.45]
@@ -81,7 +82,7 @@ define visitor position
 	z [0.7 1.4]
   )
   block(
-    color "pink"
+    color "black"
 	points 4
 	point[0] [1 0.45]
 	point[1] [0.9 0.45]

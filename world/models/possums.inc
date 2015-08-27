@@ -15,7 +15,7 @@ define possum position
 (
   size [0.25 0.5 0.5]
   drive "diff"
-  
+  velocity_bounds [ -10 10 -10 10 -10 10 -90 90 ]
   #body
   block(
 	points 4

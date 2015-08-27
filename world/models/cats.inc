@@ -15,6 +15,7 @@ define cats position
 (
   size [0.3 0.65 0.4]
   drive "diff"
+  velocity_bounds [ -10 10 -10 10 -10 10 -90 90 ]
   
   #body
   block(

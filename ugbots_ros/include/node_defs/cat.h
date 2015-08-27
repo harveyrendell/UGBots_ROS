@@ -11,6 +11,7 @@
 class Cat : public Node
 {
 public:
+	Cat();
 	Cat(ros::NodeHandle &n);
 	enum State { IDLE, ROAMING, RUNNING};
 	State state;

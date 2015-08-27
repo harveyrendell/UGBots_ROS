@@ -139,7 +139,11 @@ void Worker::checkTurningStatus()
 	}
 }
 
-void Worker::stop(){}
+void Worker::stop(){
+	this->speed.linear_x = 0.0;
+	this->speed.angular_z = 0.0;
+}
+
 void Worker::collisionDetected(){}
 
 char const* Worker::enum_to_string(State t)
