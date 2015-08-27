@@ -34,8 +34,6 @@ echo include \"models\/possums.inc\" >> world/config/animalinstances.inc
 echo include \"models\/visitors.inc\" >> world/config/peopleinstances.inc
 echo include \"models\/tractors.inc\" >> world/config/tractorinstances.inc
 
-
-
 number=0
 beacon=$(($kiwitree+$kiwitree-1))
 i=0
@@ -146,17 +144,12 @@ elif ! (( $kiwitree % 2 )); then
 		echo \<\/group\> >> ugbots_ros\/launch\/world.launch
         echo point\( pose [ $bright -38 0 0 ] name \"robot_$number\" color \"yellow\" \) >> world/config/beaconinstances.inc
 	number=$(($number+1))
-
-
-        
+     
 	tree=$(($tree+2))
         treenum=$(($treenum+1))
         z=$(($z+1))
     done
 fi
-
-
-
 
 #creating picker robots
 temp=0
@@ -270,7 +263,6 @@ while [ $c -lt $cat ];
 do
 
 rand=$(( (RANDOM % 80) - 40 )) 
-
 
 echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"catnode\" type=\"CAT\"\/\> >> ugbots_ros/launch/world.launch 
