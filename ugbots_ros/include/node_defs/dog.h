@@ -11,6 +11,7 @@
 class Dog : public Node
 {
 public:
+	Dog();
 	Dog(ros::NodeHandle &n);
 	enum State { IDLE, WALKING, RUNNING, RANDOMTURN};
 	State state;

@@ -1,7 +1,4 @@
 <launch>
-  <node pkg="ugbots_ros" type="CARRIER" name="Carrier" />
-  <test test-name="CarrierTests" pkg="ugbots_ros" type="CarrierTests" />
-
   <node pkg="ugbots_ros" type="PICKER" name="Picker" />
   <test test-name="PickerTests" pkg="ugbots_ros" type="PickerTests" />
 
