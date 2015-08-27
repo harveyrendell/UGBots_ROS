@@ -8,6 +8,25 @@
 #include <stdlib.h>
 #include <node_defs/possum.h>
 
+Possum::Possum()
+{
+	//setting base attribute defaults
+	this->pose.theta = M_PI/2.0;
+	this->pose.px = 0;
+	this->pose.py = 0;
+	this->speed.linear_x = 0.0;
+	this->speed.max_linear_x = 3.0;
+	this->speed.angular_z = 0.0;
+	this->orientation.currently_turning = false;
+
+	this->state = IDLE;
+
+	this->row = 1; //starting at vine 1
+	this->direction = EAST;
+
+	this->initial_coordinates_set = false;	
+}
+
 Possum::Possum(ros::NodeHandle &n)
 {
 	//setting base attribute defaults

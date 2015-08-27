@@ -12,6 +12,7 @@
 class Possum : public Node
 {
 public:
+	Possum();
 	Possum(ros::NodeHandle &n);
 	enum State { IDLE, ROAMING, FLEEING, MOVINGACROSS };
 	State state;
