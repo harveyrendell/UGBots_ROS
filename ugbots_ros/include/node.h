@@ -199,7 +199,8 @@ public:
 		if(!orientation.currently_turning)
 		{
 			set_status(1);
-			speed = deceleration(fabs(distance), 1, 0.005);
+			if(fabs(distance) < 1)
+				speed = deceleration(fabs(distance), 1, 0.005);
 			this->speed.linear_x = speed;
 		}
 	}

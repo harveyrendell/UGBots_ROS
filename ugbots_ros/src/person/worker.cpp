@@ -72,7 +72,7 @@ void Worker::odom_callback(nav_msgs::Odometry msg)
 	
 	calculateOrientation();
 
-	begin_action_shortest_path(2.0);
+	begin_action_shortest_path(0.5);
 
 	doAngleCheck();
 
@@ -132,7 +132,7 @@ void Worker::checkTurningStatus()
 		if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) == this->orientation.desired_angle)
 		{
 			this->orientation.currently_turning = false;
-			this->speed.linear_x = 2.0;
+			this->speed.linear_x = 0.5;
 			this->speed.angular_z = 0.0; 	
 		}
 		return;
