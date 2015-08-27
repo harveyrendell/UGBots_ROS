@@ -15,7 +15,6 @@ define worker position
 (
   size [0.5 0.5 1.8]
   drive "diff"
-  velocity_bounds [ -10 10 -10 10 -10 10 -90 90 ]
 
   #body
   block(

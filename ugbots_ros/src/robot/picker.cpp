@@ -151,9 +151,9 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 	for (int i = 71; i < 109; i++) {
 		if (msg.ranges[i] < 2.3) {
 			robot_detected = true;
+			break;
 		} else {
 			robot_detected = false;
-			break;
 		}
 	}
 	if (!robot_detected) {
