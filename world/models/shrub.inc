@@ -1,6 +1,8 @@
 define shrub model
 (
   size [1 1 1]
+  color "green"
+  gui_move 0
 
   block(
 	points 4

@@ -24,16 +24,27 @@ public:
 	void collisionDetected();
 	void checkTurningStatus();
 	void init_route();
+	void doRouteSetup();
 
-	enum State { IDLE, LOITERING, HARASSING, STOPPED };
+	void waiting();
+	void startTour();
+	bool insideFarm();
+
+	enum State { IDLE, AVOIDING, TOURING };
 	State state;
 
 	bool rightTurnInit;
 	bool leftTurnInit;
 	bool moveToEnabled;
+	bool waitingInLine;
+	bool tourStarted;
 	double queueDuplicate;
 	double queueDuplicateCheckAngle;
 	ros::Subscriber sub_row;
+	
+	//Beacon points
+	std::list<geometry_msgs::Point> beacon_points;
+
 
 	char const* enum_to_string(State t);
 };

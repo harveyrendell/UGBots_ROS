@@ -10,9 +10,17 @@
 #include <sstream>
 #include <stdlib.h>
 
-#include <node_defs/visitor.h>
+#include <node_defs/cat.h>
 
-Visitor node;
+static Chicken node;
+
+void setup()
+{
+	// create a new instance of node
+	node = Chicken();
+}
+
+//######################### UNIT TESTS #########################
 
 void odom_callback(nav_msgs::Odometry msg)
 {
@@ -37,18 +45,28 @@ TEST(UnitTest, testNodeTopSpeed)
 
 TEST(UnitTest, testStartupState)
 {
-	EXPECT_EQ(node.state, Visitor::IDLE); 
+	EXPECT_EQ(node.state, Cat::IDLE); 
+}
+
+//###################### ACCEPTANCE TESTS ######################
+
+TEST(AcceptanceTest, testTurnStop)
+{
+	setup();
+
+	node.orientation.currently_turning = true;
+	node.orientation.desired_angle = node.orientation.angle;
+
+	node.checkTurningStatus();
+
+	EXPECT_FALSE(node.orientation.currently_turning);
 }
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){
 	//Create a node to test with
-	ros::init(argc, argv, "VISITOR");
+	ros::init(argc, argv, "CHICKEN");
 	ros::NodeHandle n;
-	
-	node.sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	node.sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, odom_callback);
-	node.sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,laser_callback);
 
 	//Run the test suite
 	testing::InitGoogleTest(&argc, argv);

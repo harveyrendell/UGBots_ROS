@@ -24,10 +24,11 @@ public:
 	//void stopTurnStatic();
 	//void spinOnTheSpot();
 	void checkTurningStatus();
+	void letInNextVisitor();
 	//void checkStaticTurningStatus();
 	//void calculateOrientation();
 
-	enum State { IDLE, PATROLLING, RESPONDING, SAWDOG };
+	enum State { IDLE, QUEUENEXT };
 	State state;
 	
 	char const* enum_to_string(State t);

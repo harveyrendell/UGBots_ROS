@@ -13,15 +13,17 @@ define robolaser ranger
 define carrierRobot position
 (
   size [1.8 1.5 1.0]
-  drive "diff"
-  robolaser(pose [ 0.050 0.000 0 0.000 ])
+  drive "omni"
+  robolaser(pose [ 0.050 0.000 -1 0.000 ])
+  velocity_bounds [ -10 10 -10 10 -10 10 -90 90 ]
 )
 
 define pickerRobot position
 (
   size [2.5 1.5 1.0]
-  drive "diff"
-  robolaser(pose [ 0.050 0.000 0 0.000 ])
+  drive "omni"
+  robolaser(pose [ 0.050 0.000 -1 0.000 ])
+  velocity_bounds [ -10 10 -10 10 -10 10 -90 90 ]
 )
 
 
