@@ -15,6 +15,7 @@ define tractor position
 (
   size [2 2 2]
   drive "diff"
+  velocity_bounds [ -10 10 -10 10 -10 10 -90 90 ]
 
   #body
   block(

@@ -3,7 +3,7 @@ define binloc model
   size [25 10 2.0]
 
   block(
-	color "brown"
+	color "sienna"
 	points 4
 	point[0] [0 0.9]
 	point[1] [1 0.9]
@@ -13,7 +13,7 @@ define binloc model
   )
 
   block(
-	color "brown"
+	color "sienna"
 	points 4
 	point[0] [0.97 0]
 	point[1] [1 0]
@@ -23,7 +23,7 @@ define binloc model
   )
 
   block(
-	color "brown"
+	color "sienna"
 	points 4
 	point[0] [0 0]
 	point[1] [0.03 0]

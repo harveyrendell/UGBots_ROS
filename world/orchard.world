@@ -20,7 +20,7 @@ define floorplan model
 define grass model
 (
     size [100.000 100.000 0.050]
-    color_rgba [ 0 1 0 0.5 ]
+    color "OliveDrab"
     gui_move 0
     obstacle_return 0
 )
