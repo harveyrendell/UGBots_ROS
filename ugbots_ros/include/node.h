@@ -145,8 +145,8 @@ public:
 		}
 		if(!orientation.currently_turning)
 		{
-			//if(fabs(distance_x) < 0.1)
-			speed = deceleration(fabs(distance_x), 1, 0.01);
+			if(fabs(distance_x) < 1)
+				speed = deceleration(fabs(distance_x), 1, 0.01);
 			this->speed.linear_x = speed;
 		}
 		return false;
@@ -170,12 +170,9 @@ public:
 		}
 		if(!orientation.currently_turning)
 		{
+			if(fabs(distance_y) < 1)
+				speed = deceleration(fabs(distance_y), 1, 0.01);
 			this->speed.linear_x = speed;
-			if (fabs(distance_y) < 0.5)
-			{
-				//ROS_INFO("slow down x");
-				this->speed.linear_x = fabs(distance_y);
-			}
 		}
 		return false;
 	}
