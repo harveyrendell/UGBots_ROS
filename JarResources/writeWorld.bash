@@ -269,27 +269,13 @@ done
 while [ $c -lt $cat ];
 do
 
-rand=$(( (RANDOM % 97) - 46 )) 
-
-if (($rand>=-12 && $rand<=12));
-then
-    rand3=$(( (RANDOM % 15) - 49 )) 
-    rand4=$(( (RANDOM % 15) + 35 ))
-    if [ $(( (RANDOM % 2) + 1 )) -lt "2" ];
-    then
-        rand2=$rand3
-    else
-        rand2=$rand4
-    fi
-else
-    rand2=$(( (RANDOM % 99) - 48 )) 
-fi 
+rand=$(( (RANDOM % 80) - 40 )) 
 
 echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"catnode\" type=\"CAT\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
-echo cats\( pose [ $rand $rand2 0 0 ] origin [ 0 0 0 270 ] name \"C$c\" \) >> world/config/animalinstances.inc
+echo cats\( pose [ $rand 47 0 0 ] origin [ 0 0 0 270 ] name \"C$c\" \) >> world/config/animalinstances.inc
 c=$(($c+1))
 number=$(($number+1))
 
