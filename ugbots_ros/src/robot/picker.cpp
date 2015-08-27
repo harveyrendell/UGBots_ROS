@@ -52,9 +52,9 @@ Picker::Picker(ros::NodeHandle &n)
 	core_alert = n.advertise<ugbots_ros::robot_details>("/idle_pickers", 1000);
 	bin_alert = n.advertise<ugbots_ros::Position>("/full_bins", 1000);
 
-	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_13/cmd_vel",1000);
-	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_13/base_pose_ground_truth",1000, &Picker::odom_callback, this);
-	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_13/base_scan",1000,&Picker::laser_callback, this);
+	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Picker::odom_callback, this);
+	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
 	carrier_alert = n.advertise<ugbots_ros::bin_status>("/alert",1000);
 
 	
@@ -152,8 +152,6 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	else
 	{
 		begin_action_shortest_path(0.1);
-
-		ROS_INFO("in the else loop %f", speed.angular_z);
 	}
 	doAngleCheck();
 	checkTurningStatus();
@@ -173,34 +171,34 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 		if(msg.ranges[i] < 3.0)
 		{
 			speed.linear_x = 0.0;
-
-			if(!this->orientation.currently_turning)
+			publish();
+			if(state == PICKING && !avoidance_queue.empty())
 			{
+				return;
+			}
+			if(!this->orientation.currently_turning && avoidance_queue.empty())
+			{
+				
 				while(!avoidance_queue.empty())
 				{
 					avoidance_queue.pop();
 				}
+				
 
 				std::queue<geometry_msgs::Point> temp_queue;
 
 				geometry_msgs::Point pointtemp;
 				
-				pointtemp.x = this->pose.px + 0.2 * cos(this->orientation.angle - (M_PI/2.0));
-				pointtemp.y = this->pose.py + 0.2 * sin(this->orientation.angle - (M_PI/2.0));
-				ROS_INFO("first point x: %f",pointtemp.x);
-				ROS_INFO("first point y: %f",pointtemp.y);
+				pointtemp.x = this->pose.px + 0.6 * cos(this->orientation.angle - (M_PI/2.0));
+				pointtemp.y = this->pose.py + 0.6 * sin(this->orientation.angle - (M_PI/2.0));
 				avoidance_queue.push(pointtemp);
 
 				pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
 				pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle);
-				ROS_INFO("second point x: %f",pointtemp.x);
-				ROS_INFO("second point y: %f",pointtemp.y);
 				avoidance_queue.push(pointtemp);
 
-				pointtemp.x = pointtemp.x + 0.2 * cos(this->orientation.angle + (M_PI/2.0));
-				pointtemp.y = pointtemp.y + 0.2 * sin(this->orientation.angle + (M_PI/2.0));
-				ROS_INFO("third point x: %f",pointtemp.x);
-				ROS_INFO("third point y: %f",pointtemp.y);				
+				pointtemp.x = pointtemp.x + 0.6 * cos(this->orientation.angle + (M_PI/2.0));
+				pointtemp.y = pointtemp.y + 0.6 * sin(this->orientation.angle + (M_PI/2.0));
 				avoidance_queue.push(pointtemp);
 			}
 		}

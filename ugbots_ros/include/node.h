@@ -111,7 +111,6 @@ public:
 		{
 			if(doubleAngleComparator(orientation.angle, orientation.desired_angle))
 			{
-				ROS_INFO("angle and desired angle is equal");
 				this->orientation.currently_turning = false;
 				this->speed.linear_x = 3.0;
 				this->speed.angular_z = 0.0; 
@@ -173,7 +172,6 @@ public:
 			this->speed.linear_x = speed;
 			if (fabs(distance_y) < 0.5)
 			{
-				//ROS_INFO("slow down x");
 				this->speed.linear_x = fabs(distance_y);
 			}
 		}
@@ -213,7 +211,6 @@ public:
 		set_status(3);
 		if(avoidance_queue.empty())
 		{
-			ROS_INFO("/message/empty avoidance");
 			set_status(1);
 			return true;
 		}
@@ -225,8 +222,6 @@ public:
 			stop();
 			return true;
 		}
-		ROS_INFO("dx: %f, dy: %f", end_point.x, end_point.y);
-		ROS_INFO("x: %f, y: %f", this->pose.px, this->pose.py);
 		double distance = sqrt(pow(end_point.x - pose.px, 2) + pow(end_point.y - pose.py, 2));
 		this->orientation.desired_angle = atan2((end_point.y - pose.py),(end_point.x - pose.px));
 		doAngleCheck();
@@ -240,19 +235,17 @@ public:
 			angle_difference = angle_difference + 2.0 * M_PI;
 		}
 
-		ROS_INFO("angle diff: %f", angle_difference);
-		ROS_INFO("difference: %f", distance);
-
+		ROS_INFO("/message/angle: %f %f %f", end_point.x, end_point.y, distance);
 		if(doubleComparator(angle_difference, -1.0 * M_PI/2))
 		{
-			ROS_INFO("LEFT");
+			ROS_INFO("/message/goees in right");
 			speed = deceleration(fabs(distance), 1, 0.005);
 			this->speed.linear_y = speed;
 			this->speed.linear_x = 0.0;
 		}
 		if(doubleComparator(angle_difference, M_PI/2))
 		{
-			ROS_INFO("RIGHT");
+			ROS_INFO("/message/goees in left");
 			speed = deceleration(fabs(distance), 1, 0.005);
 			this->speed.linear_y = -1.0 * speed;
 			this->speed.linear_x = 0.0;
@@ -260,9 +253,9 @@ public:
 
 		if(doubleComparator(this->orientation.angle, this->orientation.desired_angle))
 		{
-			ROS_INFO("straight");
-			//ROS_INFO("/message/straight");
+			ROS_INFO("/message/goees in forward");
 			speed = deceleration(fabs(distance), 1, 0.005);
+			this->speed.linear_y = 0.0;
 			this->speed.linear_x = speed;
 		}
 	}
@@ -279,8 +272,6 @@ public:
 		geometry_msgs::Point end_point = action_queue.front();
 		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 		{
-			ROS_INFO("xdest: %f", end_point.x);
-			ROS_INFO("ydest: %f", end_point.y);
 			action_queue.pop();
 			stop();
 			return true;

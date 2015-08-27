@@ -48,27 +48,16 @@ Visitor::Visitor(ros::NodeHandle &n)
 	this->tourStarted = false;
 	this->angleChangeStarted = false;
 
-	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("robot_15/cmd_vel",1000);
-	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("robot_15/base_pose_ground_truth",1000, &Visitor::odom_callback, this);
-	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("robot_15/base_scan",1000,&Visitor::laser_callback, this);
+	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Visitor::odom_callback, this);
+	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Visitor::laser_callback, this);
 	
 	this->sub_row = n.subscribe<ugbots_ros::Position>("/row_loc",1000,&Visitor::core_callback, this);
 
 	this->waitingInLine = true;
 	this->state = IDLE;
 
-	geometry_msgs::Point point;
-	point.x = 8.75; 
-	point.y = -38.0;
-
-	action_queue.push(point);
-	
-		point.x = 8.75;
-		point.y = 38.0;
-
-	action_queue.push(point);
-
-	//init_route();
+	//init_route();ROS
 
 }
 
@@ -86,20 +75,18 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 
 
-	// if(!waitingInLine)
-	// {
+	if(!waitingInLine)
+	{
 		
 		if(!avoidance_queue.empty())
 		{
-			ROS_INFO("CALL AVOIDANCE");
 			begin_action_avoidance(2.0);
 		}
 		else
 		{
-			ROS_INFO("CALL SHORTEST");
 			begin_action_shortest_path(2.0);
 		}
-	// }
+	}
 
 	doAngleCheck();		
 
@@ -120,76 +107,39 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 	if(insideFarm())
 	{	
 
-		//ROS_INFO("/message/inside the FUCKING farm");
-		int min_range = (int)(floor(180 * acos(0.25/3.0)/M_PI));
-		int max_range = (int)(ceil(180 * acos(-0.25/3.0)/M_PI));
+		int min_range = (int)(floor(180 * acos(0.25/2.0)/M_PI));
+		int max_range = (int)(ceil(180 * acos(-0.25/2.0)/M_PI));
 
 		for (int i = min_range; i < max_range; i++)
 		{
-			if(msg.ranges[90] < 3.0)
+			if(msg.ranges[90] < 2.0)
 			{
-				//ROS_INFO("/message/%f", msg.ranges[i]);
 				speed.linear_x = 0.0;
 				publish();
 
-				if(!this->orientation.currently_turning)
+				if(!this->orientation.currently_turning && avoidance_queue.empty())
 				{
-					// while(avoidance_queue.size() > 1)
-					// {
-					// 	avoidance_queue.pop();
-					// }
-
 					std::queue<geometry_msgs::Point> temp_queue;
 
 					geometry_msgs::Point pointtemp;
 				
-					// pointtemp.x = this->pose.px + 0.3 * cos(this->orientation.angle - (M_PI/2.0));
-					// pointtemp.y = this->pose.py + 0.3 * sin(this->orientation.angle - (M_PI/2.0));
-					// ROS_INFO("first point x: %f",pointtemp.x);
-					// ROS_INFO("first point y: %f",pointtemp.y);
-					// avoidance_queue.push(pointtemp);
-
-					// pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
-					// pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle);
-					// ROS_INFO("second point x: %f",pointtemp.x);
-					// ROS_INFO("second point y: %f",pointtemp.y);
-					// avoidance_queue.push(pointtemp);
-
-					// pointtemp.x = pointtemp.x + 0.3 * cos(this->orientation.angle + (M_PI/2.0));
-					// pointtemp.y = pointtemp.y + 0.3 * sin(this->orientation.angle + (M_PI/2.0));
-					// ROS_INFO("third point x: %f",pointtemp.x);
-					// ROS_INFO("third point y: %f",pointtemp.y);				
-					// avoidance_queue.push(pointtemp);
-
-					pointtemp.x = this->pose.px + 0.3;
-					pointtemp.y = this->pose.py;
-					ROS_INFO("first point x: %f",pointtemp.x);
-					ROS_INFO("first point y: %f",pointtemp.y);
+					pointtemp.x = this->pose.px + 0.7 * cos(this->orientation.angle - (M_PI/2.0));
+					pointtemp.y = this->pose.py + 0.7 * sin(this->orientation.angle - (M_PI/2.0));
 					avoidance_queue.push(pointtemp);
 
-					pointtemp.x = pointtemp.x;
-					pointtemp.y = pointtemp.y + 4;
-					ROS_INFO("second point x: %f",pointtemp.x);
-					ROS_INFO("second point y: %f",pointtemp.y);
+					pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
+					pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle);
 					avoidance_queue.push(pointtemp);
 
-					pointtemp.x = pointtemp.x - 0.3;
-					pointtemp.y = pointtemp.y;
-					ROS_INFO("third point x: %f",pointtemp.x);
-					ROS_INFO("third point y: %f",pointtemp.y);				
+					pointtemp.x = pointtemp.x + 0.7 * cos(this->orientation.angle + (M_PI/2.0));
+					pointtemp.y = pointtemp.y + 0.7 * sin(this->orientation.angle + (M_PI/2.0));
 					avoidance_queue.push(pointtemp);
-
-					ROS_INFO("/message/x: %f, x legit: %f", avoidance_queue.front().x, this->pose.px);
-
 				}
 			}
 		}
 	}
 	else
-	{
-
-		ROS_INFO("/message/outside farm");
-				
+	{				
 		if(!tourStarted)
 		{
 			if(msg.ranges[90] > 5)
@@ -403,6 +353,7 @@ bool Visitor::insideFarm()
 void Visitor::move(){}
 
 void Visitor::stop(){
+	this->speed.linear_y = 0.0;
 	this->speed.linear_x = 0.0;
 	this->speed.angular_z = 0.0;
 }
