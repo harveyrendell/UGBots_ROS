@@ -145,8 +145,10 @@ public:
 		}
 		if(!orientation.currently_turning)
 		{
-			//if(fabs(distance_x) < 0.1)
-			speed = deceleration(fabs(distance_x), 1, 0.01);
+			if(fabs(distance_x) < 1)
+			{
+				speed = deceleration(fabs(distance_x), 1, 0.01);
+			}
 			this->speed.linear_x = speed;
 		}
 		return false;
@@ -170,12 +172,11 @@ public:
 		}
 		if(!orientation.currently_turning)
 		{
-			this->speed.linear_x = speed;
-			if (fabs(distance_y) < 0.5)
+			if (fabs(distance_y) < 1)
 			{
-				//ROS_INFO("slow down x");
-				this->speed.linear_x = fabs(distance_y);
+				speed = deceleration(fabs(distance_y), 1, 0.01);
 			}
+			this->speed.linear_x = speed;
 		}
 		return false;
 	}
@@ -203,7 +204,9 @@ public:
 		if(!orientation.currently_turning)
 		{
 			set_status(1);
-			speed = deceleration(fabs(distance), 1, 0.005);
+			if(fabs(distance) < 1){
+				speed = deceleration(fabs(distance), 1, 0.005);
+			}
 			this->speed.linear_x = speed;
 		}
 	}

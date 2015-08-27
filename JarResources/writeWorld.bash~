@@ -173,7 +173,7 @@ if !(($i%2)); then
 	temp=$(($temp+1))
 fi
 
-posx=$((-40 + (( $(($i%2)) * 8 )) ))
+posx=$((-40 + (( $(($i%2)) * 5 )) ))
 posy=$((-50 + $(($temp * 4))))
 echo pickerRobot\(pose [ $posx $posy 0 0 ]\ name \"P$i\" color \"red\"\) >> world/config/robotinstances.inc
 
