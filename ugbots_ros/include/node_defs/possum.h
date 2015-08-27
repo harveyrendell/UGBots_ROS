@@ -12,6 +12,7 @@
 class Possum : public Node
 {
 public:
+	Possum();
 	Possum(ros::NodeHandle &n);
 	enum State { IDLE, ROAMING, FLEEING, MOVINGACROSS };
 	State state;
@@ -35,4 +36,5 @@ public:
 	char const* enum_to_string(State t);
 	int computeNumberOfRows();
 	bool initial_coordinates_set;
+	bool begin_action2(double speed);
 };

@@ -190,7 +190,7 @@ echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"robotnode\" type=\"CARRIER\"\/\> >> ugbots_ros\/launch\/world.launch
 echo \<\/group\> >> ugbots_ros\/launch\/world.launch
 
-echo carrierRobot\(pose [ -46 $((48-$(($j*5)))) 0 90 ] name \"C$j\" color \"blue\"\) >> world/config/robotinstances.inc
+echo carrierRobot\(pose [ $((25 + (($j*5)))) -15 0 270 ] name \"C$j\" color \"blue\"\) >> world/config/robotinstances.inc
 
 j=$(($j+1))
 number=$(($number+1))
@@ -331,28 +331,12 @@ done
 #creating tractors
 while [ $t -lt $tractor ];
 do
-
-rand=$(( (RANDOM % 97) - 46 )) 
-
-if (($rand>=-12 && $rand<=12));
-then
-    rand3=$(( (RANDOM % 15) - 49 )) 
-    rand4=$(( (RANDOM % 15) + 35 ))
-    if [ $(( (RANDOM % 2) + 1 )) -lt "2" ];
-    then
-        rand2=$rand3
-    else
-        rand2=$rand4
-    fi
-else
-    rand2=$(( (RANDOM % 99) - 48 )) 
-fi
-
 echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"tractornode\" type=\"TRACTOR\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
-echo tractor\( pose [ $rand $rand2 0 0 ] origin [ 0 0 0 270] name \"T$t\" color \"brown\" \) >> world/config/tractorinstances.inc
+
+echo tractor\( pose [ -45 0 0 0 ] origin [ 0 0 0 270] name \"T$t\" color \"brown\" \) >> world/config/tractorinstances.inc
 t=$(($t+1))
 number=$(($number+1))
 

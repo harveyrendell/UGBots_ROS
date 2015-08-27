@@ -8,6 +8,29 @@
 #include <stdlib.h>
 #include <node_defs/cat.h>
 
+Cat::Cat()
+{
+
+	//setting base attribute defaults
+	this->pose.theta = M_PI/2.0;
+	this->pose.px = 10;
+	this->pose.py = 20;
+	this->speed.linear_x = 0.0;
+	this->speed.max_linear_x = 3.0;
+	this->speed.angular_z = 0.0;
+	this->orientation.currently_turning = false;
+
+	this->state = IDLE;
+	this->direction = CLOCKWISE;
+	this->position = NORTH;
+
+	geometry_msgs::Point point;
+	point.x = 47.0;
+	point.y = 47.0;
+	action_queue.push(point);
+
+}
+
 Cat::Cat(ros::NodeHandle &n)
 {
 

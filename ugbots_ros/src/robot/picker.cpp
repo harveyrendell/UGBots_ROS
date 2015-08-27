@@ -7,6 +7,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <stdlib.h>
+#include <ctime>
 #include <node_defs/picker.h>
 
 
@@ -38,27 +39,29 @@ Picker::Picker(ros::NodeHandle &n)
 	speed.linear_x = 0.0;
 	speed.max_linear_x = 3.0;
 	speed.angular_z = 0.0;
-	state = IDLE;
+	set_status(0);
 	station_y = -33;
 
 	queueDuplicateCheckAngle = 0.0;
 	queueDuplicate = true;
 	idle_status_sent = false;
+	full_bin_sent = false;
 	std::string ns = n.getNamespace();
 	ns.erase(ns.begin());
 	robotDetails.ns = ns;
 
 	sub_station = n.subscribe<ugbots_ros::picker_row>("station", 1000, &Picker::station_callback, this);
+	bin_status_alert = n.subscribe<std_msgs::String>("bin_emptied", 1000, &Picker::bsa_callback, this);
 	core_alert = n.advertise<ugbots_ros::robot_details>("/idle_pickers", 1000);
-	bin_alert = n.advertise<ugbots_ros::Position>("/full_bins", 1000);
+	bin_alert = n.advertise<ugbots_ros::robot_details>("/full_bins", 1000);
 
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Picker::odom_callback, this);
 	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
-	carrier_alert = n.advertise<ugbots_ros::bin_status>("/alert",1000);
 
-	
-
+	// point.x = 0.0;
+	// point.y = 38.0;
+	// action_queue.push(point);
 }
 
 void Picker::move(double distance, double px, double py)
@@ -100,50 +103,13 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	ROS_INFO("/position/x/%f", pose.px);
 	ROS_INFO("/position/y/%f", pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
-	ROS_INFO("%f degrees per clock", (msg.twist.twist.angular.z * 180/M_PI)/10);
+	//ROS_INFO("%f degrees per clock", (msg.twist.twist.angular.z * 180/M_PI)/10);
 
-
-	//bin location, currently attached to the centre of robot
-	binStatus.bin_x = pose.px;
-	binStatus.bin_y = pose.py;
 	speed.max_linear_x = 3.0;
 	speed.angular_z = 0.0;
 	station_x = 0;
 
-
-	if(action_queue.empty())
-	{
-		point.y = 38.0;
-		point.x = 8.75;
-		action_queue.push(point);
-		point.y = -38.0;
-		point.x = 8.75;
-		action_queue.push(point);
-	}
-
 	ROS_INFO("point x: %f point y: %f", action_queue.front().x, action_queue.front().y);
-
-	//relative actions for different states
-
-	/*if (state == IDLE) {
-		state = TRAVELLING;
-		tempx = pose.px;
-		tempy = pose.py;
-		//temprad = orientation.angle;
-		//goToWork();
-		//state = TRAVELLING;
-	} else if (state == TRAVELLING) {
-		goToWork();
-	} else if (state == PICKING) {
-		pickKiwi();
-	} else if (state == WAITING) {
-		binStatus.bin_x = 0.0;
-		binStatus.bin_y = pose.py-2;
-		speed.angular_z = M_PI;
-	}**/
-
-	//publish topic about current bin status
-	carrier_alert.publish(binStatus);
 
 	if(!avoidance_queue.empty())
 	{
@@ -151,8 +117,23 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	}
 	else
 	{
-		begin_action_shortest_path(0.1);
+		if (state == IDLE) {
+			begin_action(0);
+		} else if (state == TRAVELLING) {
+			begin_action(1);
+		} else if (state == PICKING) {
+			begin_action(0.5);
+			pickKiwi();
+		} else if (state == WAITING) {
+			speed.linear_x = 0;
+			if (!full_bin_sent) {
+				callForCarrier();
+			}
+		}
+
+		ROS_INFO("in the else loop %f", speed.angular_z);
 	}
+
 	doAngleCheck();
 	checkTurningStatus();
 	ROS_INFO("x: %f, y: %f", action_queue.front().x, action_queue.front().y);
@@ -204,13 +185,24 @@ void Picker::laser_callback(sensor_msgs::LaserScan msg)
 		}
 	}
 			publish();
+	}
 }
+
+void Picker::bsa_callback(std_msgs::String msg) {
+	begin_action(0);
+	binPercent = 0;
+	full_bin_sent = false;
+}
+
 void Picker::set_status(int status){
 	for(int i = 0; i < arraysize(state_array); i++)
 	{
 		if(i == status)
 		{
 			state = state_array[i];
+			if (state == IDLE) {
+				idle_status_sent = false;
+			}
 		}
 	}
 }
@@ -218,50 +210,45 @@ void Picker::set_status(int status){
 void Picker::station_callback(ugbots_ros::picker_row pos)
 {
 	ROS_INFO("Robot given coordinates sx: %f, sy: %f, ex: %f, ey: %f", pos.start_x, pos.start_y, pos.end_x, pos.end_y);
-}
-
-//hard coded function for robot to get to work station
-void Picker::goToWork() {
-	/*moveX(abs(station_x-tempx),tempx);
-	if (speed.linear_x == 0.0) {
-		turn(false, M_PI/2, temprad);
-		if (speed.angular_z == 0.0){
-			speed.linear_x = 1.0;
-			moveY(abs(station_y-tempy),tempy);
-			state = PICKING;
-			tempx = pose.px;
-			tempy = pose.py;
-			temprad = orientation.angle;
-		}
-	}**/
+	geometry_msgs::Point p;
+	p.x = pos.start_x;
+	p.y = pos.start_y;
+	action_queue.push(p);
+	state_queue.push(1);
+	p.x = pos.end_x;
+	p.y = pos.end_y;
+	action_queue.push(p);
+	state_queue.push(4);
 }
 
 //function putting robot into picking mode
 void Picker::pickKiwi() {
-	speed.linear_x = 0.5;
-	
+	//speed.linear_x = 0.5;
+	srand(time(0));
 	
 	if(binPercent<100){
-		int randomInt = rand() % 13;
+		int randomInt = rand() % 2;
 		if (randomInt == 0) { 
 			binPercent = binPercent + 1;
 		}
 		ROS_INFO("/bin/%d", binPercent);
 		ROS_INFO("/message/the bin is %d percent full", binPercent);
-		binStatus.bin_stat = "FILLING";
 
-		move_y(70.0,tempy);
-
-	}	
-
-
-	else if (binPercent == 100){
+	} else if (binPercent == 100){
 		binPercent = 100;
 		ROS_INFO("/bin/%d", binPercent);
 		ROS_INFO("/message/the bin is %d percent full", binPercent);
-		binStatus.bin_stat = "FULL";
 		state = WAITING;
 	}	
+}
+
+void Picker::callForCarrier() {
+	ugbots_ros::robot_details bin_pos;
+	bin_pos.x = pose.px;
+	bin_pos.y = pose.py - 2.8;
+	bin_pos.ns = robotDetails.ns;;
+	bin_alert.publish(bin_pos);
+	full_bin_sent = true;
 }
 
 char const* Picker::enum_to_string(State t) {
@@ -285,8 +272,6 @@ char const* Picker::enum_to_string(State t) {
 
 void Picker::move(){}
 void Picker::stop(){
-
-	state = STOPPED;
 	speed.linear_x = 0.0;
 	speed.linear_y = 0.0;
 	speed.angular_z = 0.0;
@@ -308,8 +293,6 @@ ros::NodeHandle n;
 //Creating the CarrierBot instance
 Picker node(n);
 
-node.binStatus.bin_stat = "EMPTY";
-
 //Setting the loop rate
 ros::Rate loop_rate(10);
 
@@ -319,8 +302,6 @@ int count = 0;
 while (ros::ok())
 {
 	node.publish();
-
-	node.carrier_alert.publish(node.binStatus);
 
 	ros::spinOnce();
 

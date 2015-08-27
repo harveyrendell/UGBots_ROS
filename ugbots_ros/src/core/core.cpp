@@ -13,7 +13,7 @@ public:
 	Core(ros::NodeHandle &n)
 	{
 		world_layout = n.subscribe<ugbots_ros::Position>("/world_layout",1000, &Core::wl_callback, this);
-		full_bin_list = n.subscribe<ugbots_ros::Position>("/full_bins",1000, &Core::fbl_callback, this);
+		full_bin_list = n.subscribe<ugbots_ros::robot_details>("/full_bins",1000, &Core::fbl_callback, this);
 		picker_list = n.subscribe<ugbots_ros::robot_details>("/idle_pickers",1000, &Core::pl_callback, this);
 		carrier_list = n.subscribe<ugbots_ros::robot_details>("/idle_carriers",1000, &Core::cl_callback, this);
 		rows_list = n.advertise<ugbots_ros::Position>("/row_loc",1000,true);
@@ -28,17 +28,18 @@ public:
 		point.y = p.y;
 		//Add the beacon to organise into list of rows and beacons
 		addBeacon(point);
-
+		ROS_INFO("Number of Beacons: %d", beaconPositions.size());
 		ROS_INFO("Number of Rows: %d", rowPositions.size());
 	}
 
-	void fbl_callback(ugbots_ros::Position p)
+	void fbl_callback(ugbots_ros::robot_details b)
 	{
-		Point point;
-		point.x = p.x;
-		point.y = p.y;
+		RobotDetails bin;
+		bin.x = b.x;
+		bin.y = b.y;
+		bin.ns = b.ns;
 
-		addBin(point);
+		addBin(bin);
 
 		ROS_INFO("Number of Bins: %d", binPositions.size());
 	}
@@ -138,14 +139,14 @@ public:
 		}
  	}
 
- 	void addBin(Point p)
+ 	void addBin(RobotDetails b)
  	{
  		bool exists = false;
 
  		//iterate through all the points in the list and check if the point exists within it
-		for (std::vector<Point>::iterator bin = binPositions.begin(); bin != binPositions.end(); ++bin) {
-			Point current = *bin;
-			if (current.x == p.x && current.y == p.y) {
+		for (std::vector<RobotDetails>::iterator bin = binPositions.begin(); bin != binPositions.end(); ++bin) {
+			RobotDetails current = *bin;
+			if (current.x == b.x && current.y == b.y) {
 				exists = true;
 				break;
 			}
@@ -154,7 +155,7 @@ public:
 		//if it doesn't exist append to the end of the list
 		if (!exists)
 		{
-			binPositions.push_back(p);
+			binPositions.push_back(b);
 		}
  	}
 
@@ -205,6 +206,11 @@ public:
 		return beaconPositions;
 	}
 
+	std::vector<RobotDetails> getPickerList()
+	{
+		return idlePickers;
+	}
+
 	//function to assign an unassigned row to the closest idle picker robot
 	void assignRowToClosest(ros::NodeHandle &n) {
 		//index for the list of rows
@@ -215,6 +221,7 @@ public:
 			Row current = *row;
 			//for only the rows that are unassigned
 			if (current.status == Row::UNASSIGNED) {
+				ROS_INFO("row list element: %d", rowNum);
 				//have both start and end point as valid start points
 				Point start;
 				Point end;
@@ -254,10 +261,10 @@ public:
 				ROS_INFO("station appointed to idle bot: %d, ns: %s", i, topic.c_str());
 				//erase the picker bot off the idle picker bot list
 				idlePickers.erase(idlePickers.begin() + i);
-				//publish the target point (station) to the picker bots topic
-				row_distributer.publish(bots_row);
 				//set the row as assigned
 				rowPositions[rowNum].status = Row::ASSIGNED;
+				//publish the target point (station) to the picker bots topic
+				row_distributer.publish(bots_row);
 				break;
 			}
 			rowNum++;
@@ -298,10 +305,15 @@ public:
 	void assignBinToClosest(ros::NodeHandle &n) {
 
 		if (binPositions.size() > 0) {
-			Point p = binPositions[0];
-			ugbots_ros::Position binLoc;
-			binLoc.x = p.x;
-			binLoc.y = p.y;
+			RobotDetails b = binPositions[0];
+			ugbots_ros::robot_details binLoc;
+			binLoc.x = b.x;
+			binLoc.y = b.y;
+			binLoc.ns = b.ns;
+
+			Point p;
+			p.x = b.x;
+			p.y = b.y;
 
 			int i = getClosestCarrier(p);
 
@@ -310,7 +322,7 @@ public:
 			}
 
 			std::string topic = idleCarriers[i].ns + "/bin";
-			bin_distributer = n.advertise<ugbots_ros::Position>(topic, 1000, true);
+			bin_distributer = n.advertise<ugbots_ros::robot_details>(topic, 1000, true);
 			ROS_INFO("bin appointed to idle bot: %d, ns: %s", i, topic.c_str());
 			//erase the carrier bot off the idle carrier bot list
 			idleCarriers.erase(idleCarriers.begin() + i);
@@ -378,7 +390,7 @@ public:
 private:
 	std::vector<Point> beaconPositions;
 	std::vector<Row> rowPositions;
-	std::vector<Point> binPositions;
+	std::vector<RobotDetails> binPositions;
 	std::vector<RobotDetails> idlePickers;
 	std::vector<RobotDetails> idleCarriers;
 };
@@ -404,7 +416,9 @@ int main(int argc, char **argv)
 		}
 
 		if (count > 5) {
-			c.assignRowToClosest(n);
+			if (c.getPickerList().size() > 0) {
+				c.assignRowToClosest(n);
+			}
 			c.assignBinToClosest(n);
 		}
 

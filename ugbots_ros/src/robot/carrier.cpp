@@ -25,13 +25,14 @@ Carrier::Carrier()
 	undergoing_task = false;
 
 	idle_status_sent = false;
+	station_set = false;
 
 	temprad = 0.0;
 }
 
 Carrier::Carrier(ros::NodeHandle &n)
 {
-	//this->n = n;
+	this->nh = n;
 
 	//setting base attribute defaults
 	speed.linear_x = 0.0;
@@ -48,29 +49,19 @@ Carrier::Carrier(ros::NodeHandle &n)
 
 
 	idle_status_sent = false;
+	station_set = false;
 	std::string ns = n.getNamespace();
 	ns.erase(ns.begin());
 	robotDetails.ns = ns;
 
 	core_alert = n.advertise<ugbots_ros::robot_details>("/idle_carriers",1000);
-	sub_bin = n.subscribe<ugbots_ros::Position>("bin", 1000, &Carrier::bin_loc_callback, this);
+	sub_bin = n.subscribe<ugbots_ros::robot_details>("bin", 1000, &Carrier::bin_loc_callback, this);
 
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Carrier::odom_callback, this);
 	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Carrier::laser_callback, this);
 	carrier_alert = n.subscribe<ugbots_ros::bin_status>("/alert",1000,&Carrier::bin_callback,this);
 	carrier_alert_pub = n.advertise<ugbots_ros::bin_status>("/alert",1000);
-
-	/*geometry_msgs::Point point;
-	point.x = 36.0;
-	point.y = -4.0;
-	action_queue.push(point);
-	point.y = 4.0;
-	point.x = 38.0;
-	action_queue.push(point);
-	point.y = -2.0;
-	point.x = -4.0;
-	action_queue.push(point);*/
 }
 
 void Carrier::bin_callback(ugbots_ros::bin_status msg)
@@ -107,6 +98,11 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 	orientation.rotz = msg.pose.pose.orientation.z;
 	orientation.rotw = msg.pose.pose.orientation.w;
 
+	if (!station_set) {
+		station_x = pose.px;
+		station_y = pose.py;
+	}
+
 	calculateOrientation();
 	if (state == IDLE && !idle_status_sent) 
 	{
@@ -121,9 +117,9 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 	//orientation.roty-orientation.rotz*orientation.rotz);
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
-	ROS_INFO("/orientation/angle/%f", this->orientation.angle);
-	ROS_INFO("/speed/x/%f", msg.twist.twist.linear.x);
-	ROS_INFO("/speed/y/%f", msg.twist.twist.linear.y);
+	//ROS_INFO("/orientation/angle/%f", this->orientation.angle);
+	//ROS_INFO("/speed/x/%f", msg.twist.twist.linear.x);
+	//ROS_INFO("/speed/y/%f", msg.twist.twist.linear.y);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
 
 	if(localBinStatus.bin_stat == "FULL")
@@ -133,7 +129,21 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 		location_point.y = localBinStatus.bin_y;
 		action_queue.push(location_point);
 	}
-	begin_action_shortest_path(3.0);
+
+	if (state == IDLE) {
+		begin_action(0);
+	} else if (state == TRAVELLING) {
+		begin_action(3);
+	} else if (state == CARRYING) {
+		if (!picker_bin_msg_sent) {
+			std::string topic = associated_picker + "/bin_emptied";
+			picker_alert = nh.advertise<std_msgs::String>(topic,1000,true);
+			picker_alert.publish(topic);
+			picker_bin_msg_sent = true;
+		}
+		begin_action(1.5);
+	}
+
 	doAngleCheck();
 	checkTurningStatus();
 	publish();
@@ -207,12 +217,33 @@ void Carrier::laser_callback(sensor_msgs::LaserScan msg)
 	}**/
 }
 
-void Carrier::bin_loc_callback(ugbots_ros::Position pos)
+void Carrier::bin_loc_callback(ugbots_ros::robot_details bin)
 {
-	//geometry_msgs::Point bin_location;
-	//bin_location.x = pos.x;
-	//bin_location.y = pos.y;
-	//action_queue(bin_location);
+	//picker bin has not been emptied, hence false
+	picker_bin_msg_sent = false;
+	associated_picker = bin.ns;
+
+	//set first point of action, which is the pivot point
+	geometry_msgs::Point pivot;
+	pivot.x = bin.x;
+	pivot.y = -40;
+	action_queue.push(pivot);
+	state_queue.push(1);
+	//set goal point of picking up bin
+	geometry_msgs::Point bin_location;
+	bin_location.x = bin.x;
+	bin_location.y = bin.y;
+	action_queue.push(bin_location);
+	state_queue.push(1);
+	//set the carry course for the carrier back to its station
+	geometry_msgs::Point carry_point;
+	carry_point.x = station_x;
+	carry_point.y = -42;
+	action_queue.push(carry_point);
+	state_queue.push(2);
+	carry_point.y = station_y;
+	action_queue.push(carry_point);
+	state_queue.push(2);
 }
 
 void Carrier::set_status(int status){
@@ -221,13 +252,16 @@ void Carrier::set_status(int status){
 		if(i == status)
 		{
 			state = state_array[i];
+			if (state == IDLE) {
+				idle_status_sent = false;
+				picker_bin_msg_sent = false; 
+			}
 		}
 	}
 }
 
 void Carrier::stop()
 {
-	state = STOPPED;
 	speed.linear_x = 0.0;
 	speed.linear_y = 0.0;
 	speed.angular_z = 0.0;

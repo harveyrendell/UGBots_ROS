@@ -80,7 +80,7 @@ public:
 		}
 		return tolerance * 10;
 	}
-
+	
 	void doAngleCheck()
 	{		
 		//if -ve rads, change to +ve rads
@@ -266,24 +266,31 @@ public:
 
 		if(action_queue.empty())
 		{
-			set_status(1);
 			return true;
 		}
 		geometry_msgs::Point end_point = action_queue.front();
+		set_status(state_queue.front());
+
 		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 		{
 			action_queue.pop();
+			state_queue.pop();
+			if (action_queue.empty()) {
+				set_status(0);
+			}
 			stop();
 			return true;
 		}
-		if(move_x(end_point.x, speed))
+
+		if(move_y(end_point.y, speed))
 		{
-			if(move_y(end_point.y, speed))
+			if(move_x(end_point.x, speed))
 			{
 				//set_status(2);
 			}
 
 		}
+		return false;
 	}	
 
 
@@ -308,6 +315,10 @@ public:
 
 	//Queue of the actions
 	std::queue<geometry_msgs::Point> action_queue;
+
+	//Queue of the states
+	std::queue<int> state_queue;
+
 
 	//Queue of the avoidance actions
 	std::queue<geometry_msgs::Point> avoidance_queue;

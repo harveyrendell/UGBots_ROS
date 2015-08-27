@@ -54,10 +54,10 @@ rosbuild_add_library(VisitorLib src/person/visitor.cpp)
 rosbuild_add_rostest(test/node.test)
 
 #Carrier
-rosbuild_add_executable(CarrierTests EXCLUDE_FROM_ALL src/test/carrier_test.cpp)
-rosbuild_add_gtest_build_flags(CarrierTests)
+#rosbuild_add_executable(CarrierTests EXCLUDE_FROM_ALL src/test/carrier_test.cpp)
+#rosbuild_add_gtest_build_flags(CarrierTests)
 #rosbuild_add_rostest(test/node.test)
-target_link_libraries(CarrierTests CarrierLib)
+#target_link_libraries(CarrierTests CarrierLib)
 
 #Picker
 rosbuild_add_executable(PickerTests EXCLUDE_FROM_ALL src/test/picker_test.cpp)
