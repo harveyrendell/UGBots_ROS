@@ -10,12 +10,21 @@ import javax.swing.SpinnerNumberModel;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 
+/**
+ * Project 1: Group robotic behaviour simulation using Robot Operating System (ROS) 
+ * Group 1: UGBots
+ * 
+ * Members: Andy Choi, Kevin Choi, Andrew Jeoung, Jay Kim, Jenny Lee, Namjun Park, Harvey Rendell, Chuan-Yu Wu
+ * 
+ * This class is responsible for creating a JPanel object which will display the
+ * GUI elements the user can interact with.
+ */
+
+
 @SuppressWarnings("serial")
 public class ROSinit extends JPanel {
-
-	/**
-	 * Create the panel.
-	 */
+	
+	//Creating Labels for dynamic elements
 	private JLabel _picker = new JLabel("Picker Robots:");
 	private JLabel _carrier = new JLabel("Carrier Robots:");
 	private JLabel _worker = new JLabel("Workers:");
@@ -26,18 +35,22 @@ public class ROSinit extends JPanel {
 	private JLabel _tractor = new JLabel("Tractors:");
 	private JLabel _rows = new JLabel("Orchard Rows:");
 	
+	//Creating bound spinners for dynamic elements
 	private JSpinner _pickerVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
 	private JSpinner _carrierVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
-	private JSpinner _workerVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
+	private JSpinner _workerVal = new JSpinner(new SpinnerNumberModel(1,1,1,1));
 	private JSpinner _visitorVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
-	private JSpinner _dogVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
+	private JSpinner _dogVal = new JSpinner(new SpinnerNumberModel(0,0,6,1));
 	private JSpinner _catVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
 	private JSpinner _possumVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
-	private JSpinner _tractorVal = new JSpinner(new SpinnerNumberModel(0,0,4,1));
+	private JSpinner _tractorVal = new JSpinner(new SpinnerNumberModel(0,0,1,1));
 	private JSpinner _rowVal = new JSpinner(new SpinnerNumberModel(2,2,10,1));
 	
+	//Creating start button
 	private JButton _startButton = new JButton("Start");
 	
+	
+	//Instantiator
 	public ROSinit() {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		
@@ -46,12 +59,12 @@ public class ROSinit extends JPanel {
 		top.setMaximumSize(new Dimension(900, 40));
 		top.add(prompt);
 		
-		
 		this.setMaximumSize(new Dimension(900,450));
 		this.add(top);
 		addPromptPanel();
 	}
 	
+	//Method to add the prompting elements
 	private void addPromptPanel(){
 		
 		JPanel panel = new JPanel();
@@ -107,6 +120,7 @@ public class ROSinit extends JPanel {
 		
 	}
 	
+	//Method to get the user input
 	public int[] getVals(){
 		int[] vals = new int[9];
 		vals[0] = (int) _pickerVal.getValue();
