@@ -6,9 +6,21 @@ import java.util.HashMap;
 
 import javax.swing.SwingWorker;
 
+
+/**
+ * Project 1: Group robotic behaviour simulation using Robot Operating System (ROS) 
+ * Group 1: UGBots
+ * 
+ * Members: Andy Choi, Kevin Choi, Andrew Jeoung, Jay Kim, Jenny Lee, Namjun Park, Harvey Rendell, Chuan-Yu Wu
+ * 
+ * This class is responsible for creating creating the appropriate processes 
+ * when actions are taken
+ */
 public class Processes {
 	private ContentPanel _panel;
 	private int[] _vals;
+	
+	//Fields for the swingworkers and processes
 	private SwingWorker<Void, Void> rosWorker;
 	private SwingWorker<Void, Void> worldWorker;
 	private SwingWorker<Void, Void> launchWorker;
@@ -21,13 +33,14 @@ public class Processes {
 	private Process _launch;
 	private Process _topic;
 
-	
 	public Processes(ContentPanel panel, int[] vals){
 		_panel = panel;
 		_vals = vals;
 		
 	}
 	
+	//Enables GUI components after 5 seconds
+	//Used when GUI is first opened to wait for roscore to start
 	public void waitFive(){
 		SwingWorker<Void,Void> wait = new SwingWorker<Void,Void>(){
 
@@ -44,11 +57,13 @@ public class Processes {
 		wait.execute();
 	}
 	
+	
+	//Method to get the current count for each node on the JSpinners
 	public void update(int[] vals){
 		_vals = vals;
 	}
 
-	
+	//Method to call the appropriate Swing workers when start button is clicked
 	public void start(){
 		writeWorldFiles();
 		runWorld();
@@ -151,6 +166,7 @@ public class Processes {
 					}
 			}
 			
+			//Method to check which robot the information belongs to and update GUI accordinly
 			private void updateGUI(String name, String info){
 
 				HashMap<String, infoPanel> map = _panel.getMap();
@@ -184,7 +200,7 @@ public class Processes {
 		topicWorker.execute();
 	}
 	
-	//Kill all processes
+	//Kill all processes but roscore
 	public void finishProcs(){
 		SwingWorker<Void, Void> killAll = new SwingWorker<Void,Void>(){
 
@@ -200,6 +216,7 @@ public class Processes {
 		}
 	}
 	
+	//Method to run test cases
 	public void runTests(){
 		SwingWorker<Void, Void> runTests = new SwingWorker<Void,Void>(){
 			
@@ -214,6 +231,7 @@ public class Processes {
 		
 	}
 
+	//Method to run rosmake 
 	public void rosmake() {
 		SwingWorker<Void, Void> rosmake = new SwingWorker<Void,Void>(){
 
@@ -226,6 +244,8 @@ public class Processes {
 		rosmake.execute();
 	}
 	
+	
+	//Method to kill all processes including roscore
 	public void killProcs(){
 		SwingWorker<Void, Void> killAll = new SwingWorker<Void,Void>(){
 

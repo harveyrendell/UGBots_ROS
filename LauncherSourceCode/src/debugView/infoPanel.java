@@ -8,6 +8,15 @@ import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.border.EtchedBorder;
 
+/**
+ * Project 1: Group robotic behaviour simulation using Robot Operating System (ROS) 
+ * Group 1: UGBots
+ * 
+ * Members: Andy Choi, Kevin Choi, Andrew Jeoung, Jay Kim, Jenny Lee, Namjun Park, Harvey Rendell, Chuan-Yu Wu
+ * 
+ * This class is responsible for creating a JPanel which displays basic information
+ * for the robot it corresponds to
+ */
 @SuppressWarnings("serial")
 public class infoPanel extends JPanel {
 
