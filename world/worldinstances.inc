@@ -11,7 +11,7 @@ shrub (pose [ 15 -30 0 0 ])
 shrub (pose [ 19 26 0 0 ])
 shrub (pose [ 35 -40 0 0 ])
 shrub (pose [ 37 -2 0 0 ])
-shrub (pose [ 46 -15 0 0 ])
+shrub (pose [ 40 -15 0 0 ])
 shrub (pose [ 21 45 0 0 ])
 shrub (pose [ 29 40 0 0 ])
 
