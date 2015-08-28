@@ -28,17 +28,19 @@ public:
 	void setY(double y) { this->y = y; }
 	void setAsPublished() { sent = true; }
 
+	//callback method for the beacons base pose ground truth topic
 	void bpgt_callback(nav_msgs::Odometry msg)
 	{
+		//set the beacons x and y position using base pose ground truth
 		setX(msg.pose.pose.position.x);
 		setY(msg.pose.pose.position.y);
 
+		//if its position has not been sent
 		if (!sent) {
+			//publish to the topic /world_layout
 			ugbots_ros::Position p;
 			p.x = x;
 			p.y = y;
-			// publish it
-			ROS_INFO("Sending x: %f, y: %f", p.x, p.y);
 			position_pub.publish(p);
 			sent = true;
 		}
@@ -48,6 +50,7 @@ private:
 	// coordinates for the beacon
 	double x;
 	double y;
+	//boolean determining position sent status
 	bool sent = false;
 };
 

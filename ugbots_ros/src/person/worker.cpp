@@ -72,7 +72,7 @@ void Worker::odom_callback(nav_msgs::Odometry msg)
 	
 	calculateOrientation();
 
-	begin_action_shortest_path(0.5);
+	begin_action_shortest_path(2.0);
 
 	doAngleCheck();
 
@@ -85,8 +85,8 @@ void Worker::odom_callback(nav_msgs::Odometry msg)
 		state = IDLE;
 	}
 
-	ROS_INFO("/position/x/%f",this->action_queue.front().x);
-	ROS_INFO("/position/y/%f",this->action_queue.front().y);
+	ROS_INFO("/position/x/%f",this->pose.px);
+	ROS_INFO("/position/y/%f",this->pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
 }
 
@@ -132,7 +132,7 @@ void Worker::checkTurningStatus()
 		if((this->orientation.angle + (M_PI / (speed.angular_z * 2) ) ) == this->orientation.desired_angle)
 		{
 			this->orientation.currently_turning = false;
-			this->speed.linear_x = 0.5;
+			this->speed.linear_x = 2.0;
 			this->speed.angular_z = 0.0; 	
 		}
 		return;
@@ -143,6 +143,7 @@ void Worker::stop(){
 	this->speed.linear_x = 0.0;
 	this->speed.angular_z = 0.0;
 }
+
 void Worker::collisionDetected(){}
 
 char const* Worker::enum_to_string(State t)

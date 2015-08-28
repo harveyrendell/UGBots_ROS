@@ -113,23 +113,27 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 
 	if(!avoidance_queue.empty())
 	{
-		begin_action_avoidance(0.1);
+		begin_action_avoidance(3.0);
 	}
 	else
 	{
 		if (state == IDLE) {
+			speed.linear_x = 0;
 			begin_action(0);
 		} else if (state == TRAVELLING) {
-			begin_action(1);
-		} else if (state == PICKING) {
 			begin_action(0.5);
+		} else if (state == PICKING) {
+			begin_action(0.25);
 			pickKiwi();
 		} else if (state == WAITING) {
 			speed.linear_x = 0;
 			if (!full_bin_sent) {
 				callForCarrier();
 			}
+		} else if (state == STOPPED) {
+			speed.linear_x = 0;
 		}
+
 
 		ROS_INFO("in the else loop %f", speed.angular_z);
 	}
@@ -143,44 +147,65 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 
 void Picker::laser_callback(sensor_msgs::LaserScan msg)
 {
+
+	bool robot_detected = false;
+	for (int i = 71; i < 109; i++) {
+		if (msg.ranges[i] < 2.3) {
+			robot_detected = true;
+			break;
+		} else {
+			robot_detected = false;
+		}
+	}
+	if (!robot_detected) {
+		if (state != WAITING) {
+			begin_action(0);
+		}
+	} else {
+		state = STOPPED;
+	}
 	//laser detection that gets in way
-	int min_range = (int)(floor(180 * acos(0.75/3)/M_PI));
-	int max_range = (int)(ceil(180 * acos(-0.75/3)/M_PI));
+	/*int min_range = (int)(floor(180 * acos(0.75/2)/M_PI));
+	int max_range = (int)(ceil(180 * acos(-0.75/2)/M_PI));
 
 	for (int i = min_range; i < max_range; i++)
 	{
-		if(msg.ranges[i] < 3.0 && state == PICKING)
+		if(msg.ranges[i] < 2.0)
 		{
 			speed.linear_x = 0.0;
 			publish();
-			if(!this->orientation.currently_turning && avoidance_queue.empty())
+
+			if(!this->orientation.currently_turning)
 			{
-				
 				while(!avoidance_queue.empty())
 				{
 					avoidance_queue.pop();
 				}
-				
 
 				std::queue<geometry_msgs::Point> temp_queue;
 
 				geometry_msgs::Point pointtemp;
 				
-				pointtemp.x = this->pose.px + 0.6 * cos(this->orientation.angle - (M_PI/2.0));
-				pointtemp.y = this->pose.py + 0.6 * sin(this->orientation.angle - (M_PI/2.0));
+				pointtemp.x = this->pose.px + 0.8 * cos(this->orientation.angle - (M_PI/2.0));
+				pointtemp.y = this->pose.py + 0.8 * sin(this->orientation.angle - (M_PI/2.0));
+				ROS_INFO("first point x: %f",pointtemp.x);
+				ROS_INFO("first point y: %f",pointtemp.y);
 				avoidance_queue.push(pointtemp);
 
 				pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
 				pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle);
+				ROS_INFO("second point x: %f",pointtemp.x);
+				ROS_INFO("second point y: %f",pointtemp.y);
 				avoidance_queue.push(pointtemp);
 
-				pointtemp.x = pointtemp.x + 0.6 * cos(this->orientation.angle + (M_PI/2.0));
-				pointtemp.y = pointtemp.y + 0.6 * sin(this->orientation.angle + (M_PI/2.0));
+				pointtemp.x = pointtemp.x + 0.8 * cos(this->orientation.angle + (M_PI/2.0));
+				pointtemp.y = pointtemp.y + 0.8 * sin(this->orientation.angle + (M_PI/2.0));
+				ROS_INFO("third point x: %f",pointtemp.x);
+				ROS_INFO("third point y: %f",pointtemp.y);				
 				avoidance_queue.push(pointtemp);
 			}
 		}
-	}
-			publish();
+	}*/
 }
 
 void Picker::bsa_callback(std_msgs::String msg) {

@@ -46,7 +46,6 @@ Visitor::Visitor(ros::NodeHandle &n)
 	this->queueDuplicateCheckAngle = 0.0;
 	this->queueDuplicate = true;
 	this->tourStarted = false;
-	this->angleChangeStarted = false;
 
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Visitor::odom_callback, this);
@@ -56,8 +55,7 @@ Visitor::Visitor(ros::NodeHandle &n)
 
 	this->waitingInLine = true;
 	this->state = IDLE;
-
-	//init_route();ROS
+	//init_route();
 
 }
 
@@ -73,19 +71,9 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 	calculateOrientation();
 
-
-
 	if(!waitingInLine)
 	{
-		
-		if(!avoidance_queue.empty())
-		{
-			begin_action_avoidance(2.0);
-		}
-		else
-		{
-			begin_action_shortest_path(2.0);
-		}
+		begin_action_shortest_path(2.0);
 	}
 
 	doAngleCheck();		
@@ -97,7 +85,6 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 	ROS_INFO("/position/x/%f",this->pose.px);
 	ROS_INFO("/position/y/%f",this->pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
-
 }
 
 
@@ -106,40 +93,54 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 
 	if(insideFarm())
 	{	
-
-		int min_range = (int)(floor(180 * acos(0.25/2.0)/M_PI));
-		int max_range = (int)(ceil(180 * acos(-0.25/2.0)/M_PI));
-
-		for (int i = min_range; i < max_range; i++)
+		if(fabs(this->queueDuplicateCheckAngle - this->orientation.angle) >= (M_PI/2.000000))
 		{
-			if(msg.ranges[90] < 2.0)
-			{
-				speed.linear_x = 0.0;
-				publish();
+			this->queueDuplicate = true;
+			this->queueDuplicateCheckAngle = 0;
+		}
+		
 
-				if(!this->orientation.currently_turning && avoidance_queue.empty())
+		for(int i=88; i<93; i++)//if(msg.ranges[90] < 2.0 ||)
+		{
+			if(msg.ranges[i] < 2.0)
+			{
+				if(this->queueDuplicate == true)
 				{
+					this->queueDuplicateCheckAngle = this->orientation.angle;
+
 					std::queue<geometry_msgs::Point> temp_queue;
 
 					geometry_msgs::Point pointtemp;
-				
-					pointtemp.x = this->pose.px + 0.7 * cos(this->orientation.angle - (M_PI/2.0));
-					pointtemp.y = this->pose.py + 0.7 * sin(this->orientation.angle - (M_PI/2.0));
-					avoidance_queue.push(pointtemp);
 
-					pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
-					pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle);
-					avoidance_queue.push(pointtemp);
+					
+					pointtemp.x = this->pose.px + sqrt(8) * cos(this->orientation.angle - (M_PI/4.0));
+					pointtemp.y = this->pose.py + sqrt(8) * sin(this->orientation.angle - (M_PI/4.0));
+					temp_queue.push(pointtemp);
 
-					pointtemp.x = pointtemp.x + 0.7 * cos(this->orientation.angle + (M_PI/2.0));
-					pointtemp.y = pointtemp.y + 0.7 * sin(this->orientation.angle + (M_PI/2.0));
-					avoidance_queue.push(pointtemp);
+					pointtemp.x = pointtemp.x + sqrt(8) * cos(this->orientation.angle + (M_PI/4.0));
+					pointtemp.y = pointtemp.y + sqrt(8) * sin(this->orientation.angle + (M_PI/4.0));
+					temp_queue.push(pointtemp);
+
+					while(!action_queue.empty())
+					{
+						temp_queue.push(action_queue.front());
+						action_queue.pop();
+					}
+
+					while(!temp_queue.empty())
+					{
+						action_queue.push(temp_queue.front());
+						temp_queue.pop();
+					}
+
+					this->queueDuplicate = false;
 				}
+				break;
 			}
 		}
 	}
 	else
-	{				
+	{
 		if(!tourStarted)
 		{
 			if(msg.ranges[90] > 5)
@@ -174,7 +175,6 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 			}
 		}
 	}
-			publish();
 }
 
 void Visitor::core_callback(ugbots_ros::Position msg)
@@ -353,7 +353,6 @@ bool Visitor::insideFarm()
 void Visitor::move(){}
 
 void Visitor::stop(){
-	this->speed.linear_y = 0.0;
 	this->speed.linear_x = 0.0;
 	this->speed.angular_z = 0.0;
 }

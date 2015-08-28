@@ -38,7 +38,6 @@ public:
 	bool moveToEnabled;
 	bool waitingInLine;
 	bool tourStarted;
-	bool angleChangeStarted;
 	double queueDuplicate;
 	double queueDuplicateCheckAngle;
 	ros::Subscriber sub_row;

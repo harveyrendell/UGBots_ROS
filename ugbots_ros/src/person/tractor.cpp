@@ -46,6 +46,7 @@ Tractor::Tractor(ros::NodeHandle &n)
 	action_queue.push(point);
 
 	state = IDLE;
+
 }
 
 void Tractor::ground_callback(nav_msgs::Odometry msg)

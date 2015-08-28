@@ -14,8 +14,7 @@ define visitorlaser ranger
 define visitor position
 (
   size [0.5 0.5 1.6]
-  drive "omni"
-  velocity_bounds [ -10 10 -10 10 -10 10 -90 90 ]
+  drive "diff"
 
   #body
   block(
