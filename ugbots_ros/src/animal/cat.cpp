@@ -1,3 +1,12 @@
+/**
+	Author: UGBots
+
+	The objects of this class linger/run around the outer fence of the orchard.
+	When obstacles are detected in front, they turn around and travel the opposite direction.
+	Their states regularly change between IDLE, WALKING, RUNNING which reflects their linear
+	and angular speed.
+*/
+
 #include <node_defs/cat.h>
 
 Cat::Cat()
@@ -175,13 +184,6 @@ void Cat::stop(){
 	this->speed.angular_z = 0.0;
 }
 
-//Stops the cats turning.
-void Cat::stopTurn(){
-	this->orientation.currently_turning = false;
-	this->speed.linear_x = 4.0;
-	this->speed.angular_z = 0.0;
-}
-
 //Makes cat walk
 void Cat::walk(){
 	this->speed.linear_x = 1.5;
@@ -192,22 +194,6 @@ void Cat::walk(){
 void Cat::run(){
 	this->speed.linear_x = 5.0;
 	this->speed.angular_z = 0.0;
-}
-
-//Makes cat turneleft
-void Cat::turnLeft(){
-	this->orientation.currently_turning = true;
-	this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2);
-	this->speed.linear_x = 0.0;
-	this->speed.angular_z = 5.0;
-}
-
-//makes cat turnright
-void Cat::turnRight(){
-	this->orientation.currently_turning = true;
-	this->orientation.desired_angle = this->orientation.desired_angle - (M_PI / 2);
-	this->speed.linear_x = 0.0;
-	this->speed.angular_z = -5.0;
 }
 
 //Makes cat turnaround.

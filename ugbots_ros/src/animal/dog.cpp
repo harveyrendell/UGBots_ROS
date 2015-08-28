@@ -1,3 +1,12 @@
+/**
+	Author: UGBots
+
+	The objects of this class freely roam around the orchard. 
+	When obstacles are detected their change directions to avoid them.
+	Their states regularly change between IDLE, WALKING, RUNNING and RANDOMTURN
+	which reflects their linear and angular speed.
+*/
+
 #include <node_defs/dog.h>
 
 Dog::Dog()
@@ -111,14 +120,6 @@ void Dog::setStatus(){
 //Stops the node
 void Dog::stop(){
 	this->speed.linear_x = 0.0;
-	this->speed.angular_z = 0.0;
-}
-
-//Stops the node turning. Linear velocity will be set to default (1.0)
-//Update the next desired angle
-void Dog::stopTurn(){ //UNUSED METHOD
-	this->orientation.currently_turning = false;
-	this->speed.linear_x = 4.0;
 	this->speed.angular_z = 0.0;
 }
 

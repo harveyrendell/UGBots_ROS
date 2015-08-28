@@ -1,3 +1,10 @@
+/**
+	Author: UGBots
+
+	The objects of this class move across the kiwi rows at right angles to their alignment.
+	They detect for any movement (robots, people) before quickly moving across to the next row.
+*/
+
 #include <node_defs/possum.h>
 
 Possum::Possum()
@@ -108,7 +115,6 @@ void Possum::laser_callback(sensor_msgs::LaserScan msg)
 		for (int i = 0; i<140; i++){
 			if (msg.ranges[i] < 3){ 
 				can_move = false; //if an object is detected set can_move to false
-				ROS_INFO("NODE DETECTED");
 				break;
 			}
 		}
@@ -155,40 +161,6 @@ void Possum::stop(){
 	//ROS_INFO("/status/%s/./", enum_to_string(this->state));
 }
 
-//make possum stop turning
-void Possum::stopTurn(){
-	this->orientation.currently_turning = false;
-	this->speed.linear_x = 4.0;
-	this->speed.angular_z = 0.0;
-}
-
-//make possum walk
-void Possum::walk(){
-	this->speed.linear_x = 1.5;
-	this->speed.angular_z = 0.0;
-}
-
-//make possum run
-void Possum::run(){
-	this->speed.linear_x = 6.0;
-	this->speed.angular_z = 0.0;
-}
-
-//make possum turnleft
-void Possum::turnLeft(){
-	this->orientation.currently_turning = true;
-	this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2);
-	this->speed.linear_x = 0.0;
-	this->speed.angular_z = 5.0;
-}
-
-//make possum turnright
-void Possum::turnRight(){
-	this->orientation.currently_turning = true;
-	this->orientation.desired_angle = this->orientation.desired_angle - (M_PI / 2);
-	this->speed.linear_x = 0.0;
-	this->speed.angular_z = -5.0;
-}
 //Turn back
 void Possum::turnBack(){
 	this->orientation.currently_turning = true;
@@ -218,11 +190,7 @@ void Possum::checkTurningStatus()
 char const* Possum::enum_to_string(State t){
     switch(t){
         case IDLE:
-            return "IDLE";
-        case ROAMING:
-            return "ROAMING";
-        case FLEEING:
-            return "FLEEING";  
+            return "IDLE"; 
         case MOVINGACROSS:
             return "MOVINGACROSS";   
         default:
@@ -240,23 +208,26 @@ int Possum::computeNumberOfRows(){
 }
 
 //this method processes co-ordinates inside action_queue. (Derivation of original method begin_action in node.h)
-void Possum::begin_action2(double speed)
+bool Possum::begin_action2(double speed)
 {
+	if(action_queue.empty())
+	{
+		return true;
+	}
 	geometry_msgs::Point end_point = action_queue.front();
-	//check if possum is at destination co-ordinate
 	if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 	{
-		//if true, pop co-ordinate from queue and call stop();
 		ROS_INFO("xdest: %f", end_point.x);
 		ROS_INFO("ydest: %f", end_point.y);
 		action_queue.pop();
 		stop();
+		return true;
 	}
-	//move in the x direction (towards destination)
 	if(move_x(end_point.x, speed))
 	{
-		//move in the y direction (towards destination)
-		move_y(end_point.y, speed);
+		if(move_y(end_point.y, speed))
+		{
+		}
 	}
 }	
 
