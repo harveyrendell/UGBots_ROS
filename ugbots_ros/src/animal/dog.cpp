@@ -19,32 +19,37 @@ Dog::Dog(ros::NodeHandle &n)
 	this->speed.angular_z = 0.0;
 	this->orientation.currently_turning = false;
 
+	//register with neccessary topics
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Dog::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000, &Dog::laser_callback, this);
 	this->sub_list.sub_timer = n.createTimer(ros::Duration(5), &Dog::timerCallback, this);
 
+	//setup initial state.
 	this->state = IDLE;
 }
 
 void Dog::odom_callback(nav_msgs::Odometry msg)
 {
-	//This is the call back function to process odometry messages coming from Stage. 	
+	//update dogs position (pose) based on its position relative to world.		
 	this->pose.px = msg.pose.pose.position.x;
 	this->pose.py = msg.pose.pose.position.y;
 
+	//assign,update orientation(x,y,z,w) values.
 	this->orientation.rotx = msg.pose.pose.orientation.x;
 	this->orientation.roty = msg.pose.pose.orientation.y;
 	this->orientation.rotz = msg.pose.pose.orientation.z;
 	this->orientation.rotw = msg.pose.pose.orientation.w;
 
+	//print dogs position and status which will be picked up and update on GUI.
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
 
-	calculateOrientation();
-	doAngleCheck();
-	checkTurningStatus();
+
+	calculateOrientation(); //calculate orientation based on x,y,z,w values previously obtained.
+	doAngleCheck(); //update dogs current angle and desired angle
+	checkTurningStatus(); //check if dog is currently facing the direction its supposed to be facing.
 	publish();
 
 }
@@ -52,17 +57,18 @@ void Dog::odom_callback(nav_msgs::Odometry msg)
 
 void Dog::laser_callback(sensor_msgs::LaserScan msg)
 {
-	//This is the callback function to process laser scan messages
-	//you can access the range data from msg.ranges[i]. i = sample number
-	bool detection = false;
-	if (this->orientation.currently_turning == false){
+	bool detection = false; //declare a boolean value which will indicate whether there is an object in front of dog.
+	if (this->orientation.currently_turning == false){ //detect for objects when not currently turning.
 		for(int a = 0 ; a < 180; a++){
+			//if there is something in front, turnback
 			if ((msg.ranges[a] < 3) && (a > 80) && (a < 100)) {
 				turnBack();
 				break;
+			//if there is something to the right, turn left
 			} else if ((msg.ranges[a] < 3) && (a <= 80)) {
 				turnLeft();
 				break;
+			//if there is something to the left, turn right
 			} else if ((msg.ranges[a] < 3) && (a >= 100)){
 				turnRight();
 				break;
@@ -71,12 +77,15 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 	}
 }
 
+//method that is called by ROS timer every 5 seconds
 void Dog::timerCallback(const ros::TimerEvent& e){
+	//update status of dog if it isn't turning.
 	if (this->orientation.currently_turning == false){
 		setStatus();
 	}
 }
 
+//method which alters dogs Speed depending on its state.
 void Dog::setStatus(){
 	state = generateStatus();
 	if (state == IDLE){
@@ -105,6 +114,7 @@ void Dog::stopTurn(){ //UNUSED METHOD
 	this->speed.angular_z = 0.0;
 }
 
+//method which turns the dog into a random direction
 void Dog::turnRandomly(){
 	int randNum;
 	srand (time(NULL));
@@ -115,11 +125,13 @@ void Dog::turnRandomly(){
 	this->speed.angular_z = 1.0;
 }
 
+//makes dog walk
 void Dog::walk(){
 	this->speed.linear_x = 1.5;
 	this->speed.angular_z = 0.0;
 }
 
+//makes dog run
 void Dog::run(){
 	this->speed.linear_x = 6.0;
 	this->speed.angular_z = 0.0;
@@ -149,7 +161,9 @@ void Dog::turnBack(){
 	this->speed.angular_z = 5.0;
 }
 
-//override checkTurningStatus so that dogs velc
+
+//override checkTurningStatus() inorder to update dogs status everytime after turning so that it
+//has a new speed to travel at.
 void Dog::checkTurningStatus()
 {
 	if(this->orientation.currently_turning == true)
@@ -164,6 +178,7 @@ void Dog::checkTurningStatus()
 	}
 }
 
+//method which turns state into string. Used to print states in ROS_INFO.
 char const* Dog::enum_to_string(State t){
     switch(t){
         case WALKING:
@@ -179,6 +194,7 @@ char const* Dog::enum_to_string(State t){
     }
  }
 
+//Returns a dogs status randomly.
 Dog::State Dog::generateStatus(){
 	int randNum;
 	srand (time(NULL));
@@ -195,6 +211,7 @@ Dog::State Dog::generateStatus(){
 	}
 }
 
+//unimplemented methods in the node interface.
 void Dog::collisionDetected(){}
 void Dog::move(){}
 

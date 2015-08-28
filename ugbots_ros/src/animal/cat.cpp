@@ -20,15 +20,19 @@ Cat::Cat(ros::NodeHandle &n)
 	this->speed.angular_z = 0.0;
 	this->orientation.currently_turning = false;
 
+	//register with neccessary topics
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Cat::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Cat::laser_callback, this);
 	this->sub_list.sub_timer = n.createTimer(ros::Duration(5), &Cat::timerCallback, this);
 
+	//setup initial states
 	this->state = IDLE;
 	this->direction = CLOCKWISE;
 	this->position = NORTH;
 
+	//push first co-ordinate the cat will travel to onto queue.
+	//initial destination will be top right corner.
 	geometry_msgs::Point point;
 	point.x = 47.0;
 	point.y = 47.0;
@@ -38,15 +42,17 @@ Cat::Cat(ros::NodeHandle &n)
 
 void Cat::odom_callback(nav_msgs::Odometry msg)
 {
-	//This is the call back function to process odometry messages coming from Stage. 	
+	//update cats position (pose) based on its position relative to world.	
 	this->pose.px = msg.pose.pose.position.x;
 	this->pose.py = msg.pose.pose.position.y;
 
+	//assign,update orientation(x,y,z,w) values.
 	this->orientation.rotx = msg.pose.pose.orientation.x;
 	this->orientation.roty = msg.pose.pose.orientation.y;
 	this->orientation.rotz = msg.pose.pose.orientation.z;
 	this->orientation.rotw = msg.pose.pose.orientation.w;
 
+	//debuging rosinfo states to be deleted later on.
 	if (direction == CLOCKWISE){
 		ROS_INFO("direction: CLOCKWISE");
 	} else {
@@ -62,28 +68,35 @@ void Cat::odom_callback(nav_msgs::Odometry msg)
 		ROS_INFO("position: WEST");
 	}
 
-	ROS_INFO("/position/x/%f", this->pose.px);
+	//print cats position and status which will be picked up and update on GUI.
+	ROS_INFO("/position/x/%f", this->pose.px); 
 	ROS_INFO("/position/y/%f", this->pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(this->state));
+
+	//to be deleted.
 	ROS_INFO("linear speed: %f", this->speed.linear_x);
 	ROS_INFO("angular speed: %f", this->speed.angular_z);
 	ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
 	ROS_INFO("orientation_angle: %f", this->orientation.angle);
 	ROS_INFO("%f, %f", action_queue.front().x , action_queue.front().y);
 
-	calculateOrientation();
+
+	calculateOrientation(); //calculate orientation based on x,y,z,w values previously obtained.
 	if(this->orientation.currently_turning == false){
+		//if cat isn't currently turning, head towards the co-ordinate on top of queue.
 		begin_action(this->speed.linear_x);
 	}
-	doAngleCheck();
-	checkTurningStatus();
-	publish();
+	doAngleCheck(); //update cats current angle and desired angle
+	checkTurningStatus(); //check if cat is currently facing the direction its supposed to be facing.
+	publish(); 
 
 }
 
 void Cat::laser_callback(sensor_msgs::LaserScan msg)
 {
+	//Use laser to detect for objects when cat isn't turning.
 	if(this->orientation.currently_turning == false){
+		//if there is something within 2.5 range, make cat turn the other way.
 		for(int i=0; i<30; i++){
 			if(msg.ranges[i] < 2.5){
 				turnBack();
@@ -93,12 +106,15 @@ void Cat::laser_callback(sensor_msgs::LaserScan msg)
 	}
 }
 
+//method that is called by ROS timer every 5 seconds
 void Cat::timerCallback(const ros::TimerEvent& e){
+	//update status of cat if it isn't turning.
 	if (this->orientation.currently_turning == false){
 		setStatus();
 	}
 }
 
+//method which alters cats Speed depending on its state.
 void Cat::setStatus(){
 	state = generateStatus();
 	if (this->state == IDLE){
@@ -110,11 +126,15 @@ void Cat::setStatus(){
 	}
 }
 
+//method called after cat reaches a destination from the action_queue and the co-ordinate(destination) is popped from queue.
 void Cat::stopAfterPop(){
 	this->speed.linear_x = 0.0;
 	this->speed.angular_z = 0.0;
 	this->orientation.currently_turning = false;
 	geometry_msgs::Point point;
+
+	//Update the cats new position and depending on which direction the cat is travelling at and where it currently is, 
+	//setup the next co-ordinate it should travel to and push onto the queue. 
 	if (this->direction == CLOCKWISE){
 		if (this->position == NORTH){
 			this->position = EAST;
@@ -163,39 +183,50 @@ void Cat::stopAfterPop(){
 	}
 }
 
+//Stops the cat.
 void Cat::stop(){
 	this->speed.linear_x = 0.0;
 	this->speed.angular_z = 0.0;
 }
+
+//Stops the cats turning.
 void Cat::stopTurn(){
 	this->orientation.currently_turning = false;
 	this->speed.linear_x = 4.0;
 	this->speed.angular_z = 0.0;
 }
+
+//Makes cat walk
 void Cat::walk(){
 	this->speed.linear_x = 1.5;
 	this->speed.angular_z = 0.0;
 }
 
+//Makes cat run
 void Cat::run(){
 	this->speed.linear_x = 6.0;
 	this->speed.angular_z = 0.0;
 }
+
+//Makes cat turneleft
 void Cat::turnLeft(){
 	this->orientation.currently_turning = true;
 	this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2);
 	this->speed.linear_x = 0.0;
 	this->speed.angular_z = 5.0;
 }
+
+//makes cat turnright
 void Cat::turnRight(){
 	this->orientation.currently_turning = true;
 	this->orientation.desired_angle = this->orientation.desired_angle - (M_PI / 2);
 	this->speed.linear_x = 0.0;
 	this->speed.angular_z = -5.0;
 }
-//Turn back
+
+//Makes cat turnaround.
 void Cat::turnBack(){
-	turn(M_PI, 0.0, 5.0);
+	turn(M_PI, 0.0, 5.0); //set cats desired angle to 180deg more than it is now and its angular-vel to 5.
 
 	//change direction of cat
 	if (this->direction == CLOCKWISE){
@@ -209,6 +240,8 @@ void Cat::turnBack(){
 		action_queue.pop();
 	}
 
+	//Depending on which direction the cat is travelling at and where it currently is, 
+	//setup the next co-ordinate it should travel to and push onto the queue. 
 	geometry_msgs::Point point;
 	if (this->direction == CLOCKWISE){
 		if (this->position == NORTH){
@@ -250,7 +283,8 @@ void Cat::turnBack(){
 
 }
 
-//override checkTurningStatus()
+//override checkTurningStatus() inorder to update cats status everytime after turning so that it
+//has a new speed to travel at.
 void Cat::checkTurningStatus(){
 	if(this->orientation.currently_turning == true)
 	{	
@@ -263,6 +297,7 @@ void Cat::checkTurningStatus(){
 	}
 }
 
+//method which turns state into string. Used to print states in ROS_INFO.
 char* Cat::enum_to_string(State t){
     switch(t){
         case IDLE:
@@ -276,10 +311,12 @@ char* Cat::enum_to_string(State t){
     }
  }
 
+//Returns a cats status randomly.
 Cat::State Cat::generateStatus(){
+	//Generate a random number and return a corresponding status.
+	//Running has been assigned 2 values to inc. chance of cat running.
 	int randNum;
 	srand (time(NULL));
-/* generate random number between 1 and 4 */
 	randNum = rand() % 4 + 1;
 	if (randNum == 1){
 		return IDLE;
@@ -290,7 +327,8 @@ Cat::State Cat::generateStatus(){
 	}
 }
 
-//override method to modify logic when action queue is empty
+//override method to make it call StopAfterPop() instead of Stop() after reaching its destination.
+//Reason for not simply overriding Stop() instead is because its called by other methods in node.h
 bool Cat::begin_action(double speed){
 
 	if (action_queue.empty())
@@ -314,6 +352,7 @@ bool Cat::begin_action(double speed){
 	}
 }	
 
+//unimplemented methods in the node interface.
 void Cat::move(){}
 void Cat::collisionDetected(){};
 
