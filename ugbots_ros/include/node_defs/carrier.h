@@ -54,7 +54,6 @@ public:
 	void ground_callback(nav_msgs::Odometry msg);
 	void bin_loc_callback(ugbots_ros::robot_details bin);
 
-	void bin_callback(ugbots_ros::bin_status msg);
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
 	void move_forward(double distance);
