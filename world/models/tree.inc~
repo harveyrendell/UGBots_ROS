@@ -13,7 +13,7 @@ define tree model
 	z [0 1.8]
   )
 
-  #kiwifruits with various colors
+  #kiwifruit
   block(
 	color "DarkGreen"
 	points 4
