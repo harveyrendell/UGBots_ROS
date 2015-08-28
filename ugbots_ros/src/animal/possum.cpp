@@ -11,12 +11,11 @@ Possum::Possum()
 	this->speed.angular_z = 0.0;
 	this->orientation.currently_turning = false;
 
+	//setup initial state.
 	this->state = IDLE;
-
 	this->row = 1; //starting at vine 1
 	this->direction = EAST;
-
-	this->initial_coordinates_set = false;	
+	this->initial_coordinates_set = false;
 }
 
 Possum::Possum(ros::NodeHandle &n)
@@ -30,17 +29,16 @@ Possum::Possum(ros::NodeHandle &n)
 	this->speed.angular_z = 0.0;
 	this->orientation.currently_turning = false;
 
-	//register with neccessary topics
-	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Possum::odom_callback, this);
-	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Possum::laser_callback, this);
-
 	//setup initial state.
 	this->state = IDLE;
 	this->row = 1; //starting at vine 1
 	this->direction = EAST;
 	this->initial_coordinates_set = false;
 
+	//register with neccessary topics
+	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
+	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Possum::odom_callback, this);
+	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Possum::laser_callback, this);
 }
 
 void Possum::odom_callback(nav_msgs::Odometry msg)
@@ -82,6 +80,7 @@ void Possum::odom_callback(nav_msgs::Odometry msg)
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(this->state));
+	ROS_INFO("/message/%i/./", this->max_row);
 	//ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
 	//ROS_INFO("orientation_angle: %f", this->orientation.angle);
 
@@ -106,7 +105,7 @@ void Possum::laser_callback(sensor_msgs::LaserScan msg)
 	//if possum is idle (is directly beneath/inside a kiwi row) and not turning
 	if 	((this->state == IDLE) && (this->orientation.currently_turning == false)){
 		bool can_move = true; //declare a variable which indicates whether possum can move across to next row.
-		for (int i = 0; i<150; i++){
+		for (int i = 0; i<140; i++){
 			if (msg.ranges[i] < 3){ 
 				can_move = false; //if an object is detected set can_move to false
 				ROS_INFO("NODE DETECTED");
@@ -121,7 +120,6 @@ void Possum::laser_callback(sensor_msgs::LaserScan msg)
 }
 
 void Possum::stop(){
-	ROS_INFO("ENTERED STOP METHOD");
 	//increment or decrement 'row' depending on which direction possum i traveling at to keep track of
 	//which row possum is currently at.
 	if (this->direction == EAST){

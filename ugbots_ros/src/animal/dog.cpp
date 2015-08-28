@@ -11,6 +11,7 @@ Dog::Dog()
 	this->speed.angular_z = 0.0;
 	this->orientation.currently_turning = false;
 
+	//setup initial state.
 	this->state = IDLE;
 }
 
@@ -25,14 +26,14 @@ Dog::Dog(ros::NodeHandle &n)
 	this->speed.angular_z = 0.0;
 	this->orientation.currently_turning = false;
 
+	//setup initial state.
+	this->state = IDLE;
+
 	//register with neccessary topics
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Dog::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000, &Dog::laser_callback, this);
 	this->sub_list.sub_timer = n.createTimer(ros::Duration(5), &Dog::timerCallback, this);
-
-	//setup initial state.
-	this->state = IDLE;
 }
 
 void Dog::odom_callback(nav_msgs::Odometry msg)
@@ -65,7 +66,7 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 {
 	bool detection = false; //declare a boolean value which will indicate whether there is an object in front of dog.
 	if (this->orientation.currently_turning == false){ //detect for objects when not currently turning.
-		for(int a = 0 ; a < 180; a++){
+		for(int a = 0 ; a < 120; a++){
 			//if there is something in front, turnback
 			if ((msg.ranges[a] < 3) && (a > 80) && (a < 100)) {
 				turnBack();
@@ -79,6 +80,7 @@ void Dog::laser_callback(sensor_msgs::LaserScan msg)
 				turnRight();
 				break;
 			}
+			publish(); //publish here for quick reflexes of dog
 		}
 	}
 }
@@ -139,7 +141,7 @@ void Dog::walk(){
 
 //makes dog run
 void Dog::run(){
-	this->speed.linear_x = 6.0;
+	this->speed.linear_x = 4.0;
 	this->speed.angular_z = 0.0;
 }
 
@@ -148,7 +150,7 @@ void Dog::turnLeft(){
 	this->orientation.currently_turning = true;
 	this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2);
 	this->speed.linear_x = 0.5;
-	this->speed.angular_z = 5.0;
+	this->speed.angular_z = (M_PI/2);
 }
 
 //Turn right
@@ -156,7 +158,7 @@ void Dog::turnRight(){
 	this->orientation.currently_turning = true;
 	this->orientation.desired_angle = this->orientation.desired_angle - (M_PI / 2);
 	this->speed.linear_x = 0.5;
-	this->speed.angular_z = -5.0;
+	this->speed.angular_z = (-M_PI/2);
 }
 
 //Turn back
@@ -164,7 +166,7 @@ void Dog::turnBack(){
 	this->orientation.currently_turning = true;
 	this->orientation.desired_angle = this->orientation.desired_angle + (M_PI);
 	this->speed.linear_x = 0.1;
-	this->speed.angular_z = 5.0;
+	this->speed.angular_z = (M_PI/2);
 }
 
 

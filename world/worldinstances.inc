@@ -3,7 +3,7 @@ include "models/shrub.inc"
 include "models/binloc.inc"
 
 #randomly locating the shrubs across the stage
-shrub (pose [ 0 -48 0 0 ])
+shrub (pose [ 0 -49 0 0 ])
 shrub (pose [ -45 -30 0 0 ])
 shrub (pose [ -35 16 0 0 ])
 shrub (pose [ -20 35 0 0 ])

@@ -1,9 +1,9 @@
 define anilaser ranger
 (
   sensor(
-  range [ 0.0 7.0 ] # range
-  fov 180       # field of vision
-  samples 180   # samples 
+  range [ 0.0 3.5 ] # range
+  fov 120       # field of vision
+  samples 120   # samples 
   )
   # generic model properties
   color "black"
@@ -114,6 +114,6 @@ define dog position
 	point[3] [0.4 0.1]
 	z [0.6 0.7]
   )
-  anilaser(pose [ 0.050 0.000 0 0.000 ])
+  anilaser(pose [ 0.050 0.000 -0.6 0.000 ])
 )
 

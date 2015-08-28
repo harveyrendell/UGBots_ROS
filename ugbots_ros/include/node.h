@@ -147,7 +147,7 @@ public:
 		{
 			if(fabs(distance_x) < 1)
 			{
-				speed = deceleration(fabs(distance_x), 1, 0.01);
+				speed = deceleration(fabs(distance_x), 1, 0.001);
 			}
 			this->speed.linear_x = speed;
 		}
@@ -174,7 +174,7 @@ public:
 		{
 			if (fabs(distance_y) < 1)
 			{
-				speed = deceleration(fabs(distance_y), 1, 0.01);
+				speed = deceleration(fabs(distance_y), 1, 0.001);
 			}
 			this->speed.linear_x = speed;
 		}

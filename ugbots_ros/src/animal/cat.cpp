@@ -2,7 +2,6 @@
 
 Cat::Cat()
 {
-
 	//setting base attribute defaults
 	this->pose.theta = M_PI/2.0;
 	this->pose.px = 10;
@@ -12,20 +11,14 @@ Cat::Cat()
 	this->speed.angular_z = 0.0;
 	this->orientation.currently_turning = false;
 
+	//setup initial states
 	this->state = IDLE;
 	this->direction = CLOCKWISE;
 	this->position = NORTH;
-
-	geometry_msgs::Point point;
-	point.x = 47.0;
-	point.y = 47.0;
-	action_queue.push(point);
-
 }
 
 Cat::Cat(ros::NodeHandle &n)
 {
-
 	//setting base attribute defaults
 	this->pose.theta = M_PI/2.0;
 	this->pose.px = 10;
@@ -34,6 +27,11 @@ Cat::Cat(ros::NodeHandle &n)
 	this->speed.max_linear_x = 3.0;
 	this->speed.angular_z = 0.0;
 	this->orientation.currently_turning = false;
+
+	//setup initial states
+	this->state = IDLE;
+	this->direction = CLOCKWISE;
+	this->position = NORTH;
 
 	//register with neccessary topics
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
@@ -41,18 +39,12 @@ Cat::Cat(ros::NodeHandle &n)
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Cat::laser_callback, this);
 	this->sub_list.sub_timer = n.createTimer(ros::Duration(5), &Cat::timerCallback, this);
 
-	//setup initial states
-	this->state = IDLE;
-	this->direction = CLOCKWISE;
-	this->position = NORTH;
-
 	//push first co-ordinate the cat will travel to onto queue.
 	//initial destination will be top right corner.
 	geometry_msgs::Point point;
 	point.x = 47.0;
 	point.y = 47.0;
 	action_queue.push(point);
-
 }
 
 void Cat::odom_callback(nav_msgs::Odometry msg)
@@ -67,34 +59,10 @@ void Cat::odom_callback(nav_msgs::Odometry msg)
 	this->orientation.rotz = msg.pose.pose.orientation.z;
 	this->orientation.rotw = msg.pose.pose.orientation.w;
 
-	//debuging rosinfo states to be deleted later on.
-	if (direction == CLOCKWISE){
-		ROS_INFO("direction: CLOCKWISE");
-	} else {
-		ROS_INFO("direction: ANTICLOCKWISE");
-	}
-	if (this->position == NORTH){
-		ROS_INFO("position: NORTH");
-	} else if(this->position == EAST){
-		ROS_INFO("position: EAST");
-	} else if(this->position == SOUTH){
-		ROS_INFO("position: SOUTH");
-	} else {
-		ROS_INFO("position: WEST");
-	}
-
 	//print cats position and status which will be picked up and update on GUI.
 	ROS_INFO("/position/x/%f", this->pose.px); 
 	ROS_INFO("/position/y/%f", this->pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(this->state));
-
-	//to be deleted.
-	ROS_INFO("linear speed: %f", this->speed.linear_x);
-	ROS_INFO("angular speed: %f", this->speed.angular_z);
-	ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
-	ROS_INFO("orientation_angle: %f", this->orientation.angle);
-	ROS_INFO("%f, %f", action_queue.front().x , action_queue.front().y);
-
 
 	calculateOrientation(); //calculate orientation based on x,y,z,w values previously obtained.
 	if(this->orientation.currently_turning == false){
@@ -114,6 +82,9 @@ void Cat::laser_callback(sensor_msgs::LaserScan msg)
 		//if there is something within 2.5 range, make cat turn the other way.
 		for(int i=0; i<30; i++){
 			if(msg.ranges[i] < 2.5){
+				ROS_INFO("/message/%s/./", "LASER DETECTED!");
+				this->speed.linear_x = 0.0; //set linear to 0 and publish straight away for quick reflexes of cat.
+				publish();
 				turnBack();
 				break;
 			}
@@ -219,7 +190,7 @@ void Cat::walk(){
 
 //Makes cat run
 void Cat::run(){
-	this->speed.linear_x = 6.0;
+	this->speed.linear_x = 5.0;
 	this->speed.angular_z = 0.0;
 }
 
@@ -241,18 +212,18 @@ void Cat::turnRight(){
 
 //Makes cat turnaround.
 void Cat::turnBack(){
-	turn(M_PI, 0.0, 5.0); //set cats desired angle to 180deg more than it is now and its angular-vel to 5.
+	//empty action queue
+	while (!action_queue.empty()){
+		action_queue.pop();
+	}
+
+	turn(M_PI, 0.0, (M_PI/2)); //set cats desired angle to 180deg more than it is now.
 
 	//change direction of cat
 	if (this->direction == CLOCKWISE){
 		this->direction = ANTICLOCKWISE;
 	} else {
 		this->direction = CLOCKWISE;
-	}
-
-	//empty action queue
-	while (action_queue.empty() == false){
-		action_queue.pop();
 	}
 
 	//Depending on which direction the cat is travelling at and where it currently is, 

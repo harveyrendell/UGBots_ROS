@@ -1,7 +1,7 @@
 define catlaser ranger
 (
   sensor(
-  range [ 0.0 3.0 ] # range
+  range [ 0.0 5.0 ] # range
   fov 30       # field of vision
   samples 30   # samples 
   )
@@ -124,6 +124,6 @@ define cats position
 	z [0.3 0.4]
   )
 
-  catlaser(pose [ 0.050 0.000 -0.1 0.000 ])
+  catlaser(pose [ 0.050 0.000 0 0.000 ])
 )
 
