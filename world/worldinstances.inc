@@ -16,7 +16,9 @@ shrub (pose [ 46 -15 0 0 ])
 shrub (pose [ 21 45 0 0 ])
 shrub (pose [ 29 40 0 0 ])
 
+
 #boundary made around the orchard farm
+
 boundary (pose [ -50 25 0 90 ])
 boundary (pose [ 50 25 0 90 ])
 boundary (pose [ -50 -25 0 90 ])
@@ -29,4 +31,5 @@ boundary (pose [ -25 -50 0 0 ])
 boundary (pose [ 25 -50 0 0 ])
 
 #bin location positioned
+
 binloc (pose [ 32.5 -12.5 0 0 ])

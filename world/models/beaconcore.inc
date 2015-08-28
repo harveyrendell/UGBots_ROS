@@ -1,3 +1,4 @@
+#core beacon model
 define core ranger
 (
   sensor(

@@ -1,3 +1,4 @@
+#model for posts between kiwifruit trees
 define post model
 (
   size [2 0.2 2]

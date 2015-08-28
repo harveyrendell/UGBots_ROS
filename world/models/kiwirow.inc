@@ -1,7 +1,6 @@
 include "models/tree.inc"
 include "models/post.inc"
 
-
 #model for kiwifruit rows are created by alternating trees and posts
 
 define rows model

@@ -1,3 +1,4 @@
+#model for visitors
 define visitorlaser ranger
 (
   sensor(

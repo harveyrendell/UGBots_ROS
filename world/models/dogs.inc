@@ -1,3 +1,4 @@
+#model for dogs
 define anilaser ranger
 (
   sensor(
