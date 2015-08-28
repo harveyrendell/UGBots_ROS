@@ -266,8 +266,8 @@ rand=$(( (RANDOM % 97) - 46 ))
 #dogs are spawned at random places in the kiwifruit orchard
 if (($rand>=-12 && $rand<=12));
 then
-    rand3=$(( (RANDOM % 15) - 39 )) 
-    rand4=$(( (RANDOM % 15) + 25 ))
+    rand3=$(( (RANDOM % 15) - 49 )) 
+    rand4=$(( (RANDOM % 15) + 35 ))
     if [ $(( (RANDOM % 2) + 1 )) -lt "2" ];
     then
         rand2=$rand3
