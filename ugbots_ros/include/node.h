@@ -159,7 +159,7 @@ public:
 			//if distance left is less than 1 start decelerating
 			if(fabs(distance_x) < 1)
 			{
-				speed = deceleration(fabs(distance_x), 1, 0.01);
+				speed = deceleration(fabs(distance_x), 1, 0.001);
 			}
 			//set nodes x speed to "speed"
 			this->speed.linear_x = speed;
@@ -190,7 +190,7 @@ public:
 			//if distance left is less that 1 start decelerating
 			if (fabs(distance_y) < 1)
 			{
-				speed = deceleration(fabs(distance_y), 1, 0.01);
+				speed = deceleration(fabs(distance_y), 1, 0.001);
 			}
 			//set nodes y speed to "speed"
 			this->speed.linear_x = speed;

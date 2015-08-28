@@ -1,11 +1,10 @@
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-#include <geometry_msgs/Twist.h>
-#include <nav_msgs/Odometry.h>
-#include <sensor_msgs/LaserScan.h>
+/**
+	Author: UGBots
 
-#include <sstream>
-#include <stdlib.h>
+	The objects of this class move across the kiwi rows at right angles to their alignment.
+	They detect for any movement (robots, people) before quickly moving across to the next row.
+*/
+
 #include <node_defs/possum.h>
 
 Possum::Possum()
@@ -19,12 +18,11 @@ Possum::Possum()
 	this->speed.angular_z = 0.0;
 	this->orientation.currently_turning = false;
 
+	//setup initial state.
 	this->state = IDLE;
-
 	this->row = 1; //starting at vine 1
 	this->direction = EAST;
-
-	this->initial_coordinates_set = false;	
+	this->initial_coordinates_set = false;
 }
 
 Possum::Possum(ros::NodeHandle &n)
@@ -38,58 +36,69 @@ Possum::Possum(ros::NodeHandle &n)
 	this->speed.angular_z = 0.0;
 	this->orientation.currently_turning = false;
 
+	//setup initial state.
+	this->state = IDLE;
+	this->row = 1; //starting at vine 1
+	this->direction = EAST;
+	this->initial_coordinates_set = false;
+
+	//register with neccessary topics
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Possum::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Possum::laser_callback, this);
-
-	this->state = IDLE;
-
-	this->row = 1; //starting at vine 1
-	this->direction = EAST;
-
-	this->initial_coordinates_set = false;
-
 }
 
 void Possum::odom_callback(nav_msgs::Odometry msg)
 {
-	ROS_INFO("ENTERED ODOM CALLBACK");
-	//This is the call back function to process odometry messages coming from Stage.
+	//if the a co-ordinate for possum to move to has never been set before
 	if (initial_coordinates_set == false){
+		//check if its own co-ordinates are the same as co-ordinates relative to the world. If not,
 		if((this->pose.px != msg.pose.pose.position.x) || (this->pose.py != msg.pose.pose.position.y)){
+			//set possums co-ordinates so that its relative to the world.
 			this->pose.px = msg.pose.pose.position.x;
 			this->pose.py = msg.pose.pose.position.y;
 		}
+		//set the max_row variable which will indicate the total number of rows
 		this->max_row = computeNumberOfRows();
 		geometry_msgs::Point point;
 		point.x = this->pose.px;
 		point.y = this->pose.py;
+		//configure the route of the possum to be travelling at 3.5 across x axis each time which is the
+		//distance between each kiwi row.
 		for (int i = 0; i<(this->max_row -1); i++){
 			point.x = point.x + 3.5;
 			action_queue.push(point);
 		}
+		//set this variable to true so that this whole initial setup won't occur again.
 		initial_coordinates_set = true;
 	}
 
+	//update possums position (pose) based on its position relative to world.		
 	this->pose.px = msg.pose.pose.position.x;
 	this->pose.py = msg.pose.pose.position.y;
 
+	//assign,update orientation(x,y,z,w) values.
 	this->orientation.rotx = msg.pose.pose.orientation.x;
 	this->orientation.roty = msg.pose.pose.orientation.y;
 	this->orientation.rotz = msg.pose.pose.orientation.z;
 	this->orientation.rotw = msg.pose.pose.orientation.w;
 
+	//print possums position and status which will be picked up and update on GUI.
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(this->state));
+	ROS_INFO("/message/%i/./", this->max_row);
 	//ROS_INFO("desired_angle: %f", this->orientation.desired_angle);
 	//ROS_INFO("orientation_angle: %f", this->orientation.angle);
 
 	//ROS_INFO("goto x: %f", action_queue.front().x);
 	//ROS_INFO("goto y: %f", action_queue.front().y);
-	calculateOrientation();
-	doAngleCheck();
-	checkTurningStatus();
+
+
+	calculateOrientation(); //calculate orientation based on x,y,z,w values previously obtained.
+	doAngleCheck(); //update possums current angle and desired angle
+	checkTurningStatus(); //check if possum is currently facing the direction its supposed to be facing.
+	//if the possums status indicates that is can move across, begin following co-ordinates in queue.
 	if(this->state == MOVINGACROSS){
 		begin_action2(3.0);
 	}
@@ -100,15 +109,16 @@ void Possum::odom_callback(nav_msgs::Odometry msg)
 
 void Possum::laser_callback(sensor_msgs::LaserScan msg)
 {
-	ROS_INFO("ENTERED LASER CALLBACK");
+	//if possum is idle (is directly beneath/inside a kiwi row) and not turning
 	if 	((this->state == IDLE) && (this->orientation.currently_turning == false)){
-		bool can_move = true;
-		for (int i = 0; i<150; i++){
-			if (msg.ranges[i] < 3){ //node detected
-				can_move = false;
-				ROS_INFO("NODE DETECTED");
+		bool can_move = true; //declare a variable which indicates whether possum can move across to next row.
+		for (int i = 0; i<140; i++){
+			if (msg.ranges[i] < 3){ 
+				can_move = false; //if an object is detected set can_move to false
+				break;
 			}
 		}
+		//if nothing has been detected by laser, change state to moveacross.
 		if (can_move == true){
 			this->state = MOVINGACROSS;
 		}
@@ -116,12 +126,14 @@ void Possum::laser_callback(sensor_msgs::LaserScan msg)
 }
 
 void Possum::stop(){
-	ROS_INFO("ENTERED STOP METHOD");
+	//increment or decrement 'row' depending on which direction possum i traveling at to keep track of
+	//which row possum is currently at.
 	if (this->direction == EAST){
 		this->row = this->row +1;
 	} else if (this->direction == WEST){
 		this->row = this->row -1;
 	}
+	//if possum is at far most right row, turn it around, change its direction, and push new set of coordinates into queue.
 	if (this->row == this->max_row){
 		this->direction = WEST;
 		geometry_msgs::Point point;
@@ -131,6 +143,7 @@ void Possum::stop(){
 			point.x = point.x - 3.5;
 			action_queue.push(point);
 		}	
+	//if possum is at far most left row, turn it around, change its direction, and push new set of coordinates into queue.
 	} else if (this->row == 1) {
 		this->direction = EAST;
 		geometry_msgs::Point point;
@@ -141,37 +154,13 @@ void Possum::stop(){
 			action_queue.push(point);
 		}
 	} 
+	//change state of possum to idle when stopped on a row.
 	this->state = IDLE;
 	this->speed.linear_x = 0.0;
 	this->speed.angular_z = 0.0;
-	ROS_INFO("/status/%s/./", enum_to_string(this->state));
-}
-void Possum::stopTurn(){
-	this->orientation.currently_turning = false;
-	this->speed.linear_x = 4.0;
-	this->speed.angular_z = 0.0;
-}
-void Possum::walk(){
-	this->speed.linear_x = 1.5;
-	this->speed.angular_z = 0.0;
+	//ROS_INFO("/status/%s/./", enum_to_string(this->state));
 }
 
-void Possum::run(){
-	this->speed.linear_x = 6.0;
-	this->speed.angular_z = 0.0;
-}
-void Possum::turnLeft(){
-	this->orientation.currently_turning = true;
-	this->orientation.desired_angle = this->orientation.desired_angle + (M_PI / 2);
-	this->speed.linear_x = 0.0;
-	this->speed.angular_z = 5.0;
-}
-void Possum::turnRight(){
-	this->orientation.currently_turning = true;
-	this->orientation.desired_angle = this->orientation.desired_angle - (M_PI / 2);
-	this->speed.linear_x = 0.0;
-	this->speed.angular_z = -5.0;
-}
 //Turn back
 void Possum::turnBack(){
 	this->orientation.currently_turning = true;
@@ -180,7 +169,8 @@ void Possum::turnBack(){
 	this->speed.angular_z = 5.0;
 }
 
-void Possum::checkTurningStatus() //override checkTurningStatus so that linear_x = 0 after turn.
+//override checkTurningStatus so that linear_x = 0 after turn. And change status to IDLE
+void Possum::checkTurningStatus() 
 {
 	if(this->orientation.currently_turning == true)
 	{	
@@ -196,14 +186,11 @@ void Possum::checkTurningStatus() //override checkTurningStatus so that linear_x
 	}
 }
 
+//method which turns state into string. Used to print states in ROS_INFO.
 char const* Possum::enum_to_string(State t){
     switch(t){
         case IDLE:
-            return "IDLE";
-        case ROAMING:
-            return "ROAMING";
-        case FLEEING:
-            return "FLEEING";  
+            return "IDLE"; 
         case MOVINGACROSS:
             return "MOVINGACROSS";   
         default:
@@ -211,6 +198,7 @@ char const* Possum::enum_to_string(State t){
     }
  }
 
+//computes the total number of kiwi rows in the world using possums current(starting) position.
 int Possum::computeNumberOfRows(){
 	if (!(int(10 * (0-this->pose.px)) % 35)){
 		return int(((10 * (0-this->pose.px)) / 35)*2 +1);
@@ -219,12 +207,11 @@ int Possum::computeNumberOfRows(){
 	}
 }
 
+//this method processes co-ordinates inside action_queue. (Derivation of original method begin_action in node.h)
 bool Possum::begin_action2(double speed)
 {
-
 	if(action_queue.empty())
 	{
-		set_status(1);
 		return true;
 	}
 	geometry_msgs::Point end_point = action_queue.front();
@@ -240,13 +227,11 @@ bool Possum::begin_action2(double speed)
 	{
 		if(move_y(end_point.y, speed))
 		{
-			//set_status(2);
 		}
-
 	}
 }	
 
-
+//unimplemented methods in the node interface.
 void Possum::move(){}
 void Possum::collisionDetected(){} 
 
