@@ -1,3 +1,11 @@
+/*
+ * Author: UGBots
+ * 
+ * Members: Andy Choi, Kevin Choi, Andrew Jeoung, Jay Kim, Jenny Lee, Namjun Park, Harvey Rendell, Chuan-Yu Wu
+ * 
+ * This class is for basic visitor movements
+ */
+
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <geometry_msgs/Twist.h>
@@ -50,7 +58,7 @@ Visitor::Visitor(ros::NodeHandle &n)
 	this->sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Visitor::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Visitor::laser_callback, this);
-	
+	//for core callbacks
 	this->sub_row = n.subscribe<ugbots_ros::Position>("/row_loc",1000,&Visitor::core_callback, this);
 
 	this->waitingInLine = true;
@@ -71,14 +79,14 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 
 	calculateOrientation();
 
-	if(!waitingInLine)
+	if(!waitingInLine)//if not waiting in line start actions
 	{
 		begin_action_shortest_path(2.0);
 	}
 
-	doAngleCheck();		
+	doAngleCheck();		//angle orientation check
 
-	checkTurningStatus();
+	checkTurningStatus();  // turning check
 
 	publish();
 
@@ -91,20 +99,20 @@ void Visitor::odom_callback(nav_msgs::Odometry msg)
 void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 {
 
-	if(insideFarm())
+	if(insideFarm()) // if inside farm
 	{	
-		if(fabs(this->queueDuplicateCheckAngle - this->orientation.angle) >= (M_PI/2.000000))
+		if(fabs(this->queueDuplicateCheckAngle - this->orientation.angle) >= (M_PI/2.000000))//after initial turn, turn avoiding on again
 		{
 			this->queueDuplicate = true;
 			this->queueDuplicateCheckAngle = 0;
 		}
 		
-
-		for(int i=88; i<93; i++)//if(msg.ranges[90] < 2.0 ||)
+		//if something is in front, initiate avoidance mechanism
+		for(int i=88; i<93; i++)
 		{
-			if(msg.ranges[i] < 2.0)
+			if(msg.ranges[i] < 2.0)// if less than 2.0
 			{
-				if(this->queueDuplicate == true)
+				if(this->queueDuplicate == true) //and if avoidance has not just started
 				{
 					this->queueDuplicateCheckAngle = this->orientation.angle;
 
@@ -112,22 +120,22 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 
 					geometry_msgs::Point pointtemp;
 
-					
+					//45 degrees clockwise
 					pointtemp.x = this->pose.px + sqrt(8) * cos(this->orientation.angle - (M_PI/4.0));
 					pointtemp.y = this->pose.py + sqrt(8) * sin(this->orientation.angle - (M_PI/4.0));
 					temp_queue.push(pointtemp);
-
+					//45 degrees anticlockwise
 					pointtemp.x = pointtemp.x + sqrt(8) * cos(this->orientation.angle + (M_PI/4.0));
 					pointtemp.y = pointtemp.y + sqrt(8) * sin(this->orientation.angle + (M_PI/4.0));
 					temp_queue.push(pointtemp);
 
-					while(!action_queue.empty())
+					while(!action_queue.empty())//empty the action queue into temp
 					{
 						temp_queue.push(action_queue.front());
 						action_queue.pop();
 					}
 
-					while(!temp_queue.empty())
+					while(!temp_queue.empty())//reinitialise action queue
 					{
 						action_queue.push(temp_queue.front());
 						temp_queue.pop();
@@ -141,34 +149,34 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 	}
 	else
 	{
-		if(!tourStarted)
+		if(!tourStarted) //if the tour has not started
 		{
-			if(msg.ranges[90] > 5)
+			if(msg.ranges[90] > 5)//if person in front has started
 			{
-				if(msg.ranges[0] > 15)
+				if(msg.ranges[0] > 15) // and worker is not around
 				{
 					this->speed.linear_x = 0.5;
 				}
 			}
-			else if(msg.ranges[90] <= 5)
+			else if(msg.ranges[90] <= 5) // if person in front stops, stop
 			{
 				this->speed.linear_x = 0.0;
 				return;
 			}
 
-			if(msg.ranges[0] > 5 && msg.ranges[0] < 15)
+			if(msg.ranges[0] > 5 && msg.ranges[0] < 15) //stop if worker is there
 			{
 				waiting();
 			}
 			
-			if(msg.ranges[0] < 4.5)
+			if(msg.ranges[0] < 4.5) //start tour if worker gives the go sign
 			{
 				startTour();
 			}
 		}
 		else
 		{
-			if(msg.ranges[90] < 2)
+			if(msg.ranges[90] < 2)// tour finished, form a line outside the farm
 			{
 				waitingInLine = true;
 				stop();
@@ -177,14 +185,14 @@ void Visitor::laser_callback(sensor_msgs::LaserScan msg)
 	}
 }
 
+//method for getting the beacon co-ordinates from the core
 void Visitor::core_callback(ugbots_ros::Position msg)
 {
 	geometry_msgs::Point pointtemp;
 	pointtemp.x = msg.x; 
 	pointtemp.y = msg.y;
 
-	this->beacon_points.push_back(pointtemp);
-	//ROS_INFO("/position/x/%f, /position/y/%f",msg.x,msg.y);
+	this->beacon_points.push_back(pointtemp);//push into a queue
 }
 
 void Visitor::checkTurningStatus()
@@ -204,7 +212,7 @@ void Visitor::checkTurningStatus()
 	}
 }
 
-//for testing
+//for testing purposes only
 void Visitor::init_route()
 {
 	geometry_msgs::Point point;
@@ -254,6 +262,9 @@ void Visitor::init_route()
 	action_queue.push(point);
 }
 
+/*set up the initial route according to the number of rows from the 
+* queue made from beacon callbacks.
+*/
 void Visitor::doRouteSetup()
 {
 	//decisions are easily configurable but for the final version
@@ -268,7 +279,7 @@ void Visitor::doRouteSetup()
 	double highest_x = 0.0;
 
 	std::list<geometry_msgs::Point>::iterator iter;
-
+	//loop through to find the first and the last beacon
 	for(iter = beacon_points.begin(); iter != beacon_points.end(); iter++)
 	{
 		geometry_msgs::Point temp;
@@ -300,12 +311,12 @@ void Visitor::doRouteSetup()
 
 	end_high.x = end_low.x;
 	end_high.y = end_low.y * -1.0;
-
+	//add the beacons to the queue
 	action_queue.push(begin_low);
 	action_queue.push(begin_high);
 	action_queue.push(end_high);
 	action_queue.push(end_low);
-
+	//initialise the exit queue
 	geometry_msgs::Point exitRoute;
 	exitRoute.x = 52.0;
 	exitRoute.y = -46.0;
@@ -318,7 +329,7 @@ void Visitor::doRouteSetup()
 	action_queue.push(exitRoute);	
 }
 
-void Visitor::waiting()
+void Visitor::waiting()//change variables for waiting 
 {
 	this->waitingInLine = true;
 	this->speed.linear_x = 0.0;
@@ -326,7 +337,7 @@ void Visitor::waiting()
 
 }
 
-void Visitor::startTour()
+void Visitor::startTour()//change variables for starting tour
 {
 	this->tourStarted = true;
 	this->waitingInLine = false;
@@ -335,7 +346,7 @@ void Visitor::startTour()
 	doRouteSetup();
 }
 
-bool Visitor::insideFarm()
+bool Visitor::insideFarm()//check if the worker is inside farm
 {
 	if(this->pose.px > 50.0 || this->pose.px < -50.0)
 	{

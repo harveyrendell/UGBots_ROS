@@ -3,8 +3,8 @@ define poslaser ranger
 (
   sensor(
   range [ 0.0 3.5 ] # range
-  fov 150       # field of vision
-  samples 150   # samples 
+  fov 140       # field of vision
+  samples 140   # samples 
   )
   # generic model properties
   color "black"

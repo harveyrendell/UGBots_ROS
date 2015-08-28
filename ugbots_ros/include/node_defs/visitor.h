@@ -1,3 +1,10 @@
+/**
+	Author: UGBots
+
+	Header file for visitor.cpp
+	It includes declarations for constructors, methods, enums and variables.
+*/
+
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <ugbots_ros/Position.h>

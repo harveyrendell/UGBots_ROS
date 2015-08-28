@@ -16,13 +16,7 @@
 class Picker : public Node
 {
 public:
-	double tempx;
-	double tempy;
-	double temprad;
-	double station_x;
-	double station_y;
-	double zero_angle;
-
+	int binCounter;
 	bool idle_status_sent;
 	bool full_bin_sent;
 
@@ -45,8 +39,6 @@ public:
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
 	void bsa_callback(std_msgs::String msg);
-	void turn(bool clockwise, double desired_angle, double temprad);
-	void move(double distance, double px, double py);
 	void move();
 	void stop();
 	void turnLeft();

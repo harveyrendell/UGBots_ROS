@@ -1,15 +1,15 @@
+
 #model for tractor
-define tractorlaser ranger
+define tractorlas ranger
 (
   sensor(
-  range [ 0.0 30.0 ] # range
+  range [ 0.0 0.0 ] # range
   fov 180       # field of vision
   samples 180   # samples 
   )
   # generic model properties
   color "black"
-  size [ 0.05 0.05 0.1 ]
-  
+  size [ 0.00 0.00 0.0 ]
 )
 
 define tractor position
@@ -17,6 +17,7 @@ define tractor position
   size [2 2 2]
   drive "diff"
   velocity_bounds [ -10 10 -10 10 -10 10 -90 90 ]
+  tractorlas(pose [ 0.00 0.000 0 0.000 ])
 
   #body
   block(

@@ -1,3 +1,10 @@
+/**
+ * Author: UGBots
+ * 
+ * Members: Andy Choi, Kevin Choi, Andrew Jeoung, Jay Kim, Jenny Lee, Namjun Park, Harvey Rendell, Chuan-Yu Wu
+ * 
+ * This header file acts as a parent class for all the nodes. It defines the basic behaviours
+ */
 #include <node_structs/speed.h>
 #include <node_structs/pose.h>
 #include <node_structs/subscriber_list.h>
@@ -64,6 +71,7 @@ public:
 		this->speed.angular_z = angular;
 		this->speed.linear_x = linear;
 	}
+	//method that calculates the deceleration for percision
 	double deceleration(double distance, double tolerance, double max_tolerance)
 	{
 		if(distance < tolerance)
@@ -105,6 +113,7 @@ public:
 		}
 	}
 
+	//method that checks if current angle is the desired angle, then stops turning if so
 	void checkTurningStatus()
 	{
 		if(this->orientation.currently_turning == true)
@@ -126,13 +135,15 @@ public:
 		this->orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*orientation.roty-orientation.rotz*orientation.rotz);
 	}
 
-
+	//helper method to move in the x direction for begin_action
 	bool move_x(double distance, double speed) {
+		//the distance left til desired position
 		double distance_x = distance - pose.px;
 		if (fabs(distance_x) < 0.0005) {
 			stop();
 			return true;
 		}
+		//if distance left is negative, face pi radians else face 0 radians
 		if (distance_x < 0.0)
 		{
 			turn(M_PI - this->orientation.desired_angle , 0.0, M_PI/2);
@@ -145,21 +156,25 @@ public:
 		}
 		if(!orientation.currently_turning)
 		{
+			//if distance left is less than 1 start decelerating
 			if(fabs(distance_x) < 1)
 			{
-				speed = deceleration(fabs(distance_x), 1, 0.01);
+				speed = deceleration(fabs(distance_x), 1, 0.001);
 			}
+			//set nodes x speed to "speed"
 			this->speed.linear_x = speed;
 		}
 		return false;
 	}
-
+	//helper method to move in the y direction for begin_action
 	bool move_y(double distance, double speed) {
+		//the distance left til desired position
 		double distance_y = distance - pose.py;
 		if (fabs(distance_y) < 0.0005) {
 			stop();
 			return true;
 		}
+		//if distance left is negative, face -pi/2 radians else face pi/2 radians
 		if (distance_y < 0.0)
 		{
 			turn(-1.0 * M_PI/2.0 - this->orientation.desired_angle , 0.0, M_PI/2);
@@ -172,38 +187,49 @@ public:
 		}
 		if(!orientation.currently_turning)
 		{
+			//if distance left is less that 1 start decelerating
 			if (fabs(distance_y) < 1)
 			{
-				speed = deceleration(fabs(distance_y), 1, 0.01);
+				speed = deceleration(fabs(distance_y), 1, 0.001);
 			}
+			//set nodes y speed to "speed"
 			this->speed.linear_x = speed;
 		}
 		return false;
 	}
 
+	//method like begin_action but finds shortest path using pythagoras theorm 
 	bool begin_action_shortest_path(double speed)
 	{
+		//if action queue is empty, set the nodes state and return
 		if(action_queue.empty())
 		{
 			set_status(0);
 			return true;
 		}
+		//gets the position of destination thats on the front of the queue
 		geometry_msgs::Point end_point = action_queue.front();
+		//if current node is in the front of the action queue, then pop that point from the queue and stop node
 		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 		{
 			action_queue.pop();
 			stop();
 			return true;
 		}
-
+		//distance left til position
 		double distance = sqrt(pow(end_point.x - pose.px, 2) + pow(end_point.y - pose.py, 2));
+		//the angle between current position and destination point
 		double angle = atan2((end_point.y - pose.py),(end_point.x - pose.px));
 
+		//turn to angle calculate
 		turn(angle - this->orientation.desired_angle , 0.0, M_PI/2);
+		//check turning status (if desired angle is reached)
 		checkTurningStatus();
 		if(!orientation.currently_turning)
 		{
+			//set status to moving
 			set_status(1);
+			//decelerate if distance is less than 1
 			if(fabs(distance) < 1){
 				speed = deceleration(fabs(distance), 1, 0.005);
 			}
@@ -211,27 +237,35 @@ public:
 		}
 	}
 
+	//action for avoidance(uses a different queue(avoidance queue))
 	bool begin_action_avoidance(double speed)
 	{
+		//set status to avoiding		
 		set_status(3);
+		//if avoidance queue is empty return
 		if(avoidance_queue.empty())
 		{
 			ROS_INFO("/message/empty avoidance");
 			set_status(1);
 			return true;
 		}
-
+		//get the first item in the avoidnace queue
 		geometry_msgs::Point end_point = avoidance_queue.front();
+		//if destination is reached pop off avoidance queue
 		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 		{
 			avoidance_queue.pop();
 			stop();
 			return true;
 		}
-
+		//calculate the distance left
 		double distance = sqrt(pow(end_point.x - pose.px, 2) + pow(end_point.y - pose.py, 2));
+		//calculate desired angle to destination
 		this->orientation.desired_angle = atan2((end_point.y - pose.py),(end_point.x - pose.px));
+		//check angle if destination angle is reached 
 		doAngleCheck();
+
+		//calculate the angle difference between to make sure -pi < x < pi
 		double angle_difference = this->orientation.angle - this->orientation.desired_angle;
 		if(angle_difference > M_PI)
 		{
@@ -244,6 +278,7 @@ public:
 
 		ROS_INFO("");
 
+		//depending on angle difference, set speed
 		if(doubleComparator(angle_difference, -1.0 * M_PI/2))
 		{
 			ROS_INFO("/message/up");
@@ -267,17 +302,20 @@ public:
 		}
 	}
 
-	
+	//begin_action method moves x then y 	
 	bool begin_action(double speed)
 	{
-
+		//if queue is empty
 		if(action_queue.empty())
 		{
 			return true;
 		}
+		//set end point to front of the queue
 		geometry_msgs::Point end_point = action_queue.front();
+		//set status to the front of the state queue(used for synchronized states )
 		set_status(state_queue.front());
 
+		//if x and y is at desired point then pop action and state queue
 		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 		{
 			action_queue.pop();
@@ -288,7 +326,7 @@ public:
 			stop();
 			return true;
 		}
-
+		//move y first, then if y is done(returns true) move x
 		if(move_y(end_point.y, speed))
 		{
 			if(move_x(end_point.x, speed))
@@ -301,11 +339,12 @@ public:
 	}	
 
 
-
+	//method that compares two booleans (angles)
 	bool doubleAngleComparator(double a, double b)
 	{
 	    return fabs(a - b) < M_PI/3600000;
 	}
+	//method that compraes two booleans (normal)
 	bool doubleComparator(double a, double b)
 	{
 	    return fabs(a - b) < 0.0005;

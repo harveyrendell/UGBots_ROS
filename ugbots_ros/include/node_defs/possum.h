@@ -1,3 +1,10 @@
+/**
+	Author: UGBots
+
+	Header file for possum.cpp
+	It includes declarations for constructors, methods, enums and variables.
+*/
+
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <geometry_msgs/Twist.h>
@@ -14,7 +21,7 @@ class Possum : public Node
 public:
 	Possum();
 	Possum(ros::NodeHandle &n);
-	enum State { IDLE, ROAMING, FLEEING, MOVINGACROSS };
+	enum State { IDLE, MOVINGACROSS };
 	State state;
 	int row;
 	int max_row;

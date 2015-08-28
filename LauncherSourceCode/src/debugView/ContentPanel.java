@@ -14,13 +14,20 @@ import javax.swing.BoxLayout;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 
+
+/**
+ * Project 1: Group robotic behaviour simulation using Robot Operating System (ROS) 
+ * Group 1: UGBots
+ * 
+ * Members: Andy Choi, Kevin Choi, Andrew Jeoung, Jay Kim, Jenny Lee, Namjun Park, Harvey Rendell, Chuan-Yu Wu
+ * 
+ * This class is responsible for creating a JPanel object which wraps the content of the GUI
+ */
+
 @SuppressWarnings("serial")
 public class ContentPanel extends JPanel {
 
-	/**
-	 * Create the panel.
-	 */
-	
+	//Instantiating the required components
 	private ROSinit _top = new ROSinit();
 	private JButton _startButton = new JButton("Start");
 	private JButton _finishButton = new JButton("Finish");
@@ -39,7 +46,9 @@ public class ContentPanel extends JPanel {
 		addContent();
 		addListeners();
 	}
-
+	
+	
+	//Method to add the content 
 	private void addContent() {
 		_finishButton.setVisible(false);
 		
@@ -62,6 +71,7 @@ public class ContentPanel extends JPanel {
 		this.add(_debug);
 	}
 	
+	//Method to create the labels which display basic information of each node
 	private void createLabels(){
 		String[] names = {"Picker","Carrier","Worker","Visitor","Dog","Cat","Possum","Tractor"};
 		String[] code = {"P","C","W","V","D","C","PO","T",};
@@ -79,6 +89,7 @@ public class ContentPanel extends JPanel {
 		}
 	}
 	
+	//Method to paint the labels onto the GUI
 	private void paint(){
 		String name = "robot_";
 		int vals[] = _top.getVals();
@@ -89,11 +100,15 @@ public class ContentPanel extends JPanel {
 		
 	}
 	
+	//Method to return the hashmap mapping the name to the corresponding Panel
 	public HashMap<String, infoPanel> getMap(){
 		return this._map;
 	}
 	
+	//Adding listeners to the buttons made
 	private void addListeners() {
+		
+		//Listener of start button to start the process creating world
 		_startButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -112,6 +127,7 @@ public class ContentPanel extends JPanel {
 			}
 		});	
 		
+		//Listener of finish button to end the appropriate ros related processes
 		_finishButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -125,6 +141,7 @@ public class ContentPanel extends JPanel {
 			}
 		});
 		
+		//Listener of test button to start tests
 		_runTests.addActionListener(new ActionListener(){
 
 			@Override
@@ -133,6 +150,7 @@ public class ContentPanel extends JPanel {
 			}
 		});
 		
+		//Listener of compile button to run rosmake
 		_rosmake.addActionListener(new ActionListener(){
 
 			@Override
@@ -142,12 +160,14 @@ public class ContentPanel extends JPanel {
 		});
 	}
 
+	//Method to kill all ros related processes
 	public void killProcs() {
 		if (processes != null){
 			processes.killProcs();
 		}
 	}
 	
+	//Method called when GUI is opened to wait for roscore to start
 	public void waitForRos(){
 		_startButton.setEnabled(false);
 		_rosmake.setEnabled(false);
@@ -155,6 +175,7 @@ public class ContentPanel extends JPanel {
 		processes.waitFive();
 	}
 	
+	//method to enable the buttons when ROS is ready.
 	public void enableButtons(){
 		_startButton.setEnabled(true);
 		_rosmake.setEnabled(true);
