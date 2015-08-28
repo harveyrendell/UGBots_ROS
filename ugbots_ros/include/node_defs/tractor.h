@@ -1,3 +1,10 @@
+/**
+	Author: UGBots
+
+	Header file for tractor.cpp
+	It includes declarations for constructors, methods, enums and variables.
+*/
+
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <geometry_msgs/Twist.h>

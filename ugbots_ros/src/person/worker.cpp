@@ -1,3 +1,11 @@
+/*
+ * Author: UGBots
+ * 
+ * Members: Andy Choi, Kevin Choi, Andrew Jeoung, Jay Kim, Jenny Lee, Namjun Park, Harvey Rendell, Chuan-Yu Wu
+ * 
+ * This class is for basic worker movements
+ */
+
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <geometry_msgs/Twist.h>
@@ -57,7 +65,7 @@ Worker::Worker(ros::NodeHandle &n)
 	this->sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Worker::odom_callback, this);
 	this->sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Worker::laser_callback, this);
 
-	letInNextVisitor();
+	letInNextVisitor(); //let in next visitor
 }
 
 void Worker::odom_callback(nav_msgs::Odometry msg)
@@ -72,11 +80,11 @@ void Worker::odom_callback(nav_msgs::Odometry msg)
 	
 	calculateOrientation();
 
-	begin_action_shortest_path(2.0);
+	begin_action_shortest_path(2.0); //start action
 
-	doAngleCheck();
+	doAngleCheck();//angle orientation check
 
-	checkTurningStatus();
+	checkTurningStatus(); //turning status check
 
 	publish();
 
@@ -97,12 +105,12 @@ void Worker::laser_callback(sensor_msgs::LaserScan msg)
 	{
 		if(action_queue.size() == 0)
 		{
-			letInNextVisitor();
+			letInNextVisitor(); // if a visitor leaves, queue next visitor
 		}
 	}
 }
 
-void Worker::letInNextVisitor()
+void Worker::letInNextVisitor() //work towards the visitor to queue them in
 {
 	geometry_msgs::Point point;
 	point.x = 55.0; 
@@ -125,7 +133,7 @@ void Worker::letInNextVisitor()
 
 void Worker::move(){}
 
-void Worker::checkTurningStatus()
+void Worker::checkTurningStatus()//checking for turning stops.
 {
 	if(this->orientation.currently_turning == true)
 	{
