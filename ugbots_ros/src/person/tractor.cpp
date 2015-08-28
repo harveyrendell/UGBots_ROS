@@ -1,3 +1,11 @@
+/*
+ * Author: UGBots
+ * 
+ * Members: Andy Choi, Kevin Choi, Andrew Jeoung, Jay Kim, Jenny Lee, Namjun Park, Harvey Rendell, Chuan-Yu Wu
+ * 
+ * This class is for basic tractor movements
+ */
+
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <geometry_msgs/Twist.h>
@@ -34,6 +42,7 @@ Tractor::Tractor(ros::NodeHandle &n)
 	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Tractor::ground_callback, this);
 	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Tractor::laser_callback, this);
 
+	//initialise routine points
 	geometry_msgs::Point point;
 	point.x = -36.0; 
 	point.y = -12.0;
@@ -60,7 +69,7 @@ void Tractor::ground_callback(nav_msgs::Odometry msg)
 	orientation.rotw = msg.pose.pose.orientation.w;
 
 	calculateOrientation();
-
+	//restack if action is finished
 	if(action_queue.size() == 1)
 	{
 		geometry_msgs::Point point;
@@ -81,9 +90,10 @@ void Tractor::ground_callback(nav_msgs::Odometry msg)
 	begin_action_shortest_path(2.0);
 
 	state = TRAVELLING;
-
+	
+	//angle orientation check
 	doAngleCheck();		
-
+	//turning check
 	checkTurningStatus();
 
 	publish();
