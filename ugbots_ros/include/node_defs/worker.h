@@ -1,3 +1,10 @@
+/**
+	Author: UGBots
+
+	Header file for worker.cpp
+	It includes declarations for constructors, methods, enums and variables.
+*/
+
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <geometry_msgs/Twist.h>
@@ -18,21 +25,20 @@ public:
 	void move();
 	void stop();
 	void stopTurn();
-	void turnLeft();
-	void turnRight();
-	void doAngleCheck();
+	//void doAngleCheck();
 	void collisionDetected();
-
-	void stopTurnStatic();
-	void spinOnTheSpot();
+	
+	//void stopTurnStatic();
+	//void spinOnTheSpot();
 	void checkTurningStatus();
-	void checkStaticTurningStatus();
-	void calculateOrientation();
+	void letInNextVisitor();
+	//void checkStaticTurningStatus();
+	//void calculateOrientation();
 
-	enum State { IDLE, PATROLLING, RESPONDING, SAWDOG };
+	enum State { IDLE, QUEUENEXT };
 	State state;
 	
-	char* enum_to_string(State t);
+	char const* enum_to_string(State t);
 
 	bool checkedThisRot;
 

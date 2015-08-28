@@ -1,3 +1,10 @@
+/**
+	Author: UGBots
+
+	Header file for dog.cpp
+	It includes declarations for constructors, methods, enums and variables.
+*/
+
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <geometry_msgs/Twist.h>
@@ -13,24 +20,25 @@ class Dog : public Node
 public:
 	Dog();
 	Dog(ros::NodeHandle &n);
+	enum State { IDLE, WALKING, RUNNING, RANDOMTURN};
+	State state;
 	void odom_callback(nav_msgs::Odometry msg);
 	void laser_callback(sensor_msgs::LaserScan msg);
+	void timerCallback(const ros::TimerEvent& e);
 	void move();
 	void stop();
 	void stopTurn();
+	void turnRandomly();
+	void walk();
+	void run();
 	void turnLeft();
 	void turnRight();
+	void turnBack();
 	void collisionDetected();
-	void calculateOrientation();
-	void doAngleCheck();
+	void checkTurningStatus();
+	void setStatus();
+	State generateStatus();
 
-	enum State { IDLE, ROAMING, AGGRESSIVE, FLEEING };
-	State state;
-
-	char* enum_to_string(State t);
-
-	bool endOfPath;
-	bool facingRight;
-	bool facingLeft;
+	char const* enum_to_string(State t);
 };
 

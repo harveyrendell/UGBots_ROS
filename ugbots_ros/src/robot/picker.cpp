@@ -5,174 +5,61 @@
 #include <sensor_msgs/LaserScan.h>
 
 #include <sstream>
+#include <cstdlib>
 #include <stdlib.h>
+#include <ctime>
 #include <node_defs/picker.h>
+
 
 Picker::Picker()
 {
 	//setting base attribute defaults
 	pose.theta = M_PI/2.0;
-	pose.px = 10;
-	pose.py = 20;
-	speed.linear_x = 1.0;
+	speed.linear_x = 0.0;
 	speed.max_linear_x = 3.0;
 	speed.angular_z = 0.0;
 	state = IDLE;
-	station_x = 0;
-	station_y = -33;
+	binPercent = 0;
+	binCounter = 0;
 
+	idle_status_sent = false;
 }
 
 Picker::Picker(ros::NodeHandle &n)
 {
-	//this->n = n;
-
 	//setting base attribute defaults
 	pose.theta = M_PI/2.0;
-	pose.px = 10;
-	pose.py = 20;
-	speed.linear_x = 1.0;
+	speed.linear_x = 0.0;
 	speed.max_linear_x = 3.0;
 	speed.angular_z = 0.0;
-	state = IDLE;
-	station_x = 0;
-	station_y = -33;
+	set_status(0);
+	binPercent = 0;
+	binCounter = 0;
+
+	queueDuplicateCheckAngle = 0.0;
+	queueDuplicate = true;
+	idle_status_sent = false;
+	full_bin_sent = false;
+	std::string ns = n.getNamespace();
+	ns.erase(ns.begin());
+	robotDetails.ns = ns;
+
+	sub_station = n.subscribe<ugbots_ros::picker_row>("station", 1000, &Picker::station_callback, this);
+	bin_status_alert = n.subscribe<std_msgs::String>("bin_emptied", 1000, &Picker::bsa_callback, this);
+	core_alert = n.advertise<ugbots_ros::robot_details>("/idle_pickers", 1000);
+	bin_alert = n.advertise<ugbots_ros::robot_details>("/full_bins", 1000);
 
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Picker::odom_callback, this);
+	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Picker::odom_callback, this);
 	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Picker::laser_callback, this);
-	carrier_alert = n.advertise<ugbots_ros::bin_status>("/alert",1000);
 }
 
-/*void Picker::logic() {
-	if (turningLeft) {
-		turn(false, M_PI/2);
-	} else if (turningRight) {
-		turn(true, M_PI/2);
-	}
-
-	if (stopped) {
-		speed.linear_x = 0.0;
-	} else {
-		speed.linear_x = 1.0;
-	}
-}*/
-
-/*void Picker::turn(bool clockwise, double desired_angle) {
-	double current_angular_z;
-
-	//desired angle of turn added to robots current angle facing
-	orientation.desired_angle = desired_angle + zero_angle;
-
-	//deduct one rotation if desired angle exceed full rotation
-	if (orientation.desired_angle > 2*M_PI) {
-		orientation.desired_angle = orientation.desired_angle - 2*M_PI;
-	}
-
-	//for when turn is set to be clockwise
-	if (clockwise) {
-		if (orientation.angle > 0) {
-			orientation.angle = -2*M_PI + orientation.angle;
-		}
-		speed.angular_z = -M_PI/2;
-		current_angular_z = -speed.angular_z;
-		orientation.angle = -orientation.angle;
-	} else {
-		if (orientation.angle < 0) {
-			orientation.angle = 2*M_PI + orientation.angle;
-		}
-		speed.angular_z = M_PI/2;
-		current_angular_z = speed.angular_z;
-	}
-
-	//turn until desired angle is reached, taking into account of the 2 clock time ahead
-	if (orientation.desired_angle-2*(current_angular_z/10) >= orientation.angle) {
-	//if desired angle is reached, robot stops turning and moves again 
-	} else {
-		orientation.currently_turning = false;
-		//stopped = false;
-		speed.angular_z = 0.0;
-		zero_angle = orientation.desired_angle;
-	}
-}*/
-void Picker::turn(bool clockwise, double desired_angle, double temprad) {
-	double current_angular_z;
-
-	//desired angle of turn added to robots current angle facing
-	orientation.desired_angle = desired_angle + temprad;
-
-	//deduct one rotation if desired angle exceed full rotation
-	if (orientation.desired_angle > 2*M_PI) {
-		orientation.desired_angle = orientation.desired_angle - 2*M_PI;
-	}
-
-	//for when turn is set to be clockwise
-	if (clockwise) {
-		if (orientation.angle > 0) {
-			orientation.angle = -2*M_PI + orientation.angle;
-		}
-		speed.angular_z = -M_PI/2;
-		current_angular_z = -speed.angular_z;
-		orientation.angle = -orientation.angle;
-	} else {
-		if (orientation.angle < 0) {
-			orientation.angle = 2*M_PI + orientation.angle;
-		}
-		speed.angular_z = M_PI/2;
-		current_angular_z = speed.angular_z;
-	}
-
-	//turn until desired angle is reached, taking into account of the 2 clock time ahead
-	if (orientation.desired_angle-3*(current_angular_z/10) >= orientation.angle) {
-		orientation.currently_turning = true;
-	//if desired angle is reached, robot stops turning and moves again 
-	} else {
-		orientation.currently_turning = false;
-		//stopped = false;
-		speed.angular_z = 0.0;
-		zero_angle = orientation.desired_angle;
-	}
-}
-
-void Picker::moveX(double distance, double px) {
-	double x = distance + px;
-	double distance_x = x - pose.px;
-	if (distance_x < 0.20001) {
-		speed.linear_x = 0.0;
-	}
-}
-
-void Picker::moveY(double distance, double py) {
-	double y = distance + py;
-	double distance_y = y - pose.py;
-	if (distance_y < 0.20001) {
-		speed.linear_x = 0.0;
-	}
-}
-
-void Picker::move(double distance, double px, double py)
-{
-	double x = distance * sin(pose.theta) + px;
-	double y = distance * cos(pose.theta) + py;
-
-	double distance_x = x - pose.px;
-	double distance_y = y - pose.py;
-	double distance_z = sqrt(pow(distance_x,2) + pow(distance_y,2));
-
-	if(distance_z < 0.20001)
-	{
-		speed.linear_x = 0.0;
-	}
-}
-
+//Callback method for when base pose ground truth is published
 void Picker::odom_callback(nav_msgs::Odometry msg)
 {
-	//This is the call back function to process odometry messages coming from Stage. 	
-	pose.px = -10 + msg.pose.pose.position.x;
-	pose.py = -40 + msg.pose.pose.position.y;
-	ROS_INFO("/position/x/%f", pose.px);
-	ROS_INFO("/position/y/%f", pose.py);
-	ROS_INFO("/status/%s/./", enum_to_string(state));
+	//set up the robots pose and orientation based on the msg
+	pose.px = msg.pose.pose.position.x;
+	pose.py = msg.pose.pose.position.y;
 	orientation.rotx = msg.pose.pose.orientation.x;
 	orientation.roty = msg.pose.pose.orientation.y;
 	orientation.rotz = msg.pose.pose.orientation.z;
@@ -180,55 +67,163 @@ void Picker::odom_callback(nav_msgs::Odometry msg)
 	orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
 	orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
 	orientation.roty-orientation.rotz*orientation.rotz);
-	ROS_INFO("Current angle is: %f", orientation.angle);
 
-	//bin location, currently attached to the centre of robot
-	binStatus.bin_x = pose.px;
-	binStatus.bin_y = pose.py;
-
-	//relative actions for different states
-	if (state == IDLE) {
-		state = TRAVELLING;
-		tempx = pose.px;
-		tempy = pose.py;
-		temprad = orientation.angle;
-		goToWork();
-		state = TRAVELLING;
-	} else if (state == TRAVELLING) {
-		goToWork();
-	} else if (state == PICKING) {
-		pickKiwi();
-	} else if (state == WAITING) {
-		binStatus.bin_x = 0.0;
-		binStatus.bin_y = pose.py-2;
-		speed.angular_z = M_PI;
+	//when robot idle send its details(x, y, namespace) exactly once
+	if (state == IDLE && !idle_status_sent) {
+		robotDetails.x = pose.px;
+		robotDetails.y = pose.py;
+		core_alert.publish(robotDetails);
+		idle_status_sent = true;
 	}
 
-	//publish topic about current bin status
-	carrier_alert.publish(binStatus);
+	//Appropriate ros info to be used by the debugger
+	ROS_INFO("/position/x/%f", pose.px);
+	ROS_INFO("/position/y/%f", pose.py);
+	ROS_INFO("/status/%s/./", enum_to_string(state));
+
+	//if there is avoidance required do not execute action queue
+	if(!avoidance_queue.empty())
+	{
+		//avoidance queue executed
+		begin_action_avoidance(3.0);
+	}
+	else
+	{
+		//state based speed
+		if (state == IDLE) {
+			//when idle speed is set to be 0
+			speed.linear_x = 0;
+			begin_action(0);
+		} else if (state == TRAVELLING) {
+			//when travelling speed is set to be 0.5
+			begin_action(0.5);
+		} else if (state == PICKING) {
+			//when picking speed is set to be 0.01
+			begin_action(0.1);
+			//bin starts filling up
+			pickKiwi();
+		} else if (state == WAITING) {
+			//when waiting speed is set to be 0
+			speed.linear_x = 0;
+			//call the carrier if it hasn't been called yet
+			if (!full_bin_sent) {
+				callForCarrier();
+			}
+		} else if (state == STOPPED) {
+			//speed is 0 when stopped
+			speed.linear_x = 0;
+		}
+	}
+
+	doAngleCheck();
+	checkTurningStatus();
+	publish();
 }
 
-
+//call back for laser scan from stage
 void Picker::laser_callback(sensor_msgs::LaserScan msg)
 {
-	//This is the callback function to process laser scan messages
-	//you can access the range data from msg.ranges[i]. i = sample number
-	
+	//boolean for determining if robot has been detected
+	bool robot_detected = false;
+	//for all the lasers in specfic area of angles
+	for (int i = 76; i < 104; i++) {
+		//if any of the angles aren't less than 2.4 in range, break with robot detected being false
+		if (msg.ranges[i] < 3) {
+			robot_detected = true;
+		} else {
+			robot_detected = false;
+			break;
+		}
+	}
+	//if not detected, and not waiting continue action as usual
+	if (!robot_detected) {
+		if (state != WAITING) {
+			begin_action(0);
+		}
+	} else {
+		//stop if robot is detected
+		state = STOPPED;
+	}
+	//laser detection that gets in way
+	/*int min_range = (int)(floor(180 * acos(0.75/2)/M_PI));
+	int max_range = (int)(ceil(180 * acos(-0.75/2)/M_PI));
+
+	for (int i = min_range; i < max_range; i++)
+	{
+		if(msg.ranges[i] < 2.0)
+		{
+			speed.linear_x = 0.0;
+			publish();
+
+			if(!this->orientation.currently_turning)
+			{
+				while(!avoidance_queue.empty())
+				{
+					avoidance_queue.pop();
+				}
+
+				std::queue<geometry_msgs::Point> temp_queue;
+
+				geometry_msgs::Point pointtemp;
+				
+				pointtemp.x = this->pose.px + 0.8 * cos(this->orientation.angle - (M_PI/2.0));
+				pointtemp.y = this->pose.py + 0.8 * sin(this->orientation.angle - (M_PI/2.0));
+				ROS_INFO("first point x: %f",pointtemp.x);
+				ROS_INFO("first point y: %f",pointtemp.y);
+				avoidance_queue.push(pointtemp);
+
+				pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
+				pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle);
+				ROS_INFO("second point x: %f",pointtemp.x);
+				ROS_INFO("second point y: %f",pointtemp.y);
+				avoidance_queue.push(pointtemp);
+
+				pointtemp.x = pointtemp.x + 0.8 * cos(this->orientation.angle + (M_PI/2.0));
+				pointtemp.y = pointtemp.y + 0.8 * sin(this->orientation.angle + (M_PI/2.0));
+				ROS_INFO("third point x: %f",pointtemp.x);
+				ROS_INFO("third point y: %f",pointtemp.y);				
+				avoidance_queue.push(pointtemp);
+			}
+		}
+	}*/
 }
 
-//hard coded function for robot to get to work station
-void Picker::goToWork() {
-	moveX(abs(station_x-tempx),tempx);
-	if (speed.linear_x == 0.0) {
-		turn(false, M_PI/2, temprad);
-		if (speed.angular_z == 0.0){
-			speed.linear_x = 1.0;
-			moveY(abs(station_y-tempy),tempy);
-			if (pose.py > -35.0){
-				state = PICKING;
-				tempx = pose.px;
-				tempy = pose.py;
-				temprad = orientation.angle;
+//call back for when bin has been alerted to be empty
+void Picker::bsa_callback(std_msgs::String msg) {
+	//continue action
+	begin_action(0);
+	//bin is set to empty = 0
+	binPercent = 0;
+	//bin sent alert is set to false
+	full_bin_sent = false;
+}
+
+//call back for when the picker robot receives coordinates for work
+void Picker::station_callback(ugbots_ros::picker_row pos)
+{
+	//its start point for picking fruits
+	geometry_msgs::Point p;
+	p.x = pos.start_x;
+	p.y = pos.start_y;
+	action_queue.push(p);
+	state_queue.push(1);
+	//its end point for picking fruits
+	p.x = pos.end_x;
+	p.y = pos.end_y;
+	action_queue.push(p);
+	state_queue.push(4);
+}
+
+//sets status relative to its element index on the array of status
+void Picker::set_status(int status){
+	for(int i = 0; i < arraysize(state_array); i++)
+	{
+		if(i == status)
+		{
+			state = state_array[i];
+			//if just set to idle, change idle_status_sent to be false
+			if (state == IDLE) {
+				idle_status_sent = false;
 			}
 		}
 	}
@@ -236,16 +231,41 @@ void Picker::goToWork() {
 
 //function putting robot into picking mode
 void Picker::pickKiwi() {
-	speed.linear_x = 0.5;
-	binStatus.bin_stat = "FILLING";
-	moveY(70.0,tempy);
-	if (speed.linear_x == 0.0) {
+	//if the bin is empty
+	if(binPercent<100){
+		int num;
+		//only increment every multiple of 30 for bin counter
+		num = binCounter%30;
+		if (num==0) {
+			binPercent = binPercent + 1;
+		}
+		binCounter++;
+		ROS_INFO("/bin/%d", binPercent);
+		ROS_INFO("/message/the bin is %d percent full", binPercent);
+
+	} else if (binPercent == 100){
+		//set bin counter to be 0 and set state as waiting when bin is full
+		binPercent = 100;
+		ROS_INFO("/bin/%d", binPercent);
+		ROS_INFO("/message/the bin is %d percent full", binPercent);
+		binCounter = 0;
 		state = WAITING;
-		binStatus.bin_stat = "FULL";
-	}
+	}	
 }
 
-char* Picker::enum_to_string(State t) {
+//method to call for carrier robot when bin is full
+void Picker::callForCarrier() {
+	//initialise the bins position and the robots namespace
+	ugbots_ros::robot_details bin_pos;
+	bin_pos.x = pose.px;
+	bin_pos.y = pose.py - 2.8;
+	bin_pos.ns = robotDetails.ns;;
+	bin_alert.publish(bin_pos);
+	//bin message sent set to true
+	full_bin_sent = true;
+}
+
+char const* Picker::enum_to_string(State t) {
 	switch (t){
 		case IDLE:
 			return "IDLE";
@@ -255,13 +275,22 @@ char* Picker::enum_to_string(State t) {
 			return "PICKING";
 		case WAITING:
 			return "WAITING";
+		case AVOIDING:
+			return "AVOIDING";
+		case STOPPED:
+			return "STOPPED";
 		default:
 			return ""; 
 	}
 }
 
 void Picker::move(){}
-void Picker::stop(){}
+void Picker::stop(){
+	speed.linear_x = 0.0;
+	speed.linear_y = 0.0;
+	speed.angular_z = 0.0;
+
+}
 void Picker::turnLeft(){}
 void Picker::turnRight(){}
 void Picker::collisionDetected(){}
@@ -278,8 +307,6 @@ ros::NodeHandle n;
 //Creating the CarrierBot instance
 Picker node(n);
 
-node.binStatus.bin_stat = "EMPTY";
-
 //Setting the loop rate
 ros::Rate loop_rate(10);
 
@@ -289,8 +316,6 @@ int count = 0;
 while (ros::ok())
 {
 	node.publish();
-
-	node.carrier_alert.publish(node.binStatus);
 
 	ros::spinOnce();
 

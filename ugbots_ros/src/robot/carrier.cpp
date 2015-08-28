@@ -1,3 +1,11 @@
+/**
+ * Author: UGBots
+ * 
+ * Members: Andy Choi, Kevin Choi, Andrew Jeoung, Jay Kim, Jenny Lee, Namjun Park, Harvey Rendell, Chuan-Yu Wu
+ * 
+ * This class is responsible for the "Carrier bot" behaviour
+ */
+
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <geometry_msgs/Twist.h>
@@ -15,56 +23,54 @@ Carrier::Carrier()
 	pose.px = 10;
 	pose.py = 20;
 	speed.linear_x = 0.0;
+	speed.linear_y = 0.0;
+
 	speed.max_linear_x = 3.0;
 	speed.angular_z = 0.0;
 	state = IDLE;
 
 	moving = false;
 	undergoing_task = false;
-	swag = false;
 
-	tempx = -10.0;
-	tempy = -48.0;
+	idle_status_sent = false;
+	station_set = false;
+
 	temprad = 0.0;
 }
 
 Carrier::Carrier(ros::NodeHandle &n)
 {
-	//this->n = n;
+	this->nh = n;
 
 	//setting base attribute defaults
-	pose.theta = M_PI/2.0;
-	pose.px = 10;
-	pose.py = 20;
 	speed.linear_x = 0.0;
+	speed.linear_y = 0.0;
 	speed.max_linear_x = 3.0;
 	speed.angular_z = 0.0;
 	state = IDLE;
+	orientation.currently_turning = false;
 
-	moving = false;
-	undergoing_task = false;
-	swag = false;
+	x_completed = false;
+	x_started = false;
+	y_completed = false;
+	x_started = false;
 
-	tempx = -10.0;
-	tempy = -48.0;
-	temprad = 0.0;
+
+	idle_status_sent = false;
+	station_set = false;
+	std::string ns = n.getNamespace();
+	ns.erase(ns.begin());
+	robotDetails.ns = ns;
+
+	core_alert = n.advertise<ugbots_ros::robot_details>("/idle_carriers",1000);
+	sub_bin = n.subscribe<ugbots_ros::robot_details>("bin", 1000, &Carrier::bin_loc_callback, this);
 
 	sub_list.node_stage_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1000);
-	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("odom",1000, &Carrier::odom_callback, this);
+	sub_list.sub_odom = n.subscribe<nav_msgs::Odometry>("base_pose_ground_truth",1000, &Carrier::odom_callback, this);
 	sub_list.sub_laser = n.subscribe<sensor_msgs::LaserScan>("base_scan",1000,&Carrier::laser_callback, this);
-	carrier_alert = n.subscribe<ugbots_ros::bin_status>("/alert",1000,&Carrier::bin_callback,this);
-	carrier_alert_pub = n.advertise<ugbots_ros::bin_status>("/alert",1000);
 }
 
-void Carrier::bin_callback(ugbots_ros::bin_status msg)
-{
-	localBinStatus.bin_x = msg.bin_x;
-	localBinStatus.bin_y = msg.bin_y;
-	localBinStatus.bin_stat = msg.bin_stat;
-
-}
-
-char* Carrier::enum_to_string(State t){
+char const* Carrier::enum_to_string(State t){
     switch(t){
         case IDLE:
             return "IDLE";
@@ -81,155 +87,136 @@ char* Carrier::enum_to_string(State t){
     }
  }
 
-
+//callback for whenever base pose ground truth is published
 void Carrier::odom_callback(nav_msgs::Odometry msg)
 {
 	//This is the call back function to process odometry messages coming from Stage. 	
-	this->pose.px = -10 + msg.pose.pose.position.x;
-	this->pose.py = -48 + msg.pose.pose.position.y;	
+	pose.px = msg.pose.pose.position.x;
+	pose.py = msg.pose.pose.position.y;
 	orientation.rotx = msg.pose.pose.orientation.x;
 	orientation.roty = msg.pose.pose.orientation.y;
 	orientation.rotz = msg.pose.pose.orientation.z;
 	orientation.rotw = msg.pose.pose.orientation.w;
-	orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
-	orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
-	orientation.roty-orientation.rotz*orientation.rotz);
+
+	//set the stations co-ordinates to initial spawn point
+	if (!station_set) {
+		station_x = pose.px;
+		station_y = pose.py;
+	}
+	//calculate the nodes orientation
+	calculateOrientation();
+
+	//if idle and its idle status has not been sent
+	if (state == IDLE && !idle_status_sent) 
+	{
+		//alert the core its current idle location and namespace
+		robotDetails.x = pose.px;
+		robotDetails.y = pose.py;
+		core_alert.publish(robotDetails);
+		idle_status_sent = true;
+	}
+	
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
 
-
-	if(localBinStatus.bin_stat == "FULL")
-	{
-		move_to(localBinStatus.bin_x,localBinStatus.bin_y);
-		/*if(move_to(bin_x,bin_y))
-		{
-			binStatus.bin_stat = "EMPTY";
-		}*/
+	if (state == IDLE) {
+		//if state is idle, begin action with 0
+		begin_action(0);
+	} else if (state == TRAVELLING) {
+		//if travelling begin action with speed 3
+		begin_action(3);
+	} else if (state == CARRYING) {
+		//if carrying begin action with speed 1.5
+		if (!picker_bin_msg_sent) {
+			//if carrier hasn't sent message to picker, send to the appropriate namespace
+			std::string topic = associated_picker + "/bin_emptied";
+			picker_alert = nh.advertise<std_msgs::String>(topic,1000,true);
+			picker_alert.publish(topic);
+			picker_bin_msg_sent = true;
+		}
+		begin_action(1.5);
+	} else if (state == STOPPED) {
+		//when stopped speed is 0
+		speed.linear_x = 0;
 	}
+
+	doAngleCheck();
+	checkTurningStatus();
+	publish();
 }
 
-
+//callback for laser range publishes
 void Carrier::laser_callback(sensor_msgs::LaserScan msg)
 {
-	//This is the callback function to process laser scan messages
-	//you can access the range data from msg.ranges[i]. i = sample number	
-}
-void Carrier::turn(bool clockwise, double desired_angle, double temprad) {
-	double current_angular_z;
-
-	//desired angle of turn added to robots current angle facing
-	orientation.desired_angle = desired_angle + temprad;
-
-	//deduct one rotation if desired angle exceed full rotation
-	if (orientation.desired_angle > 2*M_PI) {
-		orientation.desired_angle = orientation.desired_angle - 2*M_PI;
-	}
-
-	//for when turn is set to be clockwise
-	if (clockwise) {
-		if (orientation.angle > 0) {
-			orientation.angle = -2*M_PI + orientation.angle;
+	//if anything is detected in front, stop
+	bool detected = false;
+	for (int i = 55; i < 126; i++) {
+		if (msg.ranges[i] < 1.29035) {
+			detected = true;
 		}
-		speed.angular_z = -M_PI/2;
-		current_angular_z = -speed.angular_z;
-		orientation.angle = -orientation.angle;
-	} else {
-		if (orientation.angle < 0) {
-			orientation.angle = 2*M_PI + orientation.angle;
-		}
-		speed.angular_z = M_PI/2;
-		current_angular_z = speed.angular_z;
 	}
-
-	//turn until desired angle is reached, taking into account of the 2 clock time ahead
-	if (orientation.desired_angle-3*(current_angular_z/10) >= orientation.angle) {
-		orientation.currently_turning = true;
-	//if desired angle is reached, robot stops turning and moves again 
-	} else {
-		speed.angular_z = 0.0;
-		orientation.currently_turning = false;
-		//stopped = false;
+	if (detected) {
 		state = STOPPED;
-		zero_angle = orientation.desired_angle;
-	}
-}
-void Carrier::moveX(double distance, double px) {
-	double x = distance + px;
-	double distance_x = x - pose.px;
-	if (distance_x < 0.20001) {
-		state = STOPPED;
-		speed.linear_x = 0.0;
+	} else {
+		begin_action(0);
 	}
 }
 
-void Carrier::moveY(double distance, double py) {
-	double y = distance + py;
-	double distance_y = y - pose.py;
-	ROS_INFO("y:%f",distance);
-	if (distance_y < 0.20001) {
-		state = IDLE;
-		speed.linear_x = 0.0;
-	}
-}
-
-bool Carrier::move_to(double x, double y)
+//callback for when bin location is published to the carrier robot
+void Carrier::bin_loc_callback(ugbots_ros::robot_details bin)
 {
-	/*if(abs(pose.px - x) < 0.00001 && abs(pose.py - y) < 0.00001)
+	//picker bin has not been emptied, hence false
+	picker_bin_msg_sent = false;
+	associated_picker = bin.ns;
+
+	//set first point of action, which is the pivot point
+	geometry_msgs::Point pivot;
+	pivot.x = bin.x;
+	pivot.y = -40;
+	action_queue.push(pivot);
+	state_queue.push(1);
+	//set goal point of picking up bin
+	geometry_msgs::Point bin_location;
+	bin_location.x = bin.x;
+	bin_location.y = bin.y;
+	action_queue.push(bin_location);
+	state_queue.push(1);
+	//set the carry course for the carrier back to its station
+	geometry_msgs::Point carry_point;
+	carry_point.x = station_x;
+	carry_point.y = -42;
+	action_queue.push(carry_point);
+	state_queue.push(2);
+	carry_point.y = station_y;
+	action_queue.push(carry_point);
+	state_queue.push(2);
+}
+
+//set status method
+void Carrier::set_status(int status){
+	//goes through each index of the state_array to set current state to input parameter
+	for(int i = 0; i < arraysize(state_array); i++)
 	{
-		speed.linear_x = 0.0;
-		return true;
-	}
-	else
-	{*/
-		state = TRAVELLING;
-		speed.linear_x = 1.0;
-		moveX(abs(x - tempx), tempx);
-		if (speed.linear_x == 0.0) 
+		if(i == status)
 		{
-			turn(false, M_PI/2, 0.0);
-			if (speed.angular_z == 0.0)
-			{
-				state = TRAVELLING;
-				speed.linear_x = 1.0;
-				moveY(abs(y - tempy),tempy);
-				temprad = orientation.angle;
-			}	
+			state = state_array[i];
+			if (state == IDLE) {
+				idle_status_sent = false;
+				picker_bin_msg_sent = false; 
+			}
 		}
-	//}
-	return false;
+	}
+}
+//method to stop all movement
+void Carrier::stop()
+{
+	speed.linear_x = 0.0;
+	speed.linear_y = 0.0;
+	speed.angular_z = 0.0;
 }
 
 
-void Carrier::move_forward(double distance)
-{	
-	
-	undergoing_task = true;
-	speed.linear_x = 2.0;
-	if(!moving)
-	{
-		tempx = pose.px;
-		tempy = pose.py;
-		moving = true;
-	}
-	double x = distance * cos(pose.theta) + tempx;
-	double y = distance * sin(pose.theta) + tempy;
-
-	double distance_x = x - pose.px;
-	double distance_y = y - pose.py;
-	double distance_z = sqrt(pow(distance_x,2) + pow(distance_y,2));
-
-	if(distance_z < 2.000001){
-		speed.linear_x = 0.0;
-		moving = false;
-	}
-}
-
-void Carrier::move(){}
-void Carrier::stop(){}
-void Carrier::turnLeft(){}
-void Carrier::turnRight(){}
-void Carrier::collisionDetected(){}
 
 int main(int argc, char **argv)
 {	
@@ -252,8 +239,6 @@ int count = 0;
 
 while (ros::ok())
 {
-	node.publish();	
-
 	node.carrier_alert_pub.publish(node.binStatus);
 
 	ros::spinOnce();

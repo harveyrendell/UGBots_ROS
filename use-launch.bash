@@ -9,5 +9,4 @@ rosmake ugbots_ros --pre-clean -t
 
 #launch the example launch file
 #change launch file name to launch file you want to use
-roslaunch ugbots_ros alpha.launch
-
+roslaunch ugbots_ros world.launch
