@@ -72,7 +72,7 @@ public:
 			{
 				return deceleration(distance, M_PI/180, max_tolerance);
 			}
-			if (tolerance < max_tolerance)
+			if (tolerance <= max_tolerance)
 			{
 				return max_tolerance;
 			}
@@ -80,7 +80,7 @@ public:
 		}
 		return tolerance * 10;
 	}
-
+	
 	void doAngleCheck()
 	{		
 		//if -ve rads, change to +ve rads
@@ -145,8 +145,10 @@ public:
 		}
 		if(!orientation.currently_turning)
 		{
-			//if(fabs(distance_x) < 0.1)
-			speed = deceleration(fabs(distance_x), 1, 0.01);
+			if(fabs(distance_x) < 1)
+			{
+				speed = deceleration(fabs(distance_x), 1, 0.01);
+			}
 			this->speed.linear_x = speed;
 		}
 		return false;
@@ -170,12 +172,11 @@ public:
 		}
 		if(!orientation.currently_turning)
 		{
-			this->speed.linear_x = speed;
-			if (fabs(distance_y) < 0.5)
+			if (fabs(distance_y) < 1)
 			{
-				//ROS_INFO("slow down x");
-				this->speed.linear_x = fabs(distance_y);
+				speed = deceleration(fabs(distance_y), 1, 0.01);
 			}
+			this->speed.linear_x = speed;
 		}
 		return false;
 	}
@@ -203,19 +204,19 @@ public:
 		if(!orientation.currently_turning)
 		{
 			set_status(1);
-			speed = deceleration(fabs(distance), 1, 0.005);
-			this->speed.linear_x = speed;
-			if (fabs(distance) < 0.5)
-			{
-				this->speed.linear_x = distance;
+			if(fabs(distance) < 1){
+				speed = deceleration(fabs(distance), 1, 0.005);
 			}
+			this->speed.linear_x = speed;
 		}
 	}
 
 	bool begin_action_avoidance(double speed)
 	{
+		set_status(3);
 		if(avoidance_queue.empty())
 		{
+			ROS_INFO("/message/empty avoidance");
 			set_status(1);
 			return true;
 		}
@@ -223,30 +224,44 @@ public:
 		geometry_msgs::Point end_point = avoidance_queue.front();
 		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 		{
-			ROS_INFO("STOP PLS");
 			avoidance_queue.pop();
 			stop();
 			return true;
 		}
-		ROS_INFO("avoidance x: %f", end_point.x);
-		ROS_INFO("avoidance y: %f", end_point.y);
 
 		double distance = sqrt(pow(end_point.x - pose.px, 2) + pow(end_point.y - pose.py, 2));
 		this->orientation.desired_angle = atan2((end_point.y - pose.py),(end_point.x - pose.px));
 		doAngleCheck();
+		double angle_difference = this->orientation.angle - this->orientation.desired_angle;
+		if(angle_difference > M_PI)
+		{
+			angle_difference = angle_difference - 2.0 * M_PI;
+		}
+		if(angle_difference < -1.0 * M_PI )
+		{
+			angle_difference = angle_difference + 2.0 * M_PI;
+		}
 
-		ROS_INFO("angle difference: %f",this->orientation.angle - this->orientation.desired_angle);
-		ROS_INFO("M_PI: %f", M_PI/2);
-		if(doubleAngleComparator((this->orientation.angle - this->orientation.desired_angle), M_PI/2))
+		ROS_INFO("");
+
+		if(doubleComparator(angle_difference, -1.0 * M_PI/2))
+		{
+			ROS_INFO("/message/up");
+			speed = deceleration(fabs(distance), 1, 0.005);
+			this->speed.linear_y = speed;
+			this->speed.linear_x = 0.0;
+		}
+		if(doubleComparator(angle_difference, M_PI/2))
 		{
 			speed = deceleration(fabs(distance), 1, 0.005);
 			this->speed.linear_y = -1.0 * speed;
 			this->speed.linear_x = 0.0;
 		}
 
-		if(doubleAngleComparator(this->orientation.angle, this->orientation.desired_angle))
+		if(doubleComparator(this->orientation.angle, this->orientation.desired_angle))
 		{
-			ROS_INFO("go str8");
+
+			ROS_INFO("/message/straight");
 			speed = deceleration(fabs(distance), 1, 0.005);
 			this->speed.linear_x = speed;
 		}
@@ -258,27 +273,31 @@ public:
 
 		if(action_queue.empty())
 		{
-			set_status(1);
 			return true;
 		}
 		geometry_msgs::Point end_point = action_queue.front();
+		set_status(state_queue.front());
+
 		if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
 		{
-			ROS_INFO("xdest: %f", end_point.x);
-			ROS_INFO("ydest: %f", end_point.y);
 			action_queue.pop();
+			state_queue.pop();
+			if (action_queue.empty()) {
+				set_status(0);
+			}
 			stop();
 			return true;
 		}
 
-		if(move_x(end_point.x, speed))
+		if(move_y(end_point.y, speed))
 		{
-			if(move_y(end_point.y, speed))
+			if(move_x(end_point.x, speed))
 			{
 				//set_status(2);
 			}
 
 		}
+		return false;
 	}	
 
 
@@ -303,6 +322,10 @@ public:
 
 	//Queue of the actions
 	std::queue<geometry_msgs::Point> action_queue;
+
+	//Queue of the states
+	std::queue<int> state_queue;
+
 
 	//Queue of the avoidance actions
 	std::queue<geometry_msgs::Point> avoidance_queue;

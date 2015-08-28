@@ -27,10 +27,18 @@ public:
 	double zero_angle;
 	double temprad;
 
+	ros::NodeHandle nh;
+
+	bool station_set;
+	double station_x;
+	double station_y;
 	bool idle_status_sent;
+	bool picker_bin_msg_sent;
+	std::string associated_picker;
 	ros::Subscriber sub_ground;
 	ros::Subscriber sub_bin;
 	ros::Publisher core_alert;
+	ros::Publisher picker_alert;
 	ugbots_ros::robot_details robotDetails;
 
 	ros::Subscriber carrier_alert;
@@ -44,7 +52,7 @@ public:
 	Carrier(ros::NodeHandle &n);
 
 	void ground_callback(nav_msgs::Odometry msg);
-	void bin_loc_callback(ugbots_ros::Position pos);
+	void bin_loc_callback(ugbots_ros::robot_details bin);
 
 	void bin_callback(ugbots_ros::bin_status msg);
 	void odom_callback(nav_msgs::Odometry msg);

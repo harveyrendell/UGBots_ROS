@@ -15,6 +15,7 @@ define dog position
 (
   size [0.4 0.8 0.7]
   drive "diff"
+  velocity_bounds [ -10 10 -10 10 -10 10 -90 90 ]
   
   #body
   block(
@@ -113,6 +114,6 @@ define dog position
 	point[3] [0.4 0.1]
 	z [0.6 0.7]
   )
-  anilaser(pose [ 0.050 0.000 0 90.000 ])
+  anilaser(pose [ 0.050 0.000 0 0.000 ])
 )
 

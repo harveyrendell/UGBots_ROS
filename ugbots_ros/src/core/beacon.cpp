@@ -27,16 +27,30 @@ public:
 	void setX(double x) { this->x = x; }
 	void setY(double y) { this->y = y; }
 	void setAsPublished() { sent = true; }
+
+	//callback method for the beacons base pose ground truth topic
 	void bpgt_callback(nav_msgs::Odometry msg)
 	{
+		//set the beacons x and y position using base pose ground truth
 		setX(msg.pose.pose.position.x);
 		setY(msg.pose.pose.position.y);
+
+		//if its position has not been sent
+		if (!sent) {
+			//publish to the topic /world_layout
+			ugbots_ros::Position p;
+			p.x = x;
+			p.y = y;
+			position_pub.publish(p);
+			sent = true;
+		}
 	}
 
 private:
 	// coordinates for the beacon
 	double x;
 	double y;
+	//boolean determining position sent status
 	bool sent = false;
 };
 
@@ -49,21 +63,11 @@ int main(int argc, char **argv)
 	// construct instance of class
 	Beacon b(n);
 
-	ros::Rate loop_rate(1);
+	ros::Rate loop_rate(10);
 
 	int count = 0;
 	while (ros::ok())
 	{
-		// create the msg to publish
-		ugbots_ros::Position msg;
-		msg.x = b.getX();
-		msg.y = b.getY();
-
-		if (count > 1 && !b.isPublished()) {
-			// publish it
-			b.position_pub.publish(msg);
-			b.setAsPublished();
-		}
 
 		ros::spinOnce();
 		loop_rate.sleep();

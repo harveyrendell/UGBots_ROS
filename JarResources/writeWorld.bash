@@ -34,8 +34,6 @@ echo include \"models\/possums.inc\" >> world/config/animalinstances.inc
 echo include \"models\/visitors.inc\" >> world/config/peopleinstances.inc
 echo include \"models\/tractors.inc\" >> world/config/tractorinstances.inc
 
-
-
 number=0
 beacon=$(($kiwitree+$kiwitree-1))
 i=0
@@ -146,19 +144,16 @@ elif ! (( $kiwitree % 2 )); then
 		echo \<\/group\> >> ugbots_ros\/launch\/world.launch
         echo point\( pose [ $bright -38 0 0 ] name \"robot_$number\" color \"yellow\" \) >> world/config/beaconinstances.inc
 	number=$(($number+1))
-
-
-        
+     
 	tree=$(($tree+2))
         treenum=$(($treenum+1))
         z=$(($z+1))
     done
 fi
 
-
-
-
 #creating picker robots
+temp=0
+
 while [ $i -lt $picker ];
 do
 
@@ -166,7 +161,14 @@ echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"robotnode\" type=\"PICKER\"\/\> >> ugbots_ros\/launch\/world.launch 
 echo \<\/group\> >> ugbots_ros\/launch\/world.launch
 
-echo pickerRobot\(pose [ -48 $((48-$(($i * 5)))) 0 0 ]\ name \"P$i\" color \"red\"\) >> world/config/robotinstances.inc
+
+if !(($i%2)); then
+	temp=$(($temp+1))
+fi
+
+posx=$((-40 + (( $(($i%2)) * 8 )) ))
+posy=$((-50 + $(($temp * 4))))
+echo pickerRobot\(pose [ $posx $posy 0 0 ]\ name \"P$i\" color \"red\"\) >> world/config/robotinstances.inc
 
 i=$(($i+1))
 number=$(($number+1))
@@ -181,7 +183,7 @@ echo \<group ns=\"robot_$number\"\> >> ugbots_ros\/launch\/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"robotnode\" type=\"CARRIER\"\/\> >> ugbots_ros\/launch\/world.launch
 echo \<\/group\> >> ugbots_ros\/launch\/world.launch
 
-echo carrierRobot\(pose [ -46 $((48-$(($j*5)))) 0 90 ] name \"C$j\" color \"blue\"\) >> world/config/robotinstances.inc
+echo carrierRobot\(pose [ $((25 + (($j*5)))) -15 0 270 ] name \"C$j\" color \"blue\"\) >> world/config/robotinstances.inc
 
 j=$(($j+1))
 number=$(($number+1))
@@ -199,8 +201,7 @@ echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"workernode\" type=\"WORKER\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
-#echo worker\(pose [ 0 $((1+$(($w * 2)))) 0 0 ] name \"W$w\" color \"black\" \) >> world/config/peopleinstances.inc
-echo worker\(pose [ $rand $rand2 0 270 ] origin [ 0 0 0 90 ] name \"W$w\" color \"black\" \) >> world/config/peopleinstances.inc
+echo worker\(pose [ $rand $rand2 0 270 ] origin [ 0 0 0 90 ] name \"W$w\"\) >> world/config/peopleinstances.inc
 w=$(($w+1))
 number=$(($number+1))
 
@@ -216,12 +217,11 @@ do
 rand=$visitorx
 rand2=$visitory
 
-echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch #### WORKER-> VISITOR
+echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch 
 echo \<node pkg=\"ugbots_ros\" name=\"visitornode\" type=\"VISITOR\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
-#echo visitor\(pose [ 3.5 $((1+$(($v * 2)))) 0 0 ] name \"V$v\" color \"pink\" \) >> world/config/peopleinstances.inc
-echo visitor\(pose [ $rand $rand2 0 180 ] origin [ 0 0 0 90 ] name \"V$v\" color \"pink\" \) >> world/config/peopleinstances.inc
+echo visitor\(pose [ $rand $rand2 0 180 ] origin [ 0 0 0 90 ] name \"V$v\" \) >> world/config/peopleinstances.inc
 v=$(($v+1))
 number=$(($number+1))
 visitorx=$(($rand+5))
@@ -252,9 +252,24 @@ echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"dognode\" type=\"DOG\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
-#echo dog\( pose [ 0 $((-1-$(($d * 2)))) 0 0 ] name \"D$d\" color \"brown\" \) >> world/config/animalinstances.inc
-echo dog\( pose [ $rand $rand2 0 0 ] name \"D$d\" color \"brown\" \) >> world/config/animalinstances.inc
+echo dog\( pose [ $rand $rand2 0 0 ] origin [ 0 0 0 270 ] name \"D$d\" \) >> world/config/animalinstances.inc
 d=$(($d+1))
+number=$(($number+1))
+
+done
+
+#creating cat
+while [ $c -lt $cat ];
+do
+
+rand=$(( (RANDOM % 80) - 40 )) 
+
+echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch
+echo \<node pkg=\"ugbots_ros\" name=\"catnode\" type=\"CAT\"\/\> >> ugbots_ros/launch/world.launch 
+echo \<\/group\> >> ugbots_ros/launch/world.launch
+
+echo cats\( pose [ $rand 47 0 0 ] origin [ 0 0 0 270 ] name \"C$c\" \) >> world/config/animalinstances.inc
+c=$(($c+1))
 number=$(($number+1))
 
 done
@@ -263,11 +278,9 @@ done
 while [ $po -lt $possum ];
 do
 
-echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch #### DOG -> POSSUM
+echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch 
 echo \<node pkg=\"ugbots_ros\" name=\"possumnode\" type=\"POSSUM\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
-
-#echo possum\( pose [ 3.5 $((-1-$(($c * 2)))) 0 0 ] name \"P$po\" color \"purple\" \) >> world/config/animalinstances.inc
 
 possumStart=$(echo "scale=2; $bleft-1.75" | bc)
 
@@ -275,7 +288,7 @@ index=$(( (RANDOM % 28) -14))
 
 yPos=$(echo "scale=2; $index*2.5 -1.25"| bc)
 
-echo possum\( pose [ $left $yPos 0 0 ] name \"PO$po\" color \"purple\" \) >> world/config/animalinstances.inc
+echo possum\( pose [ $left $yPos 0 0 ] origin [ 0 0 0 270 ] name \"PO$po\" color \"wheat4\" \) >> world/config/animalinstances.inc
 
 po=$(($po+1))
 number=$(($number+1))
@@ -285,28 +298,12 @@ done
 #creating tractors
 while [ $t -lt $tractor ];
 do
-
-rand=$(( (RANDOM % 97) - 46 )) 
-
-if (($rand>=-12 && $rand<=12));
-then
-    rand3=$(( (RANDOM % 15) - 49 )) 
-    rand4=$(( (RANDOM % 15) + 35 ))
-    if [ $(( (RANDOM % 2) + 1 )) -lt "2" ];
-    then
-        rand2=$rand3
-    else
-        rand2=$rand4
-    fi
-else
-    rand2=$(( (RANDOM % 99) - 48 )) 
-fi
-
 echo \<group ns=\"robot_$number\"\> >> ugbots_ros/launch/world.launch
 echo \<node pkg=\"ugbots_ros\" name=\"tractornode\" type=\"TRACTOR\"\/\> >> ugbots_ros/launch/world.launch 
 echo \<\/group\> >> ugbots_ros/launch/world.launch
 
-echo tractor\( pose [ $rand $rand2 0 0 ] name \"T$t\" color \"brown\" \) >> world/config/tractorinstances.inc
+echo tractor\( pose [ -45 0 0 0 ] origin [ 0 0 0 270] name \"T$t\" \) >> world/config/tractorinstances.inc
+
 t=$(($t+1))
 number=$(($number+1))
 

@@ -1,5 +1,24 @@
 #include <node_defs/possum.h>
 
+Possum::Possum()
+{
+	//setting base attribute defaults
+	this->pose.theta = M_PI/2.0;
+	this->pose.px = 0;
+	this->pose.py = 0;
+	this->speed.linear_x = 0.0;
+	this->speed.max_linear_x = 3.0;
+	this->speed.angular_z = 0.0;
+	this->orientation.currently_turning = false;
+
+	this->state = IDLE;
+
+	this->row = 1; //starting at vine 1
+	this->direction = EAST;
+
+	this->initial_coordinates_set = false;	
+}
+
 Possum::Possum(ros::NodeHandle &n)
 {
 	//setting base attribute defaults
@@ -75,7 +94,7 @@ void Possum::odom_callback(nav_msgs::Odometry msg)
 	checkTurningStatus(); //check if possum is currently facing the direction its supposed to be facing.
 	//if the possums status indicates that is can move across, begin following co-ordinates in queue.
 	if(this->state == MOVINGACROSS){
-		begin_action(3.0);
+		begin_action2(3.0);
 	}
 
 	publish();
@@ -221,6 +240,27 @@ int Possum::computeNumberOfRows(){
 		return int(((10 * (1.75-this->pose.px)) / 35)*2); 
 	}
 }
+
+//this method processes co-ordinates inside action_queue. (Derivation of original method begin_action in node.h)
+void Possum::begin_action2(double speed)
+{
+	geometry_msgs::Point end_point = action_queue.front();
+	//check if possum is at destination co-ordinate
+	if(doubleComparator(end_point.x, pose.px) && doubleComparator(end_point.y, pose.py))
+	{
+		//if true, pop co-ordinate from queue and call stop();
+		ROS_INFO("xdest: %f", end_point.x);
+		ROS_INFO("ydest: %f", end_point.y);
+		action_queue.pop();
+		stop();
+	}
+	//move in the x direction (towards destination)
+	if(move_x(end_point.x, speed))
+	{
+		//move in the y direction (towards destination)
+		move_y(end_point.y, speed);
+	}
+}	
 
 //unimplemented methods in the node interface.
 void Possum::move(){}

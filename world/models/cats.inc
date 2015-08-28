@@ -1,9 +1,9 @@
-define anilaser ranger
+define catlaser ranger
 (
   sensor(
-  range [ 0.0 7.0 ] # range
-  fov 180       # field of vision
-  samples 180   # samples 
+  range [ 0.0 3.0 ] # range
+  fov 30       # field of vision
+  samples 30   # samples 
   )
   # generic model properties
   color "black"
@@ -11,10 +11,11 @@ define anilaser ranger
   
 )
 
-define cat position
+define cats position
 (
   size [0.3 0.65 0.4]
   drive "diff"
+  velocity_bounds [ -10 10 -10 10 -10 10 -90 90 ]
   
   #body
   block(
@@ -123,6 +124,6 @@ define cat position
 	z [0.3 0.4]
   )
 
-  anilaser(pose [ 0.050 0.000 0 90.000 ])
+  catlaser(pose [ 0.050 0.000 0 0.000 ])
 )
 

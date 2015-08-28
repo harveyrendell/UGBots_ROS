@@ -29,7 +29,7 @@ define worker position
 
   #neck
   block(
-	color "yellow"
+	color "SandyBrown"
 	points 4
 	point[0] [0.4 0.4]
 	point[1] [0.6 0.4]
@@ -40,7 +40,7 @@ define worker position
 
   #head
   block(
-	color "yellow"
+	color "SandyBrown"
 	points 4
 	point[0] [0.3 0.35]
 	point[1] [0.7 0.35]
@@ -72,7 +72,7 @@ define worker position
 
   #arms
   block(
-	color "yellow"
+	color "SandyBrown"
 	points 4
 	point[0] [0 0.45]
 	point[1] [0.1 0.45]
@@ -81,7 +81,7 @@ define worker position
 	z [0.7 1.4]
   )
   block(
-	color "yellow"
+	color "SandyBrown"
 	points 4
 	point[0] [1 0.45]
 	point[1] [0.9 0.45]
