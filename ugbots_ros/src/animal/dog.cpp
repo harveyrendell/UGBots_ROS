@@ -1,11 +1,3 @@
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-#include <geometry_msgs/Twist.h>
-#include <nav_msgs/Odometry.h>
-#include <sensor_msgs/LaserScan.h>
-
-#include <sstream>
-#include <stdlib.h>
 #include <node_defs/dog.h>
 
 Dog::Dog(ros::NodeHandle &n)
