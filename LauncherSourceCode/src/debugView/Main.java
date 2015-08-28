@@ -8,14 +8,21 @@ import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UIManager.*;
 
+/**
+ * Project 1: Group robotic behaviour simulation using Robot Operating System (ROS) 
+ * Group 1: UGBots
+ * 
+ * Members: Andy Choi, Kevin Choi, Andrew Jeoung, Jay Kim, Jenny Lee, Namjun Park, Harvey Rendell, Chuan-Yu Wu
+ * 
+ * This class is responsible for instantiating the GUI application window
+ */
+
+
 public class Main {
 	
 	ContentPanel panel;
 	private JFrame frame;
 
-	/**
-	 * Launch the application.
-	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -52,6 +59,8 @@ public class Main {
 		panel = new ContentPanel();
 		frame.add(panel);
 		
+		
+		//Adding listener to the application frame to kill roscore upon closing
 		frame.addWindowListener(new WindowListener(){
 
 			@Override
