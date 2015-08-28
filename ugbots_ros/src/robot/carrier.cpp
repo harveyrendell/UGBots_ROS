@@ -1,3 +1,11 @@
+/**
+ * Author: UGBots
+ * 
+ * Members: Andy Choi, Kevin Choi, Andrew Jeoung, Jay Kim, Jenny Lee, Namjun Park, Harvey Rendell, Chuan-Yu Wu
+ * 
+ * This class is responsible for the "Carrier bot" behaviour
+ */
+
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <geometry_msgs/Twist.h>
@@ -98,11 +106,12 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 	orientation.rotz = msg.pose.pose.orientation.z;
 	orientation.rotw = msg.pose.pose.orientation.w;
 
+	//set the stations co-ordinates to initial spawn point
 	if (!station_set) {
 		station_x = pose.px;
 		station_y = pose.py;
 	}
-
+	//calculate the nodes orientation
 	calculateOrientation();
 	if (state == IDLE && !idle_status_sent) 
 	{
@@ -111,15 +120,9 @@ void Carrier::odom_callback(nav_msgs::Odometry msg)
 		core_alert.publish(robotDetails);
 		idle_status_sent = true;
 	}
-
-	//orientation.angle = atan2(2*(orientation.roty*orientation.rotx+orientation.rotw*orientation.rotz),
-	//orientation.rotw*orientation.rotw+orientation.rotx*orientation.rotx-orientation.roty*
-	//orientation.roty-orientation.rotz*orientation.rotz);
+	
 	ROS_INFO("/position/x/%f", this->pose.px);
 	ROS_INFO("/position/y/%f", this->pose.py);
-	//ROS_INFO("/orientation/angle/%f", this->orientation.angle);
-	//ROS_INFO("/speed/x/%f", msg.twist.twist.linear.x);
-	//ROS_INFO("/speed/y/%f", msg.twist.twist.linear.y);
 	ROS_INFO("/status/%s/./", enum_to_string(state));
 
 	if(localBinStatus.bin_stat == "FULL")
@@ -164,72 +167,7 @@ void Carrier::laser_callback(sensor_msgs::LaserScan msg)
 		state = STOPPED;
 	} else {
 		begin_action(0);
-	}
-
-	/*
-	if(fabs(this->queueDuplicateCheckAngle - this->orientation.angle) >= (M_PI/2.000000))
-	{
-		this->queueDuplicate = true;
-		this->queueDuplicateCheckAngle = 0;
-	}
-	
-
-	if(msg.ranges[90] < 2.0)
-	{
-		if(this->queueDuplicate == true)
-		{
-			this->queueDuplicateCheckAngle = this->orientation.angle;
-
-			std::queue<geometry_msgs::Point> temp_queue;
-
-			geometry_msgs::Point pointtemp;
-
-			
-			pointtemp.x = this->pose.px + 2 * cos(this->orientation.angle - (M_PI/2.0));
-			pointtemp.y = this->pose.py + 2 * sin(this->orientation.angle - (M_PI/2.0));
-			temp_queue.push(pointtemp);
-
-			pointtemp.x = pointtemp.x + 4 * cos(this->orientation.angle);
-			pointtemp.y = pointtemp.y + 4 * sin(this->orientation.angle);
-			temp_queue.push(pointtemp);
-
-			pointtemp.x = pointtemp.x + 2 * cos(this->orientation.angle + (M_PI/2.0));
-			pointtemp.y = pointtemp.y + 2 * sin(this->orientation.angle + (M_PI/2.0));
-			temp_queue.push(pointtemp);
-
-			/*
-				pointtemp.x = this->pose.px; 
-				pointtemp.y = this->pose.py + 1.1;
-
-				temp_queue.push(pointtemp);
-
-				pointtemp.x = this->pose.px - 4.0; 
-				pointtemp.y = this->pose.py + 1.1;
-
-				temp_queue.push(pointtemp);
-
-				pointtemp.x = this->pose.px - 4.0; 
-				pointtemp.y = this->pose.py;
-
-				temp_queue.push(pointtemp);
-			
-
-			while(!action_queue.empty())
-			{
-				temp_queue.push(action_queue.front());
-				action_queue.pop();
-			}
-
-			while(!temp_queue.empty())
-			{
-				action_queue.push(temp_queue.front());
-				temp_queue.pop();
-			}
-
-			this->queueDuplicate = false;
-		}
-	}**/
-}
+	}}
 
 void Carrier::bin_loc_callback(ugbots_ros::robot_details bin)
 {
@@ -261,6 +199,7 @@ void Carrier::bin_loc_callback(ugbots_ros::robot_details bin)
 }
 
 void Carrier::set_status(int status){
+	//goes through each index of the state_array to set current state to input parameter
 	for(int i = 0; i < arraysize(state_array); i++)
 	{
 		if(i == status)
@@ -273,7 +212,7 @@ void Carrier::set_status(int status){
 		}
 	}
 }
-
+//method to stop all movement
 void Carrier::stop()
 {
 	speed.linear_x = 0.0;
@@ -304,8 +243,6 @@ int count = 0;
 
 while (ros::ok())
 {
-	//node.publish();	
-
 	node.carrier_alert_pub.publish(node.binStatus);
 
 	ros::spinOnce();
